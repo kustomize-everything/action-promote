@@ -1,0 +1,38 @@
+name: Testing
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-setup:
+    name: Test Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Action Test with Defaults
+        uses: ./
+        with:
+          target-repo: kustomize-everything/test-deploy
+          target-branch: main
+          target-dir: env/dev
+          working-directory: test-deploy
+          image-name-tag: nginx:1.23.0
+          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Action Test back to latest
+        uses: ./
+        with:
+          target-repo: kustomize-everything/guestbook-deploy
+          target-branch: main
+          target-dir: env/stage
+          working-directory: guestbook-deploy
+          image-name-tag: nginx:latest
+          ssh-key: ${{ secrets.GUESTBOOK_DEPLOY_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
