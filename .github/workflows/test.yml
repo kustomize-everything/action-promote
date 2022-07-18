@@ -28,14 +28,17 @@ jobs:
         shell: bash
         run: |-
           cd test-deploy-reset
+          BRANCH="pr/${GITHUB_SHA}"
+          echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
+          git checkout -B ${BRANCH}
           git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
-          git push origin main -f
+          git push origin ${BRANCH} -f
 
       - name: Action Test with Defaults
         uses: ./
         with:
           target-repo: kustomize-everything/test-deploy
-          target-branch: main
+          target-branch: ${{ env.BRANCH }}
           target-dir: env/dev
           working-directory: test-deploy
           image-name-tag: nginx:1.23.0
