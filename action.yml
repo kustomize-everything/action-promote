@@ -133,6 +133,7 @@ runs:
           kustomize edit set image ${IMAGE_NAME_TAG}
           git add .
           git commit -m "${TITLE}
+
           ${METADATA}
           "
           git show
@@ -172,6 +173,7 @@ runs:
           kustomize edit set image ${IMAGE_NAME_TAG}
           git add .
           git commit -m "${TITLE}
+
           ${METADATA}
           "
           git show
@@ -179,8 +181,16 @@ runs:
           echo
           echo "Image ${IMAGE_NAME_TAG} has been promoted to ${{ inputs.target-repo }} on branch ${{ inputs.target-branch }} in directory ${{ inputs.target-dir }}."
           echo
-          gh browse -c -n -R ${{ inputs.target-repo }}
+          DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R ${{ inputs.target-repo }})"
+          echo "${DEPLOYMENT_REPO_SHA_URL}"
         else
           echo "Unknown promotion method: ${{ inputs.promotion-method }}. Valid methods are pull_request and push."
           exit 1
         fi
+
+        # Set outputs so that downstream steps can consume this data
+        echo "::set-output image-name-tag=${IMAGE_NAME_TAG}"
+        echo "::set-output image-tags=${{ inputs.image-additional-tags }}"
+        echo "::set-output deployment-repo-sha=$(git rev-parse HEAD)"
+        echo "::set-output deployment-repo-sha-url=${DEPLOYMENT_REPO_SHA_URL}"
+        echo "::set-output deployment-repo-short-sha=$(git rev-parse --short HEAD)"
