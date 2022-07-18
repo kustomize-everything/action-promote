@@ -1,0 +1,161 @@
+---
+name: Image Promotion
+description: Promote a tagged image to a deployment repo using Kustomize and Git
+inputs:
+  image-name:
+    description: The name of the image
+    required: true
+  image-tag:
+    description: The tag to promote
+    required: true
+  image-additional-tags:
+    description: Additional tags
+    default: None
+    required: false
+  target-repo:
+    description: The repo where the image promotion should be pushed
+    required: true
+  target-branch:
+    description: The branch where the image promotion should be pushed (defaults to
+      main)
+    default: main
+    required: false
+  target-dir:
+    description: The directory where the kustomize.yaml to update is located in the
+      target-repo
+    required: true
+  github-token:
+    description: GitHub token for account that will do the promotion
+    required: true
+  version:
+    description: Version of Kustomize to use
+    required: false
+    default: 4.5.3
+  sha256-checksum:
+    description: Checksum of Kustomize version
+    required: false
+    default: e4dc2f795235b03a2e6b12c3863c44abe81338c5c0054b29baf27dcc734ae693
+  working-directory:
+    description: Working directory where the deployment repo should be checked out into
+    required: false
+    default: image-promotion
+  git-commit-user:
+    description: Name to add to the Git Commit Message
+    required: false
+    default: Kustomize Everything
+  git-commit-email:
+    description: Email to add to the Git Commit Message
+    required: false
+    default: kustomize-everything@users.noreply.github.com
+  git-commit-message:
+    description: Commit message to use for deployment
+    required: false
+
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ inputs.target-repo }}
+        ref: ${{ inputs.target-branch }}
+        token: ${{ inputs.github-token }}
+        path: ${{ inputs.working-directory }}
+
+    - name: GitHub Metadata
+      uses: kustomize-everything/action-github-metadata@main
+
+    # Kustomize setup (this should be abstracted into a separate action repo)
+    - name: Kustomize Setup
+      uses: kustomize-everything/action-kustomize@main
+      with:
+        version: ${{ inputs.version }}
+        sha256-checksum: ${{ inputs.sha256-checksum }}
+
+    - name: Set Git Author
+      shell: bash
+      run: |
+        git config --global user.name ${{ inputs.git-commit-user }}
+        git config --global user.email ${{ inputs.git-commit-email }}
+
+    - name: Update Image Tag in Base
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        IMAGE_NAME: ${{inputs.image-name}}
+        IMAGE_TAG: ${{inputs.image-tag}}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |-
+        cd ${{ inputs.target-dir }}
+        BRANCH=promotion/${GITHUB_REPOSITORY}/${{ inputs.target-branch }}/${{ inputs.target-dir}}/${IMAGE_NAME}/${IMAGE_TAG}
+        TITLE="Update ${IMAGE_NAME} image tag to ${IMAGE_TAG}"
+        METADATA="---
+        IMAGE_NAME: ${IMAGE_NAME}
+        IMAGE_TAG: ${IMAGE_TAG}
+        IMAGE_TAGS: ${{inputs.image-additional-tags}}
+        GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
+        GITHUB_JOB: ${GITHUB_JOB}
+        GITHUB_REF: ${GITHUB_REF}
+        GITHUB_REF_URL: ${GITHUB_REF_URL}
+        GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}
+        GITHUB_REPOSITORY_URL: ${GITHUB_REPOSITORY_URL}
+        GITHUB_RUN_ID: ${GITHUB_RUN_ID}
+        GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER}
+        GITHUB_SHA: ${GITHUB_SHA}
+        GITHUB_SHA_URL: ${GITHUB_SHA_URL}
+        GITHUB_WORKFLOW_RUN_URL: ${GITHUB_WORKFLOW_RUN_URL}"
+
+        if [[ "${{ inputs.promotion-method }}" == "pull_request" ]]; then
+          git checkout -B ${BRANCH}
+          kustomize edit set image ${IMAGE_NAME}:${IMAGE_TAG}
+          git add .
+          git commit -m "${TITLE}
+          ${METADATA}
+          "
+          git show
+          git push origin ${BRANCH} -f
+          set +e
+          PR="$(gh pr view 2>&1)"
+          set -e
+          if [[ "${PR}" =~ "no pull requests found" ]]; then
+            gh pr create --fill
+          else
+            echo "PR Already exists:"
+            gh pr view
+          fi
+          CHECKS_DONE=""
+          while [[ "${CHECKS_DONE}" != "true" ]]; do
+            set +e
+            CHECK_RESULTS="$(gh pr checks 2>&1)"
+            set -e
+            WAITING_PATTERN="no checks reported"
+            if [[ "${CHECK_RESULTS}" =~ "${WAITING_PATTERN}" ]]; then
+              echo "Waiting for status checks to start..."
+              sleep 5
+            else
+              CHECKS_DONE="true"
+            fi
+          done
+          echo
+          echo "Waiting for status checks to complete..."
+          gh pr checks --watch
+          echo
+          echo "Status checks have all passed. Merging PR..."
+          gh pr merge --squash --admin
+          echo
+          echo "Promotion PR has been merged. Details below."
+          gh pr view
+        elif [[ "${{ inputs.promotion-method }}" == "push" ]];
+          kustomize edit set image ${IMAGE_NAME}:${IMAGE_TAG}
+          git add .
+          git commit -m "${TITLE}
+          ${METADATA}
+          "
+          git show
+          git push origin ${{ inputs.target-branch }}
+          echo
+          echo "Image ${IMAGE_NAME}:${IMAGE_TAG} has been promoted to ${{ inputs.target-repo }} on branch ${{ inputs.target-branch }} in directory ${{ inputs.target-dir }}."
+        else
+          echo "Unknown promotion method: ${{ inputs.promotion-method }}. Valid methods are pull_request and push."
+        fi
