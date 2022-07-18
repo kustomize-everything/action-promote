@@ -4,10 +4,13 @@ description: Promote a tagged image to a deployment repo using Kustomize and Git
 inputs:
   image-name:
     description: The name of the image
-    required: true
+    required: false
   image-tag:
     description: The tag to promote
-    required: true
+    required: false
+  image-name-tag:
+    description: The image name:tag to promote
+    required: false
   image-additional-tags:
     description: Additional tags
     default: None
@@ -66,7 +69,6 @@ runs:
     - name: GitHub Metadata
       uses: kustomize-everything/action-github-metadata@main
 
-    # Kustomize setup (this should be abstracted into a separate action repo)
     - name: Kustomize Setup
       uses: kustomize-everything/action-kustomize@main
       with:
@@ -85,15 +87,27 @@ runs:
       env:
         IMAGE_NAME: ${{inputs.image-name}}
         IMAGE_TAG: ${{inputs.image-tag}}
+        IMAGE_NAME_TAG: ${{inputs.image-name-tag}}
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |-
+        if [[ "${IMAGE_NAME}" && "${IMAGE_TAG}" ]]; then
+          IMAGE_NAME_TAG="${IMAGE_NAME}:${IMAGE_TAG}"
+        elif [[ "${IMAGE_NAME_TAG}" ]]; then
+          echo "Using provided image-name-tag ${IMAGE_NAME_TAG}."
+        else
+          echo "No image was specified for promotion. You must provide one of the following inputs to the action:"
+          echo "- image-name and image-tag e.g. image-name = nginx and image-tag = 1.0.0"
+          echo "- image-name-tag e.g image-name-tag = nginx:1.0.0"
+          exit 1
+        fi
+
+        IMAGE_ID="${IMAGE_NAME_TAG}"
+
         cd ${{ inputs.target-dir }}
-        BRANCH=promotion/${GITHUB_REPOSITORY}/${{ inputs.target-branch }}/${{ inputs.target-dir}}/${IMAGE_NAME}/${IMAGE_TAG}
-        TITLE="Update ${IMAGE_NAME} image tag to ${IMAGE_TAG}"
+        TITLE="Promote ${IMAGE_ID} to ${{ inputs.target-dir }}"
         METADATA="---
-        IMAGE_NAME: ${IMAGE_NAME}
-        IMAGE_TAG: ${IMAGE_TAG}
-        IMAGE_TAGS: ${{inputs.image-additional-tags}}
+        IMAGE_NAME_TAG: ${IMAGE_NAME_TAG}
+        IMAGE_TAGS: ${{ inputs.image-additional-tags }}
         GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
         GITHUB_JOB: ${GITHUB_JOB}
         GITHUB_REF: ${GITHUB_REF}
@@ -107,8 +121,9 @@ runs:
         GITHUB_WORKFLOW_RUN_URL: ${GITHUB_WORKFLOW_RUN_URL}"
 
         if [[ "${{ inputs.promotion-method }}" == "pull_request" ]]; then
+          BRANCH=promotion/${GITHUB_REPOSITORY}/${{ inputs.target-branch }}/${{ inputs.target-dir}}/${IMAGE_NAME}/${IMAGE_TAG}
           git checkout -B ${BRANCH}
-          kustomize edit set image ${IMAGE_NAME}:${IMAGE_TAG}
+          kustomize edit set image ${IMAGE_NAME_TAG}
           git add .
           git commit -m "${TITLE}
           ${METADATA}
@@ -147,7 +162,7 @@ runs:
           echo "Promotion PR has been merged. Details below."
           gh pr view
         elif [[ "${{ inputs.promotion-method }}" == "push" ]];
-          kustomize edit set image ${IMAGE_NAME}:${IMAGE_TAG}
+          kustomize edit set image ${IMAGE_NAME_TAG}
           git add .
           git commit -m "${TITLE}
           ${METADATA}
@@ -155,7 +170,8 @@ runs:
           git show
           git push origin ${{ inputs.target-branch }}
           echo
-          echo "Image ${IMAGE_NAME}:${IMAGE_TAG} has been promoted to ${{ inputs.target-repo }} on branch ${{ inputs.target-branch }} in directory ${{ inputs.target-dir }}."
+          echo "Image ${IMAGE_NAME_TAG} has been promoted to ${{ inputs.target-repo }} on branch ${{ inputs.target-branch }} in directory ${{ inputs.target-dir }}."
         else
           echo "Unknown promotion method: ${{ inputs.promotion-method }}. Valid methods are pull_request and push."
+          exit 1
         fi
