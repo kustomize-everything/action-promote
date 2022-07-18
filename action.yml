@@ -175,6 +175,8 @@ runs:
           git push origin ${{ inputs.target-branch }}
           echo
           echo "Image ${IMAGE_NAME_TAG} has been promoted to ${{ inputs.target-repo }} on branch ${{ inputs.target-branch }} in directory ${{ inputs.target-dir }}."
+          echo
+          gh browse -c -n -R ${{ inputs.target-repo }}
         else
           echo "Unknown promotion method: ${{ inputs.promotion-method }}. Valid methods are pull_request and push."
           exit 1
