@@ -60,7 +60,22 @@ inputs:
   git-commit-message:
     description: Commit message to use for deployment
     required: false
-
+outputs:
+  image-name-tag:
+    description: "Combined image name:tag that was promoted"
+    value: ${{ steps.update-image-tag.outputs.image-name-tag }}
+  image-tags:
+    description: "Additional tags that were provided"
+    value: ${{ steps.update-image-tag.outputs.image-additional-tags }}
+  deployment-repo-sha:
+    description: "Git SHA of promotion commit on deployment repo"
+    value: ${{ steps.update-image-tag.outputs.deployment-repo-sha }}
+  deployment-repo-sha-url:
+    description: "Github URL for the promotion commit on the deployment URL"
+    value: ${{ steps.update-image-tag.outputs.deployment-repo-sha-url }}
+  deployment-repo-sha-short:
+    description: "Git short SHA of promotion commit on deployment repo."
+    value: ${{ steps.update-image-tag.outputs.deployment-repo-sha-short }}
 
 runs:
   using: composite
@@ -89,6 +104,7 @@ runs:
         git config --global user.email ${{ inputs.git-commit-email }}
 
     - name: Update Image Tag in Base
+      id: update-image-tag
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
@@ -193,4 +209,4 @@ runs:
         echo "::set-output image-tags=${{ inputs.image-additional-tags }}"
         echo "::set-output deployment-repo-sha=$(git rev-parse HEAD)"
         echo "::set-output deployment-repo-sha-url=${DEPLOYMENT_REPO_SHA_URL}"
-        echo "::set-output deployment-repo-short-sha=$(git rev-parse --short HEAD)"
+        echo "::set-output deployment-repo-sha-short=$(git rev-parse --short HEAD)"
