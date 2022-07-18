@@ -15,6 +15,22 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v2
 
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: main
+          path: test-deploy-reset
+          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
+
+      - name: Reset testing repo to known state
+        shell: bash
+        run: |-
+          cd test-deploy-reset
+          git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
+          git push origin main -f
+
       - name: Action Test with Defaults
         uses: ./
         with:
@@ -24,15 +40,4 @@ jobs:
           working-directory: test-deploy
           image-name-tag: nginx:1.23.0
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Action Test back to latest
-        uses: ./
-        with:
-          target-repo: kustomize-everything/guestbook-deploy
-          target-branch: main
-          target-dir: env/stage
-          working-directory: guestbook-deploy
-          image-name-tag: nginx:latest
-          ssh-key: ${{ secrets.GUESTBOOK_DEPLOY_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

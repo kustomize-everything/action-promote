@@ -89,10 +89,10 @@ runs:
         path: ${{ inputs.working-directory }}
 
     - name: GitHub Metadata
-      uses: kustomize-everything/action-github-metadata@v1
+      uses: kustomize-everything/action-github-metadata@v1.0.0
 
     - name: Kustomize Setup
-      uses: kustomize-everything/action-kustomize@v1
+      uses: kustomize-everything/action-kustomize@v1.0.3
       with:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
