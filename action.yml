@@ -31,8 +31,8 @@ inputs:
     description: "How to handle the promotion. pull_request opens a PR against the repository, ensures that all checks pass on the PR, and then self-merges the PR. push will push the changes directly to the target branch."
     required: false
     default: push
-  github-token:
-    description: GitHub token for account that will do the promotion
+  ssh-key:
+    description: SSH key for doing the promotion into the deployment repository. REMEMBER TO USE A GITHUB SECRET FOR THIS.
     required: true
   version:
     description: Version of Kustomize to use
@@ -67,7 +67,7 @@ runs:
       with:
         repository: ${{ inputs.target-repo }}
         ref: ${{ inputs.target-branch }}
-        token: ${{ inputs.github-token }}
+        ssh-key: ${{ inputs.ssh-key }}
         path: ${{ inputs.working-directory }}
 
     - name: GitHub Metadata
