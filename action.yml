@@ -27,6 +27,10 @@ inputs:
     description: The directory where the kustomize.yaml to update is located in the
       target-repo
     required: true
+  promotion-method:
+    description: "How to handle the promotion. pull_request opens a PR against the repository, ensures that all checks pass on the PR, and then self-merges the PR. push will push the changes directly to the target branch."
+    required: false
+    default: push
   github-token:
     description: GitHub token for account that will do the promotion
     required: true
