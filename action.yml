@@ -40,11 +40,11 @@ inputs:
   version:
     description: Version of Kustomize to use
     required: false
-    default: 4.5.3
+    default: 4.5.5
   sha256-checksum:
     description: Checksum of Kustomize version
     required: false
-    default: e4dc2f795235b03a2e6b12c3863c44abe81338c5c0054b29baf27dcc734ae693
+    default: bba81aa61dba057db1d5abeddf1e522b568b2d906ab67a5c80935e97302c8773
   working-directory:
     description: Working directory where the deployment repo should be checked out into
     required: false
