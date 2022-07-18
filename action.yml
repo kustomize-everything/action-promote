@@ -96,7 +96,6 @@ runs:
         IMAGE_TAG: ${{inputs.image-tag}}
         IMAGE_NAME_TAG: ${{inputs.image-name-tag}}
         GITHUB_TOKEN: ${{ inputs.github-token }}
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |-
         if [[ "${IMAGE_NAME}" && "${IMAGE_TAG}" ]]; then
           IMAGE_NAME_TAG="${IMAGE_NAME}:${IMAGE_TAG}"
