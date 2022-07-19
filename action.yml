@@ -2,6 +2,20 @@
 name: Image Promotion
 description: Promote a tagged image to a deployment repo using Kustomize and Git
 inputs:
+  git-commit-user:
+    description: Name to add to the Git Commit Message
+    required: false
+    default: Kustomize Everything
+  git-commit-email:
+    description: Email to add to the Git Commit Message
+    required: false
+    default: kustomize-everything@users.noreply.github.com
+  git-commit-message:
+    description: Commit message to use for deployment
+    required: false
+  github-token:
+    description: GitHub token for either opening pull requests or fetching metadata about what is being promoted.
+    required: true
   image-name:
     description: The name of the image
     required: false
@@ -15,6 +29,17 @@ inputs:
     description: Additional tags
     default: None
     required: false
+  promotion-method:
+    description: "How to handle the promotion. pull_request opens a PR against the repository, ensures that all checks pass on the PR, and then self-merges the PR. push will push the changes directly to the target branch."
+    required: false
+    default: push
+  sha256-checksum:
+    description: Checksum of Kustomize version
+    required: false
+    default: bba81aa61dba057db1d5abeddf1e522b568b2d906ab67a5c80935e97302c8773
+  ssh-key:
+    description: SSH key for doing the promotion into the deployment repository. REMEMBER TO USE A GITHUB SECRET FOR THIS.
+    required: true
   target-repo:
     description: The repo where the image promotion should be pushed
     required: true
@@ -27,46 +52,15 @@ inputs:
     description: The directory where the kustomize.yaml to update is located in the
       target-repo
     required: true
-  promotion-method:
-    description: "How to handle the promotion. pull_request opens a PR against the repository, ensures that all checks pass on the PR, and then self-merges the PR. push will push the changes directly to the target branch."
-    required: false
-    default: push
-  ssh-key:
-    description: SSH key for doing the promotion into the deployment repository. REMEMBER TO USE A GITHUB SECRET FOR THIS.
-    required: true
-  github-token:
-    description: GitHub token for either opening pull requests or fetching metadata about what is being promoted.
-    required: true
   version:
     description: Version of Kustomize to use
     required: false
     default: 4.5.5
-  sha256-checksum:
-    description: Checksum of Kustomize version
-    required: false
-    default: bba81aa61dba057db1d5abeddf1e522b568b2d906ab67a5c80935e97302c8773
   working-directory:
     description: Working directory where the deployment repo should be checked out into
     required: false
     default: image-promotion
-  git-commit-user:
-    description: Name to add to the Git Commit Message
-    required: false
-    default: Kustomize Everything
-  git-commit-email:
-    description: Email to add to the Git Commit Message
-    required: false
-    default: kustomize-everything@users.noreply.github.com
-  git-commit-message:
-    description: Commit message to use for deployment
-    required: false
 outputs:
-  image-name-tag:
-    description: "Combined image name:tag that was promoted"
-    value: ${{ steps.update-image-tag.outputs.image-name-tag }}
-  image-tags:
-    description: "Additional tags that were provided"
-    value: ${{ steps.update-image-tag.outputs.image-additional-tags }}
   deployment-repo-sha:
     description: "Git SHA of promotion commit on deployment repo"
     value: ${{ steps.update-image-tag.outputs.deployment-repo-sha }}
@@ -76,6 +70,12 @@ outputs:
   deployment-repo-sha-short:
     description: "Git short SHA of promotion commit on deployment repo."
     value: ${{ steps.update-image-tag.outputs.deployment-repo-sha-short }}
+  image-name-tag:
+    description: "Combined image name:tag that was promoted"
+    value: ${{ steps.update-image-tag.outputs.image-name-tag }}
+  image-tags:
+    description: "Additional tags that were provided"
+    value: ${{ steps.update-image-tag.outputs.image-additional-tags }}
 
 runs:
   using: composite
