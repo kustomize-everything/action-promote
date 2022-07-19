@@ -7,7 +7,6 @@ on:
 jobs:
   yaml-lint:
     name: YAML Linting
-    needs: detect-changes
     runs-on: ubuntu-latest
 
     steps:

@@ -7,7 +7,6 @@ on:
 jobs:
  shell-lint:
     name: Shell Lint
-    needs: detect-changes
     runs-on: ubuntu-latest
 
     steps:
