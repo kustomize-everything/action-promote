@@ -57,15 +57,16 @@ inputs:
     default: main
     required: false
   target-dir:
-    description: The directory where the kustomize.yaml to update is located in the
-      target-repo
+    description: The directory where the kustomize.yaml to update is located in
+      the target-repo
     required: true
   version:
     description: Version of Kustomize to use
     required: false
     default: 4.5.5
   working-directory:
-    description: Working directory where the deployment repo should be checked out into
+    description: |
+      Working directory where the deployment repo should be checked out into
     required: false
     default: image-promotion
 outputs:
