@@ -92,7 +92,7 @@ runs:
       uses: kustomize-everything/action-github-metadata@v1.0.0
 
     - name: Kustomize Setup
-      uses: kustomize-everything/action-kustomize@v1.0.3
+      uses: kustomize-everything/action-kustomize@v1.0.4
       with:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
@@ -108,10 +108,15 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        IMAGE_ADDITIONAL_TAGS: ${{inputs.image-additional-tags}}
+        IMAGE_NAME_TAG: ${{inputs.image-name-tag}}
         IMAGE_NAME: ${{inputs.image-name}}
         IMAGE_TAG: ${{inputs.image-tag}}
-        IMAGE_NAME_TAG: ${{inputs.image-name-tag}}
-        GITHUB_TOKEN: ${{ inputs.github-token }}
+        PROMOTION_METHOD: ${{ inputs.promotion-method }}
+        TARGET_BRANCH: ${{ inputs.target-branch }}
+        TARGET_DIR: ${{ inputs.target-dir }}
+        TARGET_REPO: ${{ inputs.target-repo }}
       run: |-
         if [[ "${IMAGE_NAME}" && "${IMAGE_TAG}" ]]; then
           IMAGE_NAME_TAG="${IMAGE_NAME}:${IMAGE_TAG}"
@@ -126,25 +131,25 @@ runs:
 
         IMAGE_ID="${IMAGE_NAME_TAG}"
 
-        cd ${{ inputs.target-dir }}
-        TITLE="Promote ${IMAGE_ID} to ${{ inputs.target-dir }}"
+        cd "${TARGET_DIR}"
+        TITLE="Promote ${IMAGE_ID} to ${TARGET_DIR}"
         METADATA="---
-        IMAGE_NAME_TAG: ${IMAGE_NAME_TAG}
-        IMAGE_TAGS: ${{ inputs.image-additional-tags }}
         GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
         GITHUB_JOB: ${GITHUB_JOB}
-        GITHUB_REF: ${GITHUB_REF}
         GITHUB_REF_URL: ${GITHUB_REF_URL}
-        GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}
+        GITHUB_REF: ${GITHUB_REF}
         GITHUB_REPOSITORY_URL: ${GITHUB_REPOSITORY_URL}
+        GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}
         GITHUB_RUN_ID: ${GITHUB_RUN_ID}
         GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER}
-        GITHUB_SHA: ${GITHUB_SHA}
         GITHUB_SHA_URL: ${GITHUB_SHA_URL}
+        GITHUB_SHA: ${GITHUB_SHA}
         GITHUB_WORKFLOW_RUN_URL: ${GITHUB_WORKFLOW_RUN_URL}"
+        IMAGE_NAME_TAG: ${IMAGE_NAME_TAG}
+        IMAGE_TAGS: ${{ inputs.image-additional-tags }}
 
-        if [[ "${{ inputs.promotion-method }}" == "pull_request" ]]; then
-          BRANCH=promotion/${GITHUB_REPOSITORY}/${{ inputs.target-branch }}/${{ inputs.target-dir}}/${IMAGE_NAME}/${IMAGE_TAG}
+        if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
+          BRANCH=promotion/${GITHUB_REPOSITORY}/${TARGET_BRANCH}/${TARGET_DIR}}/${IMAGE_NAME}/${IMAGE_TAG}
           git checkout -B ${BRANCH}
           kustomize edit set image ${IMAGE_NAME_TAG}
           git add .
@@ -185,7 +190,7 @@ runs:
           echo
           echo "Promotion PR has been merged. Details below."
           gh pr view
-        elif [[ "${{ inputs.promotion-method }}" == "push" ]]; then
+        elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
           kustomize edit set image ${IMAGE_NAME_TAG}
           git add .
           git commit -m "${TITLE}
@@ -193,20 +198,20 @@ runs:
           ${METADATA}
           "
           git show
-          git push origin ${{ inputs.target-branch }}
+          git push origin ${TARGET_BRANCH}
           echo
-          echo "Image ${IMAGE_NAME_TAG} has been promoted to ${{ inputs.target-repo }} on branch ${{ inputs.target-branch }} in directory ${{ inputs.target-dir }}."
+          echo "Image ${IMAGE_NAME_TAG} has been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH} in directory ${TARGET_DIR}."
           echo
-          DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R ${{ inputs.target-repo }})"
+          DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R ${TARGET_REPO})"
           echo "${DEPLOYMENT_REPO_SHA_URL}"
         else
-          echo "Unknown promotion method: ${{ inputs.promotion-method }}. Valid methods are pull_request and push."
+          echo "Unknown promotion method: ${PROMOTION_METHOD}. Valid methods are pull_request and push."
           exit 1
         fi
 
         # Set outputs so that downstream steps can consume this data
-        echo "::set-output image-name-tag=${IMAGE_NAME_TAG}"
-        echo "::set-output image-tags=${{ inputs.image-additional-tags }}"
-        echo "::set-output deployment-repo-sha=$(git rev-parse HEAD)"
-        echo "::set-output deployment-repo-sha-url=${DEPLOYMENT_REPO_SHA_URL}"
         echo "::set-output deployment-repo-sha-short=$(git rev-parse --short HEAD)"
+        echo "::set-output deployment-repo-sha-url=${DEPLOYMENT_REPO_SHA_URL}"
+        echo "::set-output deployment-repo-sha=$(git rev-parse HEAD)"
+        echo "::set-output image-additional-tags=${IMAGE_ADDITIONAL_TAGS}"
+        echo "::set-output image-name-tag=${IMAGE_NAME_TAG}"
