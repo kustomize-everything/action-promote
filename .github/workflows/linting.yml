@@ -1,0 +1,19 @@
+---
+name: Linting
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  yaml-lint:
+    name: YAML Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: YAML Lint
+        uses: karancode/yamllint-github-action@v2.0.0
+        with:
+          yamllint_comment: true
+          yamllint_format: parsable
