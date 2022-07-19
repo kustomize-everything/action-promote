@@ -1,3 +1,4 @@
+---
 name: Linting
 on:
   pull_request:
@@ -5,7 +6,7 @@ on:
       - main
 
 jobs:
- shell-lint:
+  shell-lint:
     name: Shell Lint
     runs-on: ubuntu-latest
 

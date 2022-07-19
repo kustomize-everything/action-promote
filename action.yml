@@ -14,7 +14,9 @@ inputs:
     description: Commit message to use for deployment
     required: false
   github-token:
-    description: GitHub token for either opening pull requests or fetching metadata about what is being promoted.
+    description: |
+      GitHub token for either opening pull requests or fetching metadata about
+      what is being promoted.
     required: true
   image-name:
     description: The name of the image
@@ -30,7 +32,11 @@ inputs:
     default: None
     required: false
   promotion-method:
-    description: "How to handle the promotion. pull_request opens a PR against the repository, ensures that all checks pass on the PR, and then self-merges the PR. push will push the changes directly to the target branch."
+    description: |
+      How to handle the promotion. pull_request opens a PR against the
+      repository, ensures that all checks pass on the PR, and then
+      self-merges the PR. push will push the changes directly to the target
+      branch.
     required: false
     default: push
   sha256-checksum:
@@ -38,14 +44,16 @@ inputs:
     required: false
     default: bba81aa61dba057db1d5abeddf1e522b568b2d906ab67a5c80935e97302c8773
   ssh-key:
-    description: SSH key for doing the promotion into the deployment repository. REMEMBER TO USE A GITHUB SECRET FOR THIS.
+    description: |
+      SSH key for doing the promotion into the deployment repository.
+      REMEMBER TO USE A GITHUB SECRET FOR THIS.
     required: true
   target-repo:
     description: The repo where the image promotion should be pushed
     required: true
   target-branch:
-    description: The branch where the image promotion should be pushed (defaults to
-      main)
+    description: |
+      The branch where the image promotion should be pushed (defaults to main)
     default: main
     required: false
   target-dir:
