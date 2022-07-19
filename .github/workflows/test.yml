@@ -24,16 +24,6 @@ jobs:
           path: test-deploy-reset
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
 
-      - name: Delete env/dev if it exists
-        shell: bash
-        run: |
-          cd test-deploy-reset
-          set +e
-          if git ls-remote --exit-code --heads origin; then
-            git push --delete origin env/dev
-          fi
-          set -e
-
       - name: Reset testing repo to known state
         shell: bash
         run: |-
