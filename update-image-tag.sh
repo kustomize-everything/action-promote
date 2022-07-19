@@ -44,6 +44,8 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   set +e
   PR="$(gh pr view 2>&1)"
   set -e
+  # We're just looking for the sub-string here, not a regex
+  # shellcheck disable=SC2076
   if [[ "${PR}" =~ "no pull requests found" ]]; then
     gh pr create --fill
   else
@@ -84,7 +86,7 @@ elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
   echo
   echo "Image ${IMAGE_NAME_TAG} has been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH} in directory ${TARGET_DIR}."
   echo
-  DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R ${TARGET_REPO})"
+  DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R "${TARGET_REPO}")"
   echo "${DEPLOYMENT_REPO_SHA_URL}"
 else
   echo "Unknown promotion method: ${PROMOTION_METHOD}. Valid methods are pull_request and push."
