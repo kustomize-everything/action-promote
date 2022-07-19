@@ -117,5 +117,4 @@ runs:
         TARGET_BRANCH: ${{ inputs.target-branch }}
         TARGET_DIR: ${{ inputs.target-dir }}
         TARGET_REPO: ${{ inputs.target-repo }}
-      run: |-
-        ./update-image-tag.sh
+      run: update-image-tag.sh
