@@ -58,6 +58,8 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     CHECK_RESULTS="$(gh pr checks 2>&1)"
     set -e
     WAITING_PATTERN="no checks reported"
+    # We're just looking for the sub-string here, not a regex
+    # shellcheck disable=SC2076
     if [[ "${CHECK_RESULTS}" =~ "${WAITING_PATTERN}" ]]; then
       echo "Waiting for status checks to start..."
       sleep 5
