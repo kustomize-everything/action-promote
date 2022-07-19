@@ -103,6 +103,9 @@ runs:
         git config --global user.name ${{ inputs.git-commit-user }}
         git config --global user.email ${{ inputs.git-commit-email }}
 
+    - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+      shell: bash
+
     - name: Update Image Tag in Base
       id: update-image-tag
       shell: bash
