@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Fail on non-zero exit code
+set -e
+
 if [[ "${IMAGE_NAME}" && "${IMAGE_TAG}" ]]; then
   IMAGE_NAME_TAG="${IMAGE_NAME}:${IMAGE_TAG}"
 elif [[ "${IMAGE_NAME_TAG}" ]]; then
