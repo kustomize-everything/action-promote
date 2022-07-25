@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Push promoted image to deployment repo
-        uses: kustomize-everything/action-promote@v1
+        uses: kustomize-everything/action-promote@v1.0.6
         with:
           target-repo: kustomize-everything/guestbook-deploy
           target-branch: main
