@@ -95,6 +95,7 @@ runs:
         repository: ${{ inputs.target-repo }}
         ref: ${{ inputs.target-branch }}
         ssh-key: ${{ inputs.ssh-key }}
+        token: ${{ inputs.github-token }}
         path: ${{ inputs.working-directory }}
 
     - name: GitHub Metadata
