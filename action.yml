@@ -60,6 +60,9 @@ inputs:
     description: The directory where the kustomize.yaml to update is located in
       the target-repo
     required: true
+  target-name:
+    description: The image name in the deployment that needs to be updated. If unset,
+      we will assume that it matches the image-name.
   version:
     description: Version of Kustomize to use
     required: false
@@ -130,4 +133,5 @@ runs:
         TARGET_BRANCH: ${{ inputs.target-branch }}
         TARGET_DIR: ${{ inputs.target-dir }}
         TARGET_REPO: ${{ inputs.target-repo }}
+        TARGET_NAME: ${{ inputs.target-name }}
       run: update-image-tag.sh

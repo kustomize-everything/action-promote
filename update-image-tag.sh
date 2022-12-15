@@ -36,7 +36,12 @@ IMAGE_TAGS: ${IMAGE_ADDITIONAL_TAGS}"
 if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${TARGET_DIR:?}/${IMAGE_NAME:?}/${IMAGE_TAG:?}" | tr "/" "-")"
   git checkout -B "${BRANCH}"
-  kustomize edit set image "${IMAGE_NAME_TAG}"
+  if [[ -z "${TARGET_NAME}" ]]; then
+    kustomize edit set image "${IMAGE_NAME_TAG}"
+  else
+    kustomize edit set image "${TARGET_NAME}=${IMAGE_NAME_TAG}"
+  fi
+
   git add .
   git commit -m "${TITLE}
 
