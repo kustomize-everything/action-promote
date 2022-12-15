@@ -33,17 +33,18 @@ GITHUB_WORKFLOW_RUN_URL: ${GITHUB_WORKFLOW_RUN_URL}
 IMAGE_NAME_TAG: ${IMAGE_NAME_TAG}
 IMAGE_TAGS: ${IMAGE_ADDITIONAL_TAGS}"
 
-if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
-  BRANCH="promotion/${GITHUB_REPOSITORY}/${TARGET_BRANCH}/${TARGET_DIR}}/${IMAGE_NAME}/${IMAGE_TAG}"
-  git checkout -B "${BRANCH}"
-  kustomize edit set image "${IMAGE_NAME_TAG}"
-  git add .
-  git commit -m "${TITLE}
+BRANCH="promotion/${GITHUB_REPOSITORY}/${TARGET_BRANCH}/${TARGET_DIR}}/${IMAGE_NAME}/${IMAGE_TAG}"
+git checkout -B "${BRANCH}"
+kustomize edit set image "${IMAGE_NAME_TAG}"
+git add .
+git commit -m "${TITLE}
 
-  ${METADATA}
-  "
-  git show
-  git push origin "${BRANCH}" -f
+${METADATA}
+"
+git show
+git push origin "${BRANCH}" -f
+
+if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   set +e
   PR="$(gh pr view 2>&1)"
   set -e
@@ -55,24 +56,28 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     echo "PR Already exists:"
     gh pr view
   fi
-  CHECKS_DONE=""
-  while [[ "${CHECKS_DONE}" != "true" ]]; do
-    set +e
-    CHECK_RESULTS="$(gh pr checks 2>&1)"
-    set -e
-    WAITING_PATTERN="no checks reported"
-    # We're just looking for the sub-string here, not a regex
-    # shellcheck disable=SC2076
-    if [[ "${CHECK_RESULTS}" =~ "${WAITING_PATTERN}" ]]; then
-      echo "Waiting for status checks to start..."
-      sleep 5
-    else
-      CHECKS_DONE="true"
-    fi
-  done
-  echo
-  echo "Waiting for status checks to complete..."
-  gh pr checks --watch
+fi
+
+CHECKS_STARTED=""
+while [[ "${CHECKS_STARTED}" != "true" ]]; do
+  set +e
+  CHECK_RESULTS="$(gh pr checks ${BRANCH} 2>&1)"
+  set -e
+  WAITING_PATTERN="no checks reported"
+  # We're just looking for the sub-string here, not a regex
+  # shellcheck disable=SC2076
+  if [[ "${CHECK_RESULTS}" =~ "${WAITING_PATTERN}" ]]; then
+    echo "Waiting for status checks to start..."
+    sleep 5
+  else
+    CHECKS_STARTED="true"
+  fi
+done
+echo
+echo "Waiting for status checks to complete..."
+gh pr checks "${BRANCH}" --watch
+
+if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   echo
   echo "Status checks have all passed. Merging PR..."
   gh pr merge --squash --admin
@@ -80,13 +85,6 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   echo "Promotion PR has been merged. Details below."
   gh pr view
 elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
-  kustomize edit set image "${IMAGE_NAME_TAG}"
-  git add .
-  git commit -m "${TITLE}
-
-  ${METADATA}
-  "
-  git show
   git push origin "${TARGET_BRANCH}"
   echo
   echo "Image ${IMAGE_NAME_TAG} has been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH} in directory ${TARGET_DIR}."
