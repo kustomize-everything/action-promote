@@ -127,14 +127,15 @@ runs:
     - name: Use kustomize-wrapper to update all images provided
       id: update-images
       shell: bash
-      working-directory: ${{ inputs.working-directory }}/src/kustomize-wrapper
+      working-directory: src/kustomize-wrapper
       env:
         IMAGES: ${{ inputs.images }}
         ENV_DIR: ${{ inputs.env-dir }}
         PROMOTION_METHOD: ${{ inputs.promotion-method }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
         poetry install
-        poetry run python kustomize_wrapper.py update-images --images "${IMAGES}" --env-dir "${ENV_DIR}" --promotion-method "${PROMOTION_METHOD}"
+        poetry run python kustomize_wrapper.py update-images --images "${IMAGES}" --env-dir "${WORKING_DIRECTORY}/${ENV_DIR}" --promotion-method "${PROMOTION_METHOD}"
 
     # - name: Commit Changes
     #   id: commit-changes

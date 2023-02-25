@@ -40,8 +40,10 @@ jobs:
         with:
           target-repo: kustomize-everything/test-deploy
           target-branch: ${{ env.BRANCH }}
-          target-dir: env/dev
           working-directory: test-deploy
-          image-name-tag: nginx:1.23.0
+          images: |-
+            - name: nginx
+              name_tag: nginx:1.23.0
+              env: dev
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
