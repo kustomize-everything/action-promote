@@ -18,19 +18,19 @@ inputs:
       GitHub token for either opening pull requests or fetching metadata about
       what is being promoted.
     required: true
-  image-name:
-    description: The name of the image
+  images:
+    description: |
+      A JSON list of images to promote. Each list item should be a dictionary with the
+      following keys:
+        - name: The name of the image in the target repository to update
+        - name_tag: The image name:tag to promote
+        - env: The env that this image should be promoted in
+  env-dir:
+    description: |
+      The directory where the environment files are located. This is relative to
+      the root of the target repo.
     required: false
-  image-tag:
-    description: The tag to promote
-    required: false
-  image-name-tag:
-    description: The image name:tag to promote
-    required: false
-  image-additional-tags:
-    description: Additional tags
-    default: None
-    required: false
+    default: env
   promotion-method:
     description: |
       How to handle the promotion. pull_request opens a PR against the
@@ -56,13 +56,6 @@ inputs:
       The branch where the image promotion should be pushed (defaults to main)
     default: main
     required: false
-  target-dir:
-    description: The directory where the kustomize.yaml to update is located in
-      the target-repo
-    required: true
-  target-name:
-    description: The image name in the deployment that needs to be updated. If unset,
-      we will assume that it matches the image-name.
   version:
     description: Version of Kustomize to use
     required: false
@@ -75,19 +68,16 @@ inputs:
 outputs:
   deployment-repo-sha:
     description: "Git SHA of promotion commit on deployment repo"
-    value: ${{ steps.update-image-tag.outputs.deployment-repo-sha }}
+    value: ${{ steps.commit-changes.outputs.deployment-repo-sha }}
   deployment-repo-sha-url:
     description: "Github URL for the promotion commit on the deployment URL"
-    value: ${{ steps.update-image-tag.outputs.deployment-repo-sha-url }}
+    value: ${{ steps.commit-changes.outputs.deployment-repo-sha-url }}
   deployment-repo-sha-short:
     description: "Git short SHA of promotion commit on deployment repo."
-    value: ${{ steps.update-image-tag.outputs.deployment-repo-sha-short }}
-  image-name-tag:
-    description: "Combined image name:tag that was promoted"
-    value: ${{ steps.update-image-tag.outputs.image-name-tag }}
-  image-tags:
-    description: "Additional tags that were provided"
-    value: ${{ steps.update-image-tag.outputs.image-additional-tags }}
+    value: ${{ steps.commit-changes.outputs.deployment-repo-sha-short }}
+  images-updated:
+    description: "List of image name:tags that were promoted"
+    value: ${{ steps.update-image-tag.outputs.images }}
 
 runs:
   using: composite
@@ -119,19 +109,50 @@ runs:
     - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
       shell: bash
 
-    - name: Update Image Tag in Base
-      id: update-image-tag
+    - name: Setup Git Branch
+      if: ${{ inputs.promotion-method == 'pull_request' }}
+      id: git-branch
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-        IMAGE_ADDITIONAL_TAGS: ${{inputs.image-additional-tags}}
-        IMAGE_NAME_TAG: ${{inputs.image-name-tag}}
-        IMAGE_NAME: ${{inputs.image-name}}
-        IMAGE_TAG: ${{inputs.image-tag}}
-        PROMOTION_METHOD: ${{ inputs.promotion-method }}
+        IMAGES: ${{ inputs.images }}
+        ENV_DIR: ${{ inputs.env-dir }}
         TARGET_BRANCH: ${{ inputs.target-branch }}
-        TARGET_DIR: ${{ inputs.target-dir }}
         TARGET_REPO: ${{ inputs.target-repo }}
-        TARGET_NAME: ${{ inputs.target-name }}
-      run: update-image-tag.sh
+      run: |
+        BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${TARGET_DIR:?}/${IMAGE_NAME:?}/${IMAGE_TAG:?}" | tr "/" "-")"
+        git checkout -B "${BRANCH}"
+
+    - name: Use kustomize-wrapper to update all images provided
+      id: update-images
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}/src/kustomize-wrapper
+      env:
+        IMAGES: ${{ inputs.images }}
+        ENV_DIR: ${{ inputs.env-dir }}
+        PROMOTION_METHOD: ${{ inputs.promotion-method }}
+      run: |
+        poetry install
+        poetry run python kustomize_wrapper.py update-images --images "${IMAGES}" --env-dir "${ENV_DIR}" --promotion-method "${PROMOTION_METHOD}"
+
+    # - name: Commit Changes
+    #   id: commit-changes
+    #   shell: bash
+    #   working-directory: ${{ inputs.working-directory }}
+    #   env:
+    #     GITHUB_TOKEN: ${{ inputs.github-token }}
+    #     IMAGES: ${{ inputs.images }}
+    #     ENV_DIR: ${{ inputs.env-dir }}
+    #     TARGET_BRANCH: ${{ inputs.target-branch }}
+    #     TARGET_REPO: ${{ inputs.target-repo }}
+    #   run: |
+    #     # If there are no changes, then we don't need to do anything
+    #     if [[ -z "$(git status --porcelain)" ]]; then
+    #       echo "No changes to commit"
+    #       exit 0
+    #     # Otherwise, we need to commit the changes with the relevant metadata
+    #     # in the commit message.
+    #     else
+    #       ./commit-and-pull-request.sh
+    #     fi
