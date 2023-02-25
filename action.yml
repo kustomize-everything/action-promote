@@ -134,6 +134,7 @@ runs:
         PROMOTION_METHOD: ${{ inputs.promotion-method }}
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
       run: |
+        pip install --force-reinstall "poetry==1.3.2"
         poetry install
         poetry run python kustomize_wrapper.py update-images --images "${IMAGES}" --env-dir "${WORKING_DIRECTORY}/${ENV_DIR}" --promotion-method "${PROMOTION_METHOD}"
 
