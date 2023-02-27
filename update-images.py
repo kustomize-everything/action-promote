@@ -16,7 +16,7 @@
 #   "name": "image-name",
 #   "newName": "new-image-name",
 #   "newTag": "new-image-tag",
-#   "env": "TARGET_DIR"
+#   "envs": ["TARGET_DIR", "TARGET_DIR2"]
 # }
 #
 # The script assumes that the pwd is the root of the kustomize directory, but
@@ -71,7 +71,7 @@ if not images_to_update:
                 "name": "image-name",
                 "newName": "new-image-name",
                 "newTag": "new-image-tag",
-                "env": "TARGET_ENV"
+                "envs": ["target-env", "target-env2"]
             }
         ]
         """
@@ -81,10 +81,10 @@ if not images_to_update:
 # Iterate through the images to update, building a dictionary of envs to images
 envs_to_images = {}
 for image in images_to_update:
-    env = image["env"]
-    if env not in envs_to_images:
-        envs_to_images[env] = []
-    envs_to_images[env].append(image)
+    for env in image["envs"]:
+        if env not in envs_to_images:
+            envs_to_images[env] = []
+        envs_to_images[env].append(image)
 
 # Iterate through the envs to images, updating the images in each env
 for env, images in envs_to_images.items():
