@@ -42,9 +42,9 @@ jobs:
           # simple-promotion
           echo "::set-output name=simple-promotion::$(cat examples/simple-promotion.json)"
           # invalid-promotion
-          echo "::set-output name=invalid-promotion::$(examples/invalid-promotion.json)"
+          echo "::set-output name=invalid-promotion::$(cat examples/invalid-promotion.json)"
           # complex-promotion
-          echo "::set-output name=complex-promotion::$(examples/complex-promotion.json)"
+          echo "::set-output name=complex-promotion::$(cat examples/complex-promotion.json)"
 
       - name: Action Test with Simple Deployment
         uses: ./
