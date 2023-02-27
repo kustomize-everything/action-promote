@@ -25,12 +25,6 @@ inputs:
         - name: The name of the image in the target repository to update
         - name_tag: The image name:tag to promote
         - env: The env that this image should be promoted in
-  env-dir:
-    description: |
-      The directory where the environment files are located. This is relative to
-      the root of the target repo.
-    required: false
-    default: env
   promotion-method:
     description: |
       How to handle the promotion. pull_request opens a PR against the
@@ -100,6 +94,11 @@ runs:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
 
+    - name: Python Setup
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
     - name: Set Git Author
       shell: bash
       run: |
@@ -113,12 +112,10 @@ runs:
       id: update-images
       shell: bash
       env:
-        IMAGES: ${{ inputs.images }}
-        ENV_DIR: ${{ inputs.env-dir }}
-        PROMOTION_METHOD: ${{ inputs.promotion-method }}
-        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        IMAGES_TO_UPDATE: ${{ inputs.images }}
+        DEPLOYMENT_DIR: ${{ inputs.working-directory }}
       run: |
-        update-images.sh "${IMAGES}" "${WORKING_DIRECTORY}/${ENV_DIR}"
+        python update-images.py
 
     # - name: Commit Changes
     #   id: commit-changes
