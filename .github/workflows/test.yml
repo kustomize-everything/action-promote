@@ -40,11 +40,11 @@ jobs:
         shell: bash
         run: |-
           # simple-promotion
-          echo "::set-output name=simple-promotion::examples/simple-promotion.json"
+          echo "::set-output name=simple-promotion::$(cat examples/simple-promotion.json)"
           # invalid-promotion
-          echo "::set-output name=invalid-promotion::examples/invalid-promotion.json"
+          echo "::set-output name=invalid-promotion::$(examples/invalid-promotion.json)"
           # complex-promotion
-          echo "::set-output name=complex-promotion::examples/complex-promotion.json"
+          echo "::set-output name=complex-promotion::$(examples/complex-promotion.json)"
 
       - name: Action Test with Simple Deployment
         uses: ./
