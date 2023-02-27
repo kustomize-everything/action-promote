@@ -2,7 +2,7 @@
   {
     "name": "nginx",
     "newName": "nginx",
-    "newTag": "1.23.0",
-    "env": "dev"
+    "newTag": "1.25.0",
+    "overlays": ["env/dev"]
   }
 ]
