@@ -39,7 +39,8 @@ jobs:
         id: read-examples
         shell: bash
         run: |-
-          # Set the simple-promotion output to the contents of the example/simple-promotion.json file
+          # Set the simple-promotion output to the contents of
+          # example/simple-promotion.json
           SIMPLE_PROMOTION=$(cat example/simple-promotion.json)
           echo "::set-output name=simple-promotion::${SIMPLE_PROMOTION}"
 

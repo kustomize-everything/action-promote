@@ -20,8 +20,8 @@ inputs:
     required: true
   images:
     description: |
-      A JSON list of images to promote. Each list item should be a dictionary with the
-      following keys:
+      A JSON list of images to promote. Each list item should be a dictionary
+      with the following keys:
         - name: The name of the image in the target repository to update
         - name_tag: The image name:tag to promote
         - env: The env that this image should be promoted in
