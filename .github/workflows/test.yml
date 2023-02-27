@@ -40,7 +40,7 @@ jobs:
         shell: bash
         run: |-
           # Set the simple-promotion output to the contents of the example/simple-promotion.json file
-          SIMPLE_PROMOTION=$(cat examples/simple-promotion.json)
+          SIMPLE_PROMOTION=$(cat example/simple-promotion.json)
           echo "::set-output name=simple-promotion::${SIMPLE_PROMOTION}"
 
       - name: Action Test with Simple Deployment
