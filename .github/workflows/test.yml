@@ -35,17 +35,23 @@ jobs:
           git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
           git push origin ${BRANCH} -f
 
-      - name: Action Test with Defaults
+      - name: Read in examples to github output
+        id: read-examples
+        shell: bash
+        run: |-
+          # simple-promotion
+          echo "::set-output name=simple-promotion::examples/simple-promotion.json"
+          # invalid-promotion
+          echo "::set-output name=invalid-promotion::examples/invalid-promotion.json"
+          # complex-promotion
+          echo "::set-output name=complex-promotion::examples/complex-promotion.json"
+
+      - name: Action Test with Simple Deployment
         uses: ./
         with:
           target-repo: kustomize-everything/test-deploy
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
-          images: |-
-            [{
-              "name": "nginx"
-              "name_tag": "nginx:1.23.0"
-              "env": "dev"
-            }]
+          images: ${{ steps.read-examples.outputs.simple-promotion }}
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
