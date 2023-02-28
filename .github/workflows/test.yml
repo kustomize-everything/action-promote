@@ -41,6 +41,7 @@ jobs:
         run: |-
           # Set the simple-promotion output to the contents of
           # example/simple-promotion.json
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "SIMPLE_PROMOTION<<$EOF" >> $GITHUB_ENV
           cat example/simple-promotion.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
