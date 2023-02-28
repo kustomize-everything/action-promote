@@ -89,7 +89,7 @@ runs:
       uses: kustomize-everything/action-github-metadata@v1.0.0
 
     - name: Kustomize Setup
-      uses: kustomize-everything/action-kustomize@v2.0.0
+      uses: kustomize-everything/action-kustomize@v2.0.1
       with:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
