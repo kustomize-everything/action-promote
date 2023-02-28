@@ -55,6 +55,7 @@ jobs:
           images: ${{ env.SIMPLE_PROMOTION }}
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: true
 
       - name: Show Git Diff
         shell: bash

@@ -59,6 +59,11 @@ inputs:
       Working directory where the deployment repo should be checked out into
     required: false
     default: image-promotion
+  dry-run:
+    description: |
+      If true, the action will not actually do anything. This is useful for
+      testing the action.
+    default: false
 outputs:
   deployment-repo-sha:
     description: "Git SHA of promotion commit on deployment repo"
@@ -78,9 +83,6 @@ runs:
   steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
-
-    - name: Checkout Repo
-      uses: actions/checkout@v3
       with:
         repository: ${{ inputs.target-repo }}
         ref: ${{ inputs.target-branch }}
@@ -92,7 +94,7 @@ runs:
       uses: kustomize-everything/action-github-metadata@v1.0.0
 
     - name: Kustomize Setup
-      uses: kustomize-everything/action-kustomize@main
+      uses: kustomize-everything/action-kustomize@v2.0.2
       with:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
@@ -118,25 +120,26 @@ runs:
         IMAGES_TO_UPDATE: ${{ inputs.images }}
         DEPLOYMENT_DIR: ${{ inputs.working-directory }}
       run: |
-        python update-images.py
+        python ${{ github.action_path }}/update-images.py
 
-    # - name: Commit Changes
-    #   id: commit-changes
-    #   shell: bash
-    #   working-directory: ${{ inputs.working-directory }}
-    #   env:
-    #     GITHUB_TOKEN: ${{ inputs.github-token }}
-    #     IMAGES: ${{ inputs.images }}
-    #     ENV_DIR: ${{ inputs.env-dir }}
-    #     TARGET_BRANCH: ${{ inputs.target-branch }}
-    #     TARGET_REPO: ${{ inputs.target-repo }}
-    #   run: |
-    #     # If there are no changes, then we don't need to do anything
-    #     if [[ -z "$(git status --porcelain)" ]]; then
-    #       echo "No changes to commit"
-    #       exit 0
-    #     # Otherwise, we need to commit the changes with the relevant metadata
-    #     # in the commit message.
-    #     else
-    #       ./commit-and-pull-request.sh
-    #     fi
+    - name: Commit Changes
+      id: commit-changes
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        IMAGES: ${{ inputs.images }}
+        ENV_DIR: ${{ inputs.env-dir }}
+        TARGET_BRANCH: ${{ inputs.target-branch }}
+        TARGET_REPO: ${{ inputs.target-repo }}
+        DRY_RUN: ${{ inputs.dry-run }}
+      run: |
+        # If there are no changes, then we don't need to do anything
+        if [[ -z "$(git status --porcelain)" ]]; then
+          echo "No changes to commit"
+          exit 0
+        # Otherwise, we need to commit the changes with the relevant metadata
+        # in the commit message.
+        else
+          ./commit-and-pull-request.sh
+        fi

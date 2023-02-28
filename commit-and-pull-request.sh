@@ -36,6 +36,12 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   ${METADATA}
   "
   git show
+
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    echo "Dry run is enabled. Not pushing changes."
+    exit 0
+  fi
+
   git push origin "${BRANCH}" -f
   set +e
   PR="$(gh pr view 2>&1)"
@@ -80,6 +86,12 @@ elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
   ${METADATA}
   "
   git show
+
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    echo "Dry run is enabled. Not pushing changes."
+    exit 0
+  fi
+
   git push origin "${TARGET_BRANCH}"
   echo
   echo "Image ${IMAGE_NAME_TAG} has been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH} in directory ${TARGET_DIR}."
