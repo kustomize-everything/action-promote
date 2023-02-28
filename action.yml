@@ -120,7 +120,13 @@ runs:
         IMAGES_TO_UPDATE: ${{ inputs.images }}
         DEPLOYMENT_DIR: ${{ inputs.working-directory }}
       run: |
-        python ${{ github.action_path }}/update-images.py
+        python ${{ github.action_path }}/update-images.py > images.json
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "images-json<<$EOF" >> $GITHUB_OUTPUT
+        cat images.json >> $GITHUB_OUTPUT
+        echo "$EOF" >> $GITHUB_OUTPUT
+        echo "images=$(jq -c -r '.[] | .name' < images.json | xargs)" >> $GITHUB_OUTPUT
+
 
     - name: Commit Changes
       id: commit-changes
@@ -128,7 +134,8 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-        IMAGES: ${{ inputs.images }}
+        IMAGES: ${{ steps.update-images.outputs.images }}
+        IMAGES_JSON: ${{ steps.update-images.outputs.images-json }}
         ENV_DIR: ${{ inputs.env-dir }}
         TARGET_BRANCH: ${{ inputs.target-branch }}
         TARGET_REPO: ${{ inputs.target-repo }}
