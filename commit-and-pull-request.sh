@@ -99,7 +99,9 @@ else
 fi
 
 # Set outputs so that downstream steps can consume this data
-echo "::set-output deployment-repo-sha-short=$(git rev-parse --short HEAD)"
-echo "::set-output deployment-repo-sha-url=${DEPLOYMENT_REPO_SHA_URL}"
-echo "::set-output deployment-repo-sha=$(git rev-parse HEAD)"
-echo "::set-output images=${IMAGES}"
+# shellcheck disable=SC2129
+echo "deployment-repo-sha-short=$(git rev-parse --short HEAD)" >> "${GITHUB_OUTPUT}"
+echo "deployment-repo-sha-url=${DEPLOYMENT_REPO_SHA_URL}" >> "${GITHUB_OUTPUT}"
+echo "deployment-repo-sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
+echo "images=${IMAGES}" >> "${GITHUB_OUTPUT}"
+echo "images-json=${IMAGES_JSON}" >> "${GITHUB_OUTPUT}"
