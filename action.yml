@@ -133,6 +133,7 @@ runs:
         TARGET_BRANCH: ${{ inputs.target-branch }}
         TARGET_REPO: ${{ inputs.target-repo }}
         DRY_RUN: ${{ inputs.dry-run }}
+        PROMOTION_METHOD: ${{ inputs.promotion-method }}
       run: |
         # If there are no changes, then we don't need to do anything
         if [[ -z "$(git status --porcelain)" ]]; then
