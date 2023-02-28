@@ -135,7 +135,6 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         IMAGES: ${{ steps.update-images.outputs.images }}
         IMAGES_JSON: ${{ steps.update-images.outputs.images-json }}
-        ENV_DIR: ${{ inputs.env-dir }}
         TARGET_BRANCH: ${{ inputs.target-branch }}
         TARGET_REPO: ${{ inputs.target-repo }}
         DRY_RUN: ${{ inputs.dry-run }}
