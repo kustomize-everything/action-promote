@@ -78,6 +78,9 @@ runs:
   steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
+
+    - name: Checkout Repo
+      uses: actions/checkout@v3
       with:
         repository: ${{ inputs.target-repo }}
         ref: ${{ inputs.target-branch }}
