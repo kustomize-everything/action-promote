@@ -141,5 +141,5 @@ runs:
         # Otherwise, we need to commit the changes with the relevant metadata
         # in the commit message.
         else
-          ./commit-and-pull-request.sh
+           ${{ github.action_path }}/commit-and-pull-request.sh
         fi
