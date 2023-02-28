@@ -3,8 +3,6 @@
 # Fail on non-zero exit code
 set -e
 
-IMAGE_ID="${IMAGE_NAME_TAG}"
-
 cd "${TARGET_DIR}"
 TITLE="Promote ${IMAGES}"
 METADATA="---
