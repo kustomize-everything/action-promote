@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: YAML Lint
-        uses: karancode/yamllint-github-action@v2.0.0
+        uses: karancode/yamllint-github-action@v2.1.0
         with:
           yamllint_comment: true
           yamllint_format: parsable
