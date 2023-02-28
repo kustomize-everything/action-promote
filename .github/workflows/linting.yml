@@ -17,3 +17,4 @@ jobs:
         with:
           yamllint_comment: true
           yamllint_format: parsable
+          yamllint_config_filepath: .github/config/yamllint.yaml

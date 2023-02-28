@@ -35,13 +35,29 @@ jobs:
           git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
           git push origin ${BRANCH} -f
 
-      - name: Action Test with Defaults
+      - name: Read in examples to github output
+        id: read-examples
+        shell: bash
+        run: |-
+          # Set the simple-promotion output to the contents of
+          # example/simple-promotion.json
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "SIMPLE_PROMOTION<<$EOF" >> $GITHUB_ENV
+          cat example/simple-promotion.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
+      - name: Action Test with Simple Deployment
         uses: ./
         with:
           target-repo: kustomize-everything/test-deploy
           target-branch: ${{ env.BRANCH }}
-          target-dir: env/dev
           working-directory: test-deploy
-          image-name-tag: nginx:1.23.0
+          images: ${{ env.SIMPLE_PROMOTION }}
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: true
+
+      - name: Show Git Diff
+        shell: bash
+        working-directory: test-deploy
+        run: git diff

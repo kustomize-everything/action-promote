@@ -3,21 +3,8 @@
 # Fail on non-zero exit code
 set -e
 
-if [[ "${IMAGE_NAME}" && "${IMAGE_TAG}" ]]; then
-  IMAGE_NAME_TAG="${IMAGE_NAME}:${IMAGE_TAG}"
-elif [[ "${IMAGE_NAME_TAG}" ]]; then
-  echo "Using provided image-name-tag ${IMAGE_NAME_TAG}."
-else
-  echo "No image was specified for promotion. You must provide one of the following inputs to the action:"
-  echo "- image-name and image-tag e.g. image-name = nginx and image-tag = 1.0.0"
-  echo "- image-name-tag e.g image-name-tag = nginx:1.0.0"
-  exit 1
-fi
-
-IMAGE_ID="${IMAGE_NAME_TAG}"
-
 cd "${TARGET_DIR}"
-TITLE="Promote ${IMAGE_ID} to ${TARGET_DIR}"
+TITLE="Promote ${IMAGES}"
 METADATA="---
 GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
 GITHUB_JOB: ${GITHUB_JOB}
@@ -30,17 +17,12 @@ GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER}
 GITHUB_SHA_URL: ${GITHUB_SHA_URL}
 GITHUB_SHA: ${GITHUB_SHA}
 GITHUB_WORKFLOW_RUN_URL: ${GITHUB_WORKFLOW_RUN_URL}
-IMAGE_NAME_TAG: ${IMAGE_NAME_TAG}
-IMAGE_TAGS: ${IMAGE_ADDITIONAL_TAGS}"
+IMAGES: ${IMAGES}
+IMAGES_JSON: ${IMAGES_JSON}"
 
 if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${TARGET_DIR:?}/${IMAGE_NAME:?}/${IMAGE_TAG:?}" | tr "/" "-")"
   git checkout -B "${BRANCH}"
-  if [[ -z "${TARGET_NAME}" ]]; then
-    kustomize edit set image "${IMAGE_NAME_TAG}"
-  else
-    kustomize edit set image "${TARGET_NAME}=${IMAGE_NAME_TAG}"
-  fi
 
   git add .
   git commit -m "${TITLE}
@@ -48,6 +30,12 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   ${METADATA}
   "
   git show
+
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    echo "Dry run is enabled. Not pushing changes."
+    exit 0
+  fi
+
   git push origin "${BRANCH}" -f
   set +e
   PR="$(gh pr view 2>&1)"
@@ -85,13 +73,18 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   echo "Promotion PR has been merged. Details below."
   gh pr view
 elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
-  kustomize edit set image "${IMAGE_NAME_TAG}"
   git add .
   git commit -m "${TITLE}
 
   ${METADATA}
   "
   git show
+
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    echo "Dry run is enabled. Not pushing changes."
+    exit 0
+  fi
+
   git push origin "${TARGET_BRANCH}"
   echo
   echo "Image ${IMAGE_NAME_TAG} has been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH} in directory ${TARGET_DIR}."
@@ -104,8 +97,9 @@ else
 fi
 
 # Set outputs so that downstream steps can consume this data
-echo "::set-output deployment-repo-sha-short=$(git rev-parse --short HEAD)"
-echo "::set-output deployment-repo-sha-url=${DEPLOYMENT_REPO_SHA_URL}"
-echo "::set-output deployment-repo-sha=$(git rev-parse HEAD)"
-echo "::set-output image-additional-tags=${IMAGE_ADDITIONAL_TAGS}"
-echo "::set-output image-name-tag=${IMAGE_NAME_TAG}"
+# shellcheck disable=SC2129
+echo "deployment-repo-sha-short=$(git rev-parse --short HEAD)" >> "${GITHUB_OUTPUT}"
+echo "deployment-repo-sha-url=${DEPLOYMENT_REPO_SHA_URL}" >> "${GITHUB_OUTPUT}"
+echo "deployment-repo-sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
+echo "images=${IMAGES}" >> "${GITHUB_OUTPUT}"
+echo "images-json=${IMAGES_JSON}" >> "${GITHUB_OUTPUT}"
