@@ -3,7 +3,6 @@
 # Fail on non-zero exit code
 set -e
 
-cd "${TARGET_DIR}"
 TITLE="Promote ${IMAGES}"
 METADATA="---
 GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
@@ -21,7 +20,7 @@ IMAGES: ${IMAGES}
 IMAGES_JSON: ${IMAGES_JSON}"
 
 if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
-  BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${TARGET_DIR:?}/${IMAGE_NAME:?}/${IMAGE_TAG:?}" | tr "/" "-")"
+  BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${GITHUB_SHA:?}" | tr "/" "-")"
   git checkout -B "${BRANCH}"
 
   git add .
@@ -87,7 +86,7 @@ elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
 
   git push origin "${TARGET_BRANCH}"
   echo
-  echo "Image ${IMAGE_NAME_TAG} has been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH} in directory ${TARGET_DIR}."
+  echo "Images ${IMAGES} from ${GITHUB_GHA} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
   echo
   DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R "${TARGET_REPO}")"
   echo "${DEPLOYMENT_REPO_SHA_URL}"
