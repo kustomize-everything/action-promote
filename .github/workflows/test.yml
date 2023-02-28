@@ -55,3 +55,8 @@ jobs:
           images: ${{ env.SIMPLE_PROMOTION }}
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show Git Diff
+        shell: bash
+        working-directory: test-deploy
+        run: git diff
