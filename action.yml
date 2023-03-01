@@ -125,7 +125,7 @@ runs:
         echo "images-json<<$EOF" >> $GITHUB_OUTPUT
         cat images.json >> $GITHUB_OUTPUT
         echo "$EOF" >> $GITHUB_OUTPUT
-        echo "images=$(jq -c -r '.[] | .name' < images.json | xargs)" >> $GITHUB_OUTPUT
+        echo "images=$(jq -c -r '.[] | map(.name) | join(" ")' < images.json | xargs)" >> $GITHUB_OUTPUT
 
     - name: Commit Changes
       id: commit-changes
