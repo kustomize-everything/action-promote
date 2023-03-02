@@ -140,7 +140,11 @@ def generate_kustomize_args(env, images, promotion_manifest):
 
     return kustomize_args, promotion_manifest
 
-def main():
+def validate_runtime_environment():
+    """
+    Validate that the runtime environment has the tools we need and provided directories exist.
+    """
+
     # Validate that the kustomize command is available
     try:
         logger.debug("Validating that kustomize is available...")
@@ -148,6 +152,11 @@ def main():
     except subprocess.CalledProcessError:
         logger.fatal("kustomize is not available. Please install kustomize before running this script.")
         exit(1)
+
+def get_deployment_dir():
+    """
+    Get the deployment directory from the DEPLOYMENT_DIR env variable.
+    """
 
     # Validate that the kustomize directory exists
     deployment_dir = os.getenv("DEPLOYMENT_DIR", ".")
@@ -159,6 +168,13 @@ def main():
 
     # Convert deployment_dir to an absolute path
     deployment_dir = os.path.abspath(deployment_dir)
+
+    return deployment_dir
+
+def main():
+    validate_runtime_environment()
+
+    deployment_dir = get_deployment_dir()
 
     # Read in the images to update from stdin or the IMAGES_TO_UPDATE env variable
     images_to_update = None
