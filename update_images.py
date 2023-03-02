@@ -75,6 +75,9 @@ def validate_images_from_overlays(images_to_update):
         if "name" not in image:
             logger.fatal(f"Image {image} is missing the required 'name' field.")
             return False
+        if ("newTag" not in image) and ("newName" not in image):
+            logger.fatal(f"Image {image} must set newName, newTag or both.")
+            return False
         if "overlays" not in image:
             logger.fatal(f"Image {image} is missing the required 'overlays' field.")
             return False

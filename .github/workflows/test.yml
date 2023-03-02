@@ -9,8 +9,8 @@ on:
       - main
 
 jobs:
-  positive-testing:
-    name: Positive Testing
+  positive-action-testing:
+    name: Positive Action Testing
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -108,3 +108,19 @@ jobs:
           images: ${{ env.COMPLEX_PROMOTION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
+
+  python-tests:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Run Tests
+        run: |
+          python -m unittest tests/*_test.py
