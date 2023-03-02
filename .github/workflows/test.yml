@@ -39,14 +39,25 @@ jobs:
         id: read-examples
         shell: bash
         run: |-
+          # Generate unique EOF value to prevent injection attack
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           # Set the simple-promotion output to the contents of
           # example/simple-promotion.json
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "SIMPLE_PROMOTION<<$EOF" >> $GITHUB_ENV
           cat example/simple-promotion.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
+          # Set the complex-promotion output to the contents of
+          # example/complex-promotion.json
+          echo "COMPLEX_PROMOTION<<$EOF" >> $GITHUB_ENV
+          cat example/complex-promotion.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+          # Set the invalid-promotion output to the contents of
+          # example/invalid-promotion.json
+          echo "INVALID_PROMOTION<<$EOF" >> $GITHUB_ENV
+          cat example/invalid-promotion.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
 
-      - name: Action Test with Simple Deployment
+      - name: Action Test with Simple Promotion
         uses: ./
         with:
           target-repo: kustomize-everything/test-deploy
@@ -64,7 +75,7 @@ jobs:
           git diff
           git reset --hard
 
-      - name: Action Test with Simple Deployment
+      - name: Action Test with Simple Promotion (Inline)
         uses: ./
         with:
           target-repo: kustomize-everything/test-deploy
@@ -79,6 +90,42 @@ jobs:
                 "overlays": ["env/dev"]
               }
             ]
+          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: true
+
+      - name: Show Git Diff and Reset
+        shell: bash
+        working-directory: test-deploy
+        run: |-
+          git diff
+          git reset --hard
+
+      - name: Action Test with Complex Promotion
+        uses: ./
+        with:
+          target-repo: kustomize-everything/test-deploy
+          target-branch: ${{ env.BRANCH }}
+          working-directory: test-deploy
+          images: ${{ env.COMPLEX_PROMOTION }}
+          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: true
+
+      - name: Show Git Diff and Reset
+        shell: bash
+        working-directory: test-deploy
+        run: |-
+          git diff
+          git reset --hard
+
+      - name: Action Test with Invalid Promotion
+        uses: ./
+        with:
+          target-repo: kustomize-everything/test-deploy
+          target-branch: ${{ env.BRANCH }}
+          working-directory: test-deploy
+          images: ${{ env.INVALID_PROMOTION }}
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
