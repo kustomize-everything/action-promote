@@ -50,91 +50,27 @@ def run(args):
         logger.info(output.stdout)
     output.check_returncode()
 
+def validate_images_from_overlays(images_to_update):
+    for image in images_to_update:
+        # Validate that the image has the required fields
+        if "name" not in image:
+            logger.fatal(f"Image {image} is missing the required 'name' field.")
+            return False
+        if "overlays" not in image:
+            logger.fatal(f"Image {image} is missing the required 'overlays' field.")
+            return False
+    return True
 
-# Validate that the kustomize command is available
-try:
-    logger.debug("Validating that kustomize is available...")
-    run(["kustomize", "version"])
-except subprocess.CalledProcessError:
-    logger.fatal("kustomize is not available. Please install kustomize before running this script.")
-    exit(1)
+def get_images_from_overlays(images_to_update):
+    overlays_to_images = {}
+    for image in images_to_update:
+        # Add the image to the list of images for each env
+        for overlay in image["overlays"]:
+            if overlay not in overlays_to_images:
+                overlays_to_images[overlay] = []
+            overlays_to_images[overlay].append(image)
 
-# Validate that the kustomize directory exists
-deployment_dir = os.getenv("DEPLOYMENT_DIR", ".")
-if not os.path.isdir(deployment_dir):
-    logger.fatal(f"Deployment directory {deployment_dir} does not exist.")
-    exit(1)
-else:
-    logger.info(f"Using deployment directory: {deployment_dir}")
-
-# Convert deployment_dir to an absolute path
-deployment_dir = os.path.abspath(deployment_dir)
-
-# Read in the images to update from stdin or the IMAGES_TO_UPDATE env variable
-images_to_update = None
-try:
-    if os.getenv("IMAGES_TO_UPDATE"):
-        images_to_update = json.loads(os.getenv("IMAGES_TO_UPDATE"))
-    else:
-        # Read the whole JSON document from stdin, parsing it as JSON and validating that it is a list
-        # Fail with a useful error message if the JSON is invalid or not a list
-        images_to_update = json.load(sys.stdin)
-except json.JSONDecodeError as e:
-    logger.fatal(f"Provided JSON object failed to parse. Please provide a valid JSON object. Error: {e}")
-    exit(1)
-
-# Exit with failure if there are no images to update, printing usage information.
-if not images_to_update:
-    logger.fatal("No images to update. Please provide a JSON object of images to update via the IMAGES_TO_UPDATE env var or via stdin.")
-    logger.info("The JSON object should be in the following format:")
-    logger.info(
-        """
-        [
-            {
-                "name": "image-name",
-                "newName": "new-image-name",
-                "newTag": "new-image-tag",
-                "overlays": ["target-env", "target-env2"]
-            }
-        ]
-        """
-    )
-    exit(1)
-
-# Iterate through the images to update, building a dictionary of overlays to images
-overlays_to_images = {}
-for image in images_to_update:
-    # Validate that the image has the required fields
-    if "name" not in image:
-        logger.fatal(f"Image {image} is missing the required 'name' field.")
-        exit(1)
-    if "overlays" not in image:
-        logger.fatal(f"Image {image} is missing the required 'overlays' field.")
-        exit(1)
-
-    # Add the image to the list of images for each env
-    for overlay in image["overlays"]:
-        if overlay not in overlays_to_images:
-            overlays_to_images[overlay] = []
-        overlays_to_images[overlay].append(image)
-
-# Create promotion manifest dictionary to store the promotion manifest
-promotion_manifest = {}
-
-# Iterate through the overlays to images, updating the images in each env
-for env, images in overlays_to_images.items():
-    kustomize_dir = os.path.join(deployment_dir, env)
-
-    # Validate that the kustomize directory for the env exists
-    if not os.path.isdir(kustomize_dir):
-        logger.fatal(f"Kustomize directory for {env} does not exist. ({kustomize_dir})")
-        exit(1)
-    else:
-        logger.info(f"Updating images for {env}...")
-
-    # Change to the kustomize directory for the env
-    os.chdir(kustomize_dir)
-
+def generate_kustomize_args(env, images, promotion_manifest):
     # Iterate through the images to collect them into one list of arguments that
     # will be passed as a group to kustomize edit
 
@@ -160,22 +96,101 @@ for env, images in overlays_to_images.items():
         else:
             logger.info(f"Skipping image {name} because no new tag was provided.")
 
-    # Run the kustomize edit set image command, failing the script if it fails
-    if kustomize_args:
-        try:
-            run(["kustomize", "edit", "set", "image", *kustomize_args])
-        except subprocess.CalledProcessError:
-            logger.fatal(f"Failed to update images in {env}.")
-            exit(1)
+def main():
+    # Validate that the kustomize command is available
+    try:
+        logger.debug("Validating that kustomize is available...")
+        run(["kustomize", "version"])
+    except subprocess.CalledProcessError:
+        logger.fatal("kustomize is not available. Please install kustomize before running this script.")
+        exit(1)
+
+    # Validate that the kustomize directory exists
+    deployment_dir = os.getenv("DEPLOYMENT_DIR", ".")
+    if not os.path.isdir(deployment_dir):
+        logger.fatal(f"Deployment directory {deployment_dir} does not exist.")
+        exit(1)
     else:
-        logger.info(f"No images to update in {env}.")
+        logger.info(f"Using deployment directory: {deployment_dir}")
 
-    # Change back to the original directory
-    os.chdir(deployment_dir)
+    # Convert deployment_dir to an absolute path
+    deployment_dir = os.path.abspath(deployment_dir)
 
-# If we made it this far, all of the images were updated successfully.
-# Write the promotion manifest to stdout
-print(json.dumps(promotion_manifest))
+    # Read in the images to update from stdin or the IMAGES_TO_UPDATE env variable
+    images_to_update = None
+    try:
+        if os.getenv("IMAGES_TO_UPDATE"):
+            images_to_update = json.loads(os.getenv("IMAGES_TO_UPDATE"))
+        else:
+            # Read the whole JSON document from stdin, parsing it as JSON and validating that it is a list
+            # Fail with a useful error message if the JSON is invalid or not a list
+            images_to_update = json.load(sys.stdin)
+    except json.JSONDecodeError as e:
+        logger.fatal(f"Provided JSON object failed to parse. Please provide a valid JSON object. Error: {e}")
+        exit(1)
 
-logger.info("Successfully updated images.")
-exit(0)
+    # Exit with failure if there are no images to update, printing usage information.
+    if not images_to_update:
+        logger.fatal("No images to update. Please provide a JSON object of images to update via the IMAGES_TO_UPDATE env var or via stdin.")
+        logger.info("The JSON object should be in the following format:")
+        logger.info(
+            """
+            [
+                {
+                    "name": "image-name",
+                    "newName": "new-image-name",
+                    "newTag": "new-image-tag",
+                    "overlays": ["target-env", "target-env2"]
+                }
+            ]
+            """
+        )
+        exit(1)
+
+    # Validate that the images to update have the required fields
+    validate_images_from_overlays(images_to_update)
+
+    # Get the list of images for each overlay
+    overlays_to_images = get_images_from_overlays(images_to_update)
+
+    # Create promotion manifest dictionary to store the promotion manifest
+    promotion_manifest = {}
+
+    # Iterate through the overlays to images, updating the images in each env
+    for env, images in overlays_to_images.items():
+        kustomize_dir = os.path.join(deployment_dir, env)
+
+        # Validate that the kustomize directory for the env exists
+        if not os.path.isdir(kustomize_dir):
+            logger.fatal(f"Kustomize directory for {env} does not exist. ({kustomize_dir})")
+            exit(1)
+        else:
+            logger.info(f"Updating images for {env}...")
+
+        # Change to the kustomize directory for the env
+        os.chdir(kustomize_dir)
+
+        kustomize_args = generate_kustomize_args(env, images, promotion_manifest)
+
+        # Run the kustomize edit set image command, failing the script if it fails
+        if kustomize_args:
+            try:
+                run(["kustomize", "edit", "set", "image", *kustomize_args])
+            except subprocess.CalledProcessError:
+                logger.fatal(f"Failed to update images in {env}.")
+                exit(1)
+        else:
+            logger.info(f"No images to update in {env}.")
+
+        # Change back to the original directory
+        os.chdir(deployment_dir)
+
+    # If we made it this far, all of the images were updated successfully.
+    # Write the promotion manifest to stdout
+    print(json.dumps(promotion_manifest))
+
+    logger.info("Successfully updated images.")
+    exit(0)
+
+if __name__ == "__main__":
+    main()
