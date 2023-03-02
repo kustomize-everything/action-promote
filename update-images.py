@@ -39,6 +39,15 @@ logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.DEBUG)
 
 def run(args):
+    """
+    Run the given command and log the output.
+
+    Args:
+        args (list): The command to run.
+
+    Returns:
+        int: The return code of the command.
+    """
     logger.debug(f"Running command: {' '.join(args)}")
     # Run the command, capturing the output and printing it to the stderr
     # This is done so that the output of the command is printed to the GitHub Action log
@@ -48,9 +57,19 @@ def run(args):
         logger.error(output.stderr)
     if output.stdout:
         logger.info(output.stdout)
-    output.check_returncode()
+
+    return output.check_returncode()
 
 def validate_images_from_overlays(images_to_update):
+    """
+    Validate that the images to update have the required fields.
+
+    Args:
+        images_to_update (list): The list of images to update.
+
+    Returns:
+        bool: True if the images are valid, False otherwise.
+    """
     for image in images_to_update:
         # Validate that the image has the required fields
         if "name" not in image:
@@ -62,6 +81,15 @@ def validate_images_from_overlays(images_to_update):
     return True
 
 def get_images_from_overlays(images_to_update):
+    """
+    Get the list of images to update for each overlay.
+
+    Args:
+        images_to_update (list): The list of images to update.
+
+    Returns:
+        dict: A dictionary mapping overlays to the list of images to update for that overlay.
+    """
     overlays_to_images = {}
     for image in images_to_update:
         # Add the image to the list of images for each env
@@ -70,7 +98,21 @@ def get_images_from_overlays(images_to_update):
                 overlays_to_images[overlay] = []
             overlays_to_images[overlay].append(image)
 
+    return overlays_to_images
+
 def generate_kustomize_args(env, images, promotion_manifest):
+    """
+    Generate the arguments to pass to kustomize edit set image for the given env and images.
+
+    Args:
+        env (str): The environment to generate the kustomize args for.
+        images (list): The list of images to generate the kustomize args for.
+        promotion_manifest (dict): The promotion manifest to add the images to.
+
+    Returns:
+        list: The list of arguments to pass to kustomize edit set image.
+    """
+
     # Iterate through the images to collect them into one list of arguments that
     # will be passed as a group to kustomize edit
 
@@ -95,6 +137,8 @@ def generate_kustomize_args(env, images, promotion_manifest):
             promotion_manifest[env].append({"name": name, "newName": new_name, "newTag": new_tag})
         else:
             logger.info(f"Skipping image {name} because no new tag was provided.")
+
+    return kustomize_args, promotion_manifest
 
 def main():
     # Validate that the kustomize command is available
@@ -170,7 +214,7 @@ def main():
         # Change to the kustomize directory for the env
         os.chdir(kustomize_dir)
 
-        kustomize_args = generate_kustomize_args(env, images, promotion_manifest)
+        kustomize_args, promotion_manifest = generate_kustomize_args(env, images, promotion_manifest)
 
         # Run the kustomize edit set image command, failing the script if it fails
         if kustomize_args:
