@@ -120,7 +120,7 @@ runs:
         IMAGES_TO_UPDATE: ${{ inputs.images }}
         DEPLOYMENT_DIR: ${{ inputs.working-directory }}
       run: |
-        python -m pip install --update pip poetry
+        python -m pip install -r requirements.txt
         poetry install
         poetry run python ${{ github.action_path }}/update_images.py > images.json
         EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
