@@ -41,20 +41,21 @@ jobs:
         run: |-
           # Generate unique EOF value to prevent injection attack
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          # Set the simple-promotion output to the contents of
-          # example/simple-promotion.json
+
           echo "SIMPLE_PROMOTION<<$EOF" >> $GITHUB_ENV
           cat example/simple-promotion.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
-          # Set the complex-promotion output to the contents of
-          # example/complex-promotion.json
+
           echo "COMPLEX_PROMOTION<<$EOF" >> $GITHUB_ENV
           cat example/complex-promotion.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
-          # Set the invalid-promotion output to the contents of
-          # example/invalid-promotion.json
+
           echo "INVALID_PROMOTION<<$EOF" >> $GITHUB_ENV
           cat example/invalid-promotion.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
+          echo "CROSS_OVERLAY_PROMOTION<<$EOF" >> $GITHUB_ENV
+          cat example/cross-overlay-promotion.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Action Test with Simple Promotion
@@ -106,6 +107,23 @@ jobs:
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
           images: ${{ env.COMPLEX_PROMOTION }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: true
+
+      - name: Show Git Diff and Reset
+        shell: bash
+        working-directory: test-deploy
+        run: |-
+          git diff
+          git reset --hard
+
+      - name: Action Test with Cross Overlay Promotion
+        uses: ./
+        with:
+          target-repo: kustomize-everything/test-deploy
+          target-branch: ${{ env.BRANCH }}
+          working-directory: test-deploy
+          images: ${{ env.CROSS_OVERLAY_PROMOTION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
 

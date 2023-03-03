@@ -1,0 +1,7 @@
+[
+  {
+    "name": "nginx",
+    "fromOverlay": "env/dev",
+    "overlays": ["env/production"]
+  }
+]

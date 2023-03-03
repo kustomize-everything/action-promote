@@ -14,8 +14,12 @@
 # to the kustomize edit set image command:
 # {
 #   "name": "image-name",
+#   # Either newName or newTag must be specified.
 #   "newName": "new-image-name",
 #   "newTag": "new-image-tag",
+#   # If from is specified, the image will be updated using the values found for
+#   # the image with the specified name in the fromOverlay.
+#   "fromOverlay": "overlay-name",
 #   "overlays": ["TARGET_DIR", "TARGET_DIR2"]
 # }
 #
@@ -60,7 +64,7 @@ def run(args):
 
     return output.check_returncode()
 
-def validate_images_from_overlays(images_to_update):
+def validate_images(images):
     """
     Validate that the images to update have the required fields.
 
@@ -70,18 +74,48 @@ def validate_images_from_overlays(images_to_update):
     Returns:
         bool: True if the images are valid, False otherwise.
     """
-    for image in images_to_update:
+    for image in images:
         # Validate that the image has the required fields
         if "name" not in image:
             logger.fatal(f"Image {image} is missing the required 'name' field.")
             return False
-        if ("newTag" not in image) and ("newName" not in image):
-            logger.fatal(f"Image {image} must set newName, newTag or both.")
-            return False
+        if "fromOverlay" in image:
+            if "newName" in image:
+                logger.fatal(f"Image {image} cannot set newName when fromOverlay is set.")
+                return False
+            if "newTag" in image:
+                logger.fatal(f"Image {image} cannot set newTag when fromOverlay is set.")
+                return False
+        else:
+            if ("newTag" not in image) and ("newName" not in image):
+                logger.fatal(f"Image {image} must set newName, newTag or both.")
+                return False
         if "overlays" not in image:
             logger.fatal(f"Image {image} is missing the required 'overlays' field.")
             return False
     return True
+
+def read_images_from_overlay(overlay, deployment_dir):
+    """
+    Read the images from the given overlay.
+
+    Args:
+        overlay (str): The overlay to read the images from.
+        deployment_dir (str): The directory containing the overlays.
+
+    Returns:
+        dict: A dictionary mapping image names to the image dictionary.
+    """
+    images = {}
+    with open(os.path.join(deployment_dir, overlay, "images.json"), "r") as f:
+        images = json.load(f)
+
+    # Validate that the images have the required fields
+    if not validate_images(images):
+        logger.fatal(f"Overlay {overlay} has invalid images.")
+        sys.exit(1)
+
+    return images
 
 def get_images_from_overlays(images_to_update):
     """
@@ -99,7 +133,12 @@ def get_images_from_overlays(images_to_update):
         for overlay in image["overlays"]:
             if overlay not in overlays_to_images:
                 overlays_to_images[overlay] = []
-            overlays_to_images[overlay].append(image)
+            # If the image has a fromOverlay, get the image from that overlay
+            if "fromOverlay" in image:
+                images = read_images_from_overlay(image["fromOverlay"])
+                overlays_to_images[overlay].append(images[image["name"]])
+            else:
+                overlays_to_images[overlay].append(image)
 
     return overlays_to_images
 
@@ -207,8 +246,11 @@ def main():
             [
                 {
                     "name": "image-name",
+                    # Either newTag or newName is required
                     "newName": "new-image-name",
                     "newTag": "new-image-tag",
+                    # ... or fromOverlay is required
+                    "fromOverlay": "overlay-name",
                     "overlays": ["target-env", "target-env2"]
                 }
             ]
