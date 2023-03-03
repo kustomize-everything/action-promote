@@ -50,10 +50,6 @@ jobs:
           cat example/complex-promotion.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
-          echo "INVALID_PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/invalid-promotion.json >> $GITHUB_ENV
-          echo "$EOF" >> $GITHUB_ENV
-
           echo "CROSS_OVERLAY_PROMOTION<<$EOF" >> $GITHUB_ENV
           cat example/cross-overlay-promotion.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
