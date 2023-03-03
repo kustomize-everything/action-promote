@@ -103,12 +103,12 @@ def get_images_from_overlays(images_to_update):
 
     return overlays_to_images
 
-def generate_kustomize_args(env, images, promotion_manifest):
+def generate_kustomize_args(overlay, images, promotion_manifest):
     """
-    Generate the arguments to pass to kustomize edit set image for the given env and images.
+    Generate the arguments to pass to kustomize edit set image for the given overlay and images.
 
     Args:
-        env (str): The environment to generate the kustomize args for.
+        overlay (str): The overlay to generate the kustomize args for.
         images (list): The list of images to generate the kustomize args for.
         promotion_manifest (dict): The promotion manifest to add the images to.
 
@@ -132,14 +132,20 @@ def generate_kustomize_args(env, images, promotion_manifest):
         name = image["name"]
         new_name = image.get("newName", name)
         new_tag = image.get("newTag")
-        if new_tag:
+        if new_name and new_tag:
             kustomize_args.append(f"{name}={new_name}:{new_tag}")
             # Add to promotion manifest
-            if env not in promotion_manifest:
-                promotion_manifest[env] = []
-            promotion_manifest[env].append({"name": name, "newName": new_name, "newTag": new_tag})
+            if overlay not in promotion_manifest:
+                promotion_manifest[overlay] = []
+            promotion_manifest[overlay].append({"name": name, "newName": new_name, "newTag": new_tag})
+        elif new_name:
+            kustomize_args.append(f"{name}={new_name}")
+            # Add to promotion manifest
+            if overlay not in promotion_manifest:
+                promotion_manifest[overlay] = []
+            promotion_manifest[overlay].append({"name": name, "newName": new_name})
         else:
-            logger.info(f"Skipping image {name} because no new tag was provided.")
+            raise ValueError(f"Image {image} is missing required fields.")
 
     return kustomize_args, promotion_manifest
 
