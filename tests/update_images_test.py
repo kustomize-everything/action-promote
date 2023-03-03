@@ -23,19 +23,19 @@ class TestValidateImagesFromOverlays(unittest.TestCase):
 
 class TestGetImagesFromOverlays(unittest.TestCase):
     def test_empty(self):
-        self.assertEqual(update_images.get_images_from_overlays([]), {})
+        self.assertEqual(update_images.get_images_from_overlays([], "."), {})
 
     def test_missing_new_name(self):
-        self.assertEqual(update_images.get_images_from_overlays(overlay_no_name_or_tag), {"bar": [{"name": "foo", "overlays": ["bar"]}]})
+        self.assertEqual(update_images.get_images_from_overlays(overlay_no_name_or_tag, "."), {"bar": [{"name": "foo", "overlays": ["bar"]}]})
 
     def test_new_name(self):
-        self.assertEqual(update_images.get_images_from_overlays(overlay_new_name), {"bar": [{"name": "foo", "newName": "quz", "overlays": ["bar"]}]})
+        self.assertEqual(update_images.get_images_from_overlays(overlay_new_name, "."), {"bar": [{"name": "foo", "newName": "quz", "overlays": ["bar"]}]})
 
     def test_new_tag(self):
-        self.assertEqual(update_images.get_images_from_overlays(overlay_new_tag), {"bar": [{"name": "foo", "newTag": "whizbang", "overlays": ["bar"]}]})
+        self.assertEqual(update_images.get_images_from_overlays(overlay_new_tag, "."), {"bar": [{"name": "foo", "newTag": "whizbang", "overlays": ["bar"]}]})
 
     def test_new_name_and_tag(self):
-        self.assertEqual(update_images.get_images_from_overlays(overlay_new_name_and_tag), {"bar": [{"name": "foo", "newName": "quz", "newTag": "whizbang", "overlays": ["bar"]}]})
+        self.assertEqual(update_images.get_images_from_overlays(overlay_new_name_and_tag, "."), {"bar": [{"name": "foo", "newName": "quz", "newTag": "whizbang", "overlays": ["bar"]}]})
 
 
 class TestGenerateKustomizeArgs(unittest.TestCase):
