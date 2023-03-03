@@ -142,4 +142,4 @@ jobs:
 
       - name: Run Tests
         run: |-
-          python -m unittest tests/*_test.py
+          poetry run python -m unittest tests/*_test.py

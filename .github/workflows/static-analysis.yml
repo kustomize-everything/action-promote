@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Linters
         run: |
-          flake8
+          poetry run flake8
 
   markdown-lint:
     name: Markdown Lint
