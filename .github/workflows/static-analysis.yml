@@ -35,18 +35,6 @@ jobs:
         run: |
           flake8
 
-  yaml-lint:
-    name: YAML Lint
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run yamllint
-        uses: ibiqlik/action-yamllint@v3
-        with:
-          config_file: yamllint.yaml
-
-
   markdown-lint:
     name: Markdown Lint
     runs-on: ubuntu-latest
@@ -57,3 +45,16 @@ jobs:
         uses: avto-dev/markdown-lint@v1
         with:
           args: './**/*.md'
+
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: YAML Lint
+        uses: karancode/yamllint-github-action@v2.1.0
+        with:
+          yamllint_comment: true
+          yamllint_format: parsable
+          yamllint_config_filepath: yamllint.yaml
