@@ -36,6 +36,7 @@ import logging
 import os
 import subprocess
 import sys
+import yaml
 
 # Initialize logger
 logger = logging.getLogger()
@@ -74,6 +75,13 @@ def validate_images(images):
     Returns:
         bool: True if the images are valid, False otherwise.
     """
+    originally_dict = False
+    # Convert to list if it is a dict (which is the case when we are validating
+    # images from a promotion file)
+    if isinstance(images, dict):
+        originally_dict = True
+        images = list(images.values())
+
     for image in images:
         # Validate that the image has the required fields
         if "name" not in image:
@@ -90,9 +98,13 @@ def validate_images(images):
             if ("newTag" not in image) and ("newName" not in image):
                 logger.fatal(f"Image {image} must set newName, newTag or both.")
                 return False
-        if "overlays" not in image:
+        # Validate that the image has the required fields if it was not a dict,
+        # which means that it is coming from a promotion file and not from a
+        # kustomization.yaml file.
+        if not originally_dict and "overlays" not in image:
             logger.fatal(f"Image {image} is missing the required 'overlays' field.")
             return False
+
     return True
 
 def read_images_from_overlay(overlay, deployment_dir):
@@ -107,8 +119,27 @@ def read_images_from_overlay(overlay, deployment_dir):
         dict: A dictionary mapping image names to the image dictionary.
     """
     images = {}
-    with open(os.path.join(deployment_dir, overlay, "images.json"), "r") as f:
-        images = json.load(f)
+    kustomization_file = os.path.join(deployment_dir, overlay, "kustomization.yaml")
+    try:
+        # Open the kustomize.yaml file for the overlay
+        with open(kustomization_file) as f:
+            # Read the images from the kustomize.yaml file
+            kustomize = yaml.safe_load(f)
+            if "images" not in kustomize:
+                logger.fatal(f"Overlay {overlay} does not have any images.")
+                sys.exit(1)
+            for image in kustomize["images"]:
+                if "name" not in image:
+                    logger.fatal(f"Image {image} is missing the required 'name' field.")
+                    sys.exit(1)
+                # Add the image to the list of images
+                images[image["name"]] = image
+    except FileNotFoundError:
+        logger.fatal(f"Kustomization file {kustomization_file} does not exist.")
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        logger.fatal(f"Kustomization file {kustomization_file} is invalid: {e}")
+        sys.exit(1)
 
     # Validate that the images have the required fields
     if not validate_images(images):
@@ -117,12 +148,13 @@ def read_images_from_overlay(overlay, deployment_dir):
 
     return images
 
-def get_images_from_overlays(images_to_update):
+def get_images_from_overlays(images_to_update, deployment_dir):
     """
     Get the list of images to update for each overlay.
 
     Args:
         images_to_update (list): The list of images to update.
+        deployment_dir (str): The directory containing the overlays.
 
     Returns:
         dict: A dictionary mapping overlays to the list of images to update for that overlay.
@@ -135,7 +167,7 @@ def get_images_from_overlays(images_to_update):
                 overlays_to_images[overlay] = []
             # If the image has a fromOverlay, get the image from that overlay
             if "fromOverlay" in image:
-                images = read_images_from_overlay(image["fromOverlay"])
+                images = read_images_from_overlay(image["fromOverlay"], deployment_dir)
                 overlays_to_images[overlay].append(images[image["name"]])
             else:
                 overlays_to_images[overlay].append(image)
@@ -262,7 +294,7 @@ def main():
     validate_images(images_to_update)
 
     # Get the list of images for each overlay
-    overlays_to_images = get_images_from_overlays(images_to_update)
+    overlays_to_images = get_images_from_overlays(images_to_update, deployment_dir)
 
     # Create promotion manifest dictionary to store the promotion manifest
     promotion_manifest = {}
