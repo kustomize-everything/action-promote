@@ -14,3 +14,47 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@2.0.0
+
+  python-lint:
+    name: Python Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          poetry install
+
+      - name: Run Linters
+        run: |
+          poetry run flake8 --ignore=E501
+
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Lint MD files
+        uses: avto-dev/markdown-lint@v1
+        with:
+          args: './**/*.md'
+
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: YAML Lint
+        uses: karancode/yamllint-github-action@v2.1.0
+        with:
+          yamllint_comment: true
+          yamllint_format: parsable
+          yamllint_config_filepath: yamllint.yaml

@@ -1,6 +1,23 @@
 # action-promote
 
-GitHub action providing a standard promotion pattern using Kustomize.
+GitHub action providing a standard promotion patterns using Kustomize.
+
+It supports injecting multiple new images into target overlays via a JSON config
+file. For examples, refer to [example](./example).
+
+Within a JSON config for you image promotions, you have two (mutually exclusive
+on a per image name basis) ways of providing the promotion information. Either
+you can provide the `newName` and/or `newTag` directly keys directly in the
+image configuration OR you can provide a `fromOverlay` key, which will find
+the overlay provided as the value in your deployment repo and extract the value
+of the image `name` from it.
+
+For each image, you can promote into multiple target overlays in your deployment
+repo by providing multiple values to the `overlays` key.
+
+After making all of the changes specified in the JSON configuration, the GitHub
+action will automatically commit and either push the branch directly or open
+a pull request, depending on what you specify.
 
 ## Usage
 
@@ -36,7 +53,8 @@ jobs:
     name: Build and Push Docker images
     runs-on: ubuntu-latest
     outputs:
-      image: ${{ steps.push-image.outputs.image }}
+      image-name: ${{ steps.push-image.outputs.image-name }}
+      image-tag: ${{ steps.push-image.outputs.image-tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -57,16 +75,23 @@ jobs:
         with:
           target-repo: kustomize-everything/guestbook-deploy
           target-branch: main
-          target-dir: env/dev
           working-directory: guestbook-deploy
-          image-name-tag: ${{ needs.build-image.outputs.image }}
-          ssh-key: ${{ secrets.GUESTBOOK_DEPLOY_KEY }}
+          images: |-
+            [
+              {
+                "name": "nginx",
+                "newName": "${{ needs.build-image.outputs.image-name }}",
+                "newTag": "${{ needs.build-image.outputs.image-tag }}",
+                "overlays": ["env/dev"]
+              }
+            ]
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Contributing
 
-We would love for you to contribute to kustomize-everything/actions-promote, pull requests are welcome!
+We would love for you to contribute to kustomize-everything/actions-promote,
+pull requests are welcome!
 
 ## License
 
