@@ -9,8 +9,8 @@ on:
       - main
 
 jobs:
-  positive-action-testing:
-    name: Positive Action Testing
+  action-testing:
+    name: Action Testing
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
