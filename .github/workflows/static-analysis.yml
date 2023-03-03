@@ -44,16 +44,8 @@ jobs:
       - name: Run yamllint
         uses: ibiqlik/action-yamllint@v3
         with:
-          configData: |
-            extends: relaxed
-            rules:
-              line-length:
-                max: 120
-                level: warning
-              document-start:
-                present: true
-              truthy:
-                level: warning
+          config_file: yamllint.yaml
+
 
   markdown-lint:
     name: Markdown Lint

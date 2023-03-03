@@ -90,7 +90,8 @@ jobs:
 
 ## Contributing
 
-We would love for you to contribute to kustomize-everything/actions-promote, pull requests are welcome!
+We would love for you to contribute to kustomize-everything/actions-promote,
+pull requests are welcome!
 
 ## License
 
