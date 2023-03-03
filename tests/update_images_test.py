@@ -6,6 +6,7 @@ overlay_new_name = [{"name": "foo", "newName": "quz", "overlays": ["bar"]}]
 overlay_new_tag = [{"name": "foo", "newTag": "whizbang", "overlays": ["bar"]}]
 overlay_new_name_and_tag = [{"name": "foo", "newName": "quz", "newTag": "whizbang", "overlays": ["bar"]}]
 
+
 class TestValidateImagesFromOverlays(unittest.TestCase):
     def test_empty(self):
         self.assertEqual(update_images.validate_images([]), True)
@@ -18,6 +19,7 @@ class TestValidateImagesFromOverlays(unittest.TestCase):
 
     def test_missing_new_name_and_new_tag(self):
         self.assertEqual(update_images.validate_images([{"name": "foo", "overlays": ["bar"]}]), False)
+
 
 class TestGetImagesFromOverlays(unittest.TestCase):
     def test_empty(self):
@@ -34,6 +36,7 @@ class TestGetImagesFromOverlays(unittest.TestCase):
 
     def test_new_name_and_tag(self):
         self.assertEqual(update_images.get_images_from_overlays(overlay_new_name_and_tag), {"bar": [{"name": "foo", "newName": "quz", "newTag": "whizbang", "overlays": ["bar"]}]})
+
 
 class TestGenerateKustomizeArgs(unittest.TestCase):
     def test_empty(self):

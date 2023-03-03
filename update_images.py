@@ -43,6 +43,7 @@ logger = logging.getLogger()
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.DEBUG)
 
+
 def run(args):
     """
     Run the given command and log the output.
@@ -64,6 +65,7 @@ def run(args):
         logger.info(output.stdout)
 
     return output.check_returncode()
+
 
 def find_duplicates(images, field):
     """
@@ -107,13 +109,17 @@ def validate_images(images):
     # Ensure that all image names are unique
     duplicates = find_duplicates(images, "name")
     if len(duplicates) > 0:
-        logger.fatal(f"Found duplicate image names: {' '.join(duplicates)}. Images must have unique names.")
+        logger.fatal(
+            f"Found duplicate image names: {' '.join(duplicates)}. Images must have unique names."
+        )
         sys.exit(1)
 
     # Ensure that all image newNames are unique
     duplicates = find_duplicates(images, "newName")
     if len(duplicates) > 0:
-        logger.fatal(f"Found duplicate image newNames: {' '.join(duplicates)}. Image newNames must have unique names.")
+        logger.fatal(
+            f"Found duplicate image newNames: {' '.join(duplicates)}. Image newNames must have unique names."
+        )
         sys.exit(1)
 
     for image in images:
@@ -123,10 +129,14 @@ def validate_images(images):
             return False
         if "fromOverlay" in image:
             if "newName" in image:
-                logger.fatal(f"Image {image} cannot set newName when fromOverlay is set.")
+                logger.fatal(
+                    f"Image {image} cannot set newName when fromOverlay is set."
+                )
                 return False
             if "newTag" in image:
-                logger.fatal(f"Image {image} cannot set newTag when fromOverlay is set.")
+                logger.fatal(
+                    f"Image {image} cannot set newTag when fromOverlay is set."
+                )
                 return False
         else:
             if ("newTag" not in image) and ("newName" not in image):
@@ -140,6 +150,7 @@ def validate_images(images):
             return False
 
     return True
+
 
 def read_images_from_overlay(overlay, deployment_dir):
     """
@@ -182,6 +193,7 @@ def read_images_from_overlay(overlay, deployment_dir):
 
     return images
 
+
 def get_images_from_overlays(images_to_update, deployment_dir):
     """
     Get the list of images to update for each overlay.
@@ -207,6 +219,7 @@ def get_images_from_overlays(images_to_update, deployment_dir):
                 overlays_to_images[overlay].append(image)
 
     return overlays_to_images
+
 
 def generate_kustomize_args(overlay, images, promotion_manifest):
     """
@@ -242,7 +255,9 @@ def generate_kustomize_args(overlay, images, promotion_manifest):
             # Add to promotion manifest
             if overlay not in promotion_manifest:
                 promotion_manifest[overlay] = []
-            promotion_manifest[overlay].append({"name": name, "newName": new_name, "newTag": new_tag})
+            promotion_manifest[overlay].append(
+                {"name": name, "newName": new_name, "newTag": new_tag}
+            )
         elif new_name:
             kustomize_args.append(f"{name}={new_name}")
             # Add to promotion manifest
@@ -254,6 +269,7 @@ def generate_kustomize_args(overlay, images, promotion_manifest):
 
     return kustomize_args, promotion_manifest
 
+
 def validate_runtime_environment():
     """
     Validate that the runtime environment has the tools we need and provided directories exist.
@@ -264,8 +280,11 @@ def validate_runtime_environment():
         logger.debug("Validating that kustomize is available...")
         run(["kustomize", "version"])
     except subprocess.CalledProcessError:
-        logger.fatal("kustomize is not available. Please install kustomize before running this script.")
+        logger.fatal(
+            "kustomize is not available. Please install kustomize before running this script."
+        )
         exit(1)
+
 
 def get_deployment_dir():
     """
@@ -285,6 +304,7 @@ def get_deployment_dir():
 
     return deployment_dir
 
+
 def main():
     validate_runtime_environment()
 
@@ -300,12 +320,16 @@ def main():
             # Fail with a useful error message if the JSON is invalid or not a list
             images_to_update = json.load(sys.stdin)
     except json.JSONDecodeError as e:
-        logger.fatal(f"Provided JSON object failed to parse. Please provide a valid JSON object. Error: {e}")
+        logger.fatal(
+            f"Provided JSON object failed to parse. Please provide a valid JSON object. Error: {e}"
+        )
         exit(1)
 
     # Exit with failure if there are no images to update, printing usage information.
     if not images_to_update:
-        logger.fatal("No images to update. Please provide a JSON object of images to update via the IMAGES_TO_UPDATE env var or via stdin.")
+        logger.fatal(
+            "No images to update. Please provide a JSON object of images to update via the IMAGES_TO_UPDATE env var or via stdin."
+        )
         logger.info("The JSON object should be in the following format:")
         logger.info(
             """
@@ -339,7 +363,9 @@ def main():
 
         # Validate that the kustomize directory for the env exists
         if not os.path.isdir(kustomize_dir):
-            logger.fatal(f"Kustomize directory for {env} does not exist. ({kustomize_dir})")
+            logger.fatal(
+                f"Kustomize directory for {env} does not exist. ({kustomize_dir})"
+            )
             exit(1)
         else:
             logger.info(f"Updating images for {env}...")
@@ -347,7 +373,9 @@ def main():
         # Change to the kustomize directory for the env
         os.chdir(kustomize_dir)
 
-        kustomize_args, promotion_manifest = generate_kustomize_args(env, images, promotion_manifest)
+        kustomize_args, promotion_manifest = generate_kustomize_args(
+            env, images, promotion_manifest
+        )
 
         # Run the kustomize edit set image command, failing the script if it fails
         if kustomize_args:
@@ -368,6 +396,7 @@ def main():
 
     logger.info("Successfully updated images.")
     exit(0)
+
 
 if __name__ == "__main__":
     main()
