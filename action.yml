@@ -119,7 +119,9 @@ runs:
       env:
         IMAGES_TO_UPDATE: ${{ inputs.images }}
         DEPLOYMENT_DIR: ${{ inputs.working-directory }}
-      run: |
+      run: |-
+        cd ${{ github.action_path }}
+        pwd
         python -m pip install -r requirements.txt
         poetry install
         poetry run python ${{ github.action_path }}/update_images.py > images.json
