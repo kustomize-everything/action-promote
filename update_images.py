@@ -65,6 +65,28 @@ def run(args):
 
     return output.check_returncode()
 
+def find_duplicates(images, field):
+    """
+    Find duplicate fields in images in the list of images.
+
+    Args:
+        images (list): The list of images to check for duplicates.
+
+    Returns:
+        set: The set of duplicate images.
+    """
+    duplicates = set()
+    image_names = [image[field] for image in images if field in image]
+    seen = set()
+    for image_name in image_names:
+        if image_name in seen:
+            duplicates.add(image_name)
+        else:
+            seen.add(image_name)
+
+    return duplicates
+
+
 def validate_images(images):
     """
     Validate that the images to update have the required fields.
@@ -81,6 +103,18 @@ def validate_images(images):
     if isinstance(images, dict):
         originally_dict = True
         images = list(images.values())
+
+    # Ensure that all image names are unique
+    duplicates = find_duplicates(images, "name")
+    if len(duplicates) > 0:
+        logger.fatal(f"Found duplicate image names: {' '.join(duplicates)}. Images must have unique names.")
+        sys.exit(1)
+
+    # Ensure that all image newNames are unique
+    duplicates = find_duplicates(images, "newName")
+    if len(duplicates) > 0:
+        logger.fatal(f"Found duplicate image newNames: {' '.join(duplicates)}. Image newNames must have unique names.")
+        sys.exit(1)
 
     for image in images:
         # Validate that the image has the required fields

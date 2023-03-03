@@ -1,0 +1,14 @@
+[
+  {
+    "name": "nginx",
+    "newName": "nginx",
+    "newTag": "1.25.0",
+    "overlays": ["env/dev"]
+  },
+  {
+    "name": "nginx",
+    "newName": "nginxTwo",
+    "newTag": "0.0.1",
+    "overlays": ["env/dev"]
+  }
+]
