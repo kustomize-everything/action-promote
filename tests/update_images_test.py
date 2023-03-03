@@ -8,16 +8,16 @@ overlay_new_name_and_tag = [{"name": "foo", "newName": "quz", "newTag": "whizban
 
 class TestValidateImagesFromOverlays(unittest.TestCase):
     def test_empty(self):
-        self.assertEqual(update_images.validate_images_from_overlays([]), True)
+        self.assertEqual(update_images.validate_images([]), True)
 
     def test_only_new_name(self):
-        self.assertEqual(update_images.validate_images_from_overlays([{"name": "foo", "newName": "quz", "overlays": ["bar"]}]), True)
+        self.assertEqual(update_images.validate_images([{"name": "foo", "newName": "quz", "overlays": ["bar"]}]), True)
 
     def test_only_new_tag(self):
-        self.assertEqual(update_images.validate_images_from_overlays([{"name": "foo", "newTag": "whizbang", "overlays": ["bar"]}]), True)
+        self.assertEqual(update_images.validate_images([{"name": "foo", "newTag": "whizbang", "overlays": ["bar"]}]), True)
 
     def test_missing_new_name_and_new_tag(self):
-        self.assertEqual(update_images.validate_images_from_overlays([{"name": "foo", "overlays": ["bar"]}]), False)
+        self.assertEqual(update_images.validate_images([{"name": "foo", "overlays": ["bar"]}]), False)
 
 class TestGetImagesFromOverlays(unittest.TestCase):
     def test_empty(self):

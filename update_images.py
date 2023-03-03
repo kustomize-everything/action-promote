@@ -259,7 +259,7 @@ def main():
         exit(1)
 
     # Validate that the images to update have the required fields
-    validate_images_from_overlays(images_to_update)
+    validate_images(images_to_update)
 
     # Get the list of images for each overlay
     overlays_to_images = get_images_from_overlays(images_to_update)
