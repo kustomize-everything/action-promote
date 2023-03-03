@@ -54,3 +54,14 @@ jobs:
                 present: true
               truthy:
                 level: warning
+
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Lint MD files
+        uses: avto-dev/markdown-lint@v1
+        with:
+          args: './**/*.md'
