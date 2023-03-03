@@ -122,5 +122,5 @@ jobs:
           python-version: 3.9
 
       - name: Run Tests
-        run: |
+        run: |-
           python -m unittest tests/*_test.py
