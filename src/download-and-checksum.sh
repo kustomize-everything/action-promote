@@ -26,4 +26,3 @@ popd
 
 echo "${KUSTOMIZE_BIN_DIR}" >> $GITHUB_PATH
 "${KUSTOMIZE_BIN_DIR}/kustomize" version
-kustomize version
