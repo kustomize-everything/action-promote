@@ -42,8 +42,8 @@ echo "GITHUB_WORKFLOW_RUN_URL=${GITHUB_WORKFLOW_RUN_URL}" >> $GITHUB_ENV
 /download-and-checksum.sh
 PATH="${KUSTOMIZE_BIN_DIR}:${PATH}"
 
-git config --global user.name "${GITHUB_COMMIT_USER}"
-git config --global user.email "${GITHUB_COMMIT_EMAIL}"
+git config --global user.name "${GIT_COMMIT_USER}"
+git config --global user.email "${GIT_COMMIT_EMAIL}"
 
 # Update the overlays
 # Expects the following environment variables to be set:
