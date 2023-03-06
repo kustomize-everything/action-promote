@@ -63,7 +63,11 @@ inputs:
     description: |
       If true, the action will not actually do anything. This is useful for
       testing the action.
-    default: false
+    default: "false"
+  debug:
+    description: |
+      If true, the action will print out a lot of debug information.
+    default: "false"
 outputs:
   deployment-repo-sha:
     description: "Git SHA of promotion commit on deployment repo"

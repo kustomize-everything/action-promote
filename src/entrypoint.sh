@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Fail on non-zero exit code
 set -e
@@ -73,12 +73,15 @@ echo "images=$(cat images.txt)" >> $GITHUB_OUTPUT
   #       DRY_RUN: ${{ inputs.dry-run }}
   #       PROMOTION_METHOD: ${{ inputs.promotion-method }}
   #     run: |
-  #       # If there are no changes, then we don't need to do anything
-  #       if [[ -z "$(git status --porcelain)" ]]; then
-  #         echo "No changes to commit"
-  #         exit 0
-  #       # Otherwise, we need to commit the changes with the relevant metadata
-  #       # in the commit message.
-  #       else
-  #          ${{ github.action_path }}/commit-and-pull-request.sh
-  #       fi
+# If there are no changes, then we don't need to do anything
+if [[ -z "$(git status --porcelain)" ]]; then
+  echo "No changes to commit"
+  exit 0
+# Otherwise, we need to commit the changes with the relevant metadata
+# in the commit message.
+else
+  echo "Changes to commit"
+  pushd "${DEPLOYMENT_DIR}" || exit 1
+  /commit-and-pull-request.sh
+  popd
+fi
