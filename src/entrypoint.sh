@@ -37,10 +37,10 @@ echo "GITHUB_WORKFLOW_RUN_URL=${GITHUB_WORKFLOW_RUN_URL}" >> $GITHUB_ENV
 # Expects the following environment variables to be set:
 #   - KUSTOMIZE_VERSION
 #   - KUSTOMIZE_CHECKSUM
-#   - KUSTOMIZE_BIN_PATH
+#   - KUSTOMIZE_BIN_DIR
 #   - KUSTOMIZE_FILENAME
 /download-and-checksum.sh
-PATH="${KUSTOMIZE_BIN_PATH}:${PATH}"
+PATH="${KUSTOMIZE_BIN_DIR}:${PATH}"
 
 git config --global user.name "${GITHUB_COMMIT_USER}"
 git config --global user.email "${GITHUB_COMMIT_EMAIL}"
