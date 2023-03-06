@@ -54,6 +54,15 @@ jobs:
           cat example/cross-overlay-promotion.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: main
+          path: test-deploy
+          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
+
       - name: Action Test with Simple Promotion
         uses: ./
         with:
