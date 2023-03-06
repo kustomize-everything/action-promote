@@ -57,7 +57,8 @@ EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 echo "images-json<<$EOF" >> $GITHUB_OUTPUT
 cat images.json >> $GITHUB_OUTPUT
 echo "$EOF" >> $GITHUB_OUTPUT
-echo "images=$(jq -c -r '.[] | map(.name) | join(" ")' < images.json | xargs)" >> $GITHUB_OUTPUT
+jq -c -r '.[] | map(.name) | join(" ")' < images.json | xargs > images.txt
+echo "images=$(cat images.txt)" >> $GITHUB_OUTPUT
 
   #   - name: Commit Changes
   #     id: commit-changes
