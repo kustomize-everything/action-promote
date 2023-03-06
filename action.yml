@@ -97,3 +97,4 @@ runs:
     KUSTOMIZE_FILENAME: kustomize_v${{ inputs.version }}_linux_amd64.tar.gz
     KUSTOMIZE_SHA256_CHECKSUM: ${{ inputs.sha256-checksum }}
     KUSTOMIZE_VERSION: ${{ inputs.version }}
+    DEBUG: ${{ inputs.debug }}
