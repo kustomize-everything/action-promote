@@ -153,4 +153,4 @@ jobs:
       - name: Run Tests
         working-directory: src
         run: |-
-          poetry run python -m unittest ../tests/*_test.py
+          poetry run python -m unittest tests/*_test.py

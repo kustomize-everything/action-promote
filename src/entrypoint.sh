@@ -25,13 +25,13 @@ env
   #       path: ${{ inputs.working-directory }}
 
 GITHUB_REF_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_REF}"
-echo "GITHUB_REF_URL=${GITHUB_REF_URL}" >> $GITHUB_ENV
+echo "GITHUB_REF_URL=${GITHUB_REF_URL}" >> "${GITHUB_ENV}"
 GITHUB_REPOSITORY_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
-echo "GITHUB_REPOSITORY_URL=${GITHUB_REPOSITORY_URL}" >> $GITHUB_ENV
+echo "GITHUB_REPOSITORY_URL=${GITHUB_REPOSITORY_URL}" >> "${GITHUB_ENV}"
 GITHUB_SHA_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
-echo "GITHUB_SHA_URL=${GITHUB_SHA_URL}" >> $GITHUB_ENV
+echo "GITHUB_SHA_URL=${GITHUB_SHA_URL}" >> "${GITHUB_ENV}"
 GITHUB_WORKFLOW_RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-echo "GITHUB_WORKFLOW_RUN_URL=${GITHUB_WORKFLOW_RUN_URL}" >> $GITHUB_ENV
+echo "GITHUB_WORKFLOW_RUN_URL=${GITHUB_WORKFLOW_RUN_URL}" >> "${GITHUB_ENV}"
 
 # Download and verify checksum on tools (kustomize)
 # Expects the following environment variables to be set:
@@ -54,11 +54,12 @@ poetry run python /update_images.py > images.json
 
 # Save images json output to GITHUB_OUTPUT
 EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-echo "images-json<<$EOF" >> $GITHUB_OUTPUT
-cat images.json >> $GITHUB_OUTPUT
-echo "$EOF" >> $GITHUB_OUTPUT
+# shellcheck disable=SC2086
+echo "images-json<<$EOF" >> "${GITHUB_OUTPUT}"
+cat images.json >> "${GITHUB_OUTPUT}"
+echo "$EOF" >> "${GITHUB_OUTPUT}"
 jq -c -r '.[] | map(.name) | join(" ")' < images.json | xargs > images.txt
-echo "images=$(cat images.txt)" >> $GITHUB_OUTPUT
+echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
 
   #   - name: Commit Changes
   #     id: commit-changes

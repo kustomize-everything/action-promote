@@ -24,5 +24,5 @@ tar xzf "${KUSTOMIZE_FILENAME}"
 chmod u+x kustomize
 popd
 
-echo "${KUSTOMIZE_BIN_DIR}" >> $GITHUB_PATH
+echo "${KUSTOMIZE_BIN_DIR}" >> "${GITHUB_PATH}"
 "${KUSTOMIZE_BIN_DIR}/kustomize" version
