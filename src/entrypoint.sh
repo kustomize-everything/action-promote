@@ -39,7 +39,7 @@ echo "GITHUB_WORKFLOW_RUN_URL=${GITHUB_WORKFLOW_RUN_URL}" >> $GITHUB_ENV
 #   - KUSTOMIZE_CHECKSUM
 #   - KUSTOMIZE_BIN_PATH
 #   - KUSTOMIZE_FILENAME
-./download-and-checksum.sh
+/download-and-checksum.sh
 PATH="${KUSTOMIZE_BIN_PATH}:${PATH}"
 
 git config --global user.name "${GITHUB_COMMIT_USER}"
