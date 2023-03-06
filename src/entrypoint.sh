@@ -54,7 +54,7 @@ poetry run python /update_images.py > images.json
 
 # Save images json output to GITHUB_OUTPUT
 EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-# shellcheck disable=SC2086
+# shellcheck disable=SC2129
 echo "images-json<<$EOF" >> "${GITHUB_OUTPUT}"
 cat images.json >> "${GITHUB_OUTPUT}"
 echo "$EOF" >> "${GITHUB_OUTPUT}"
