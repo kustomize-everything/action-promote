@@ -79,82 +79,96 @@ outputs:
     value: ${{ steps.update-image-tag.outputs.images }}
 
 runs:
-  using: composite
-  steps:
-    - name: Checkout Repo
-      uses: actions/checkout@v3
-      with:
-        repository: ${{ inputs.target-repo }}
-        ref: ${{ inputs.target-branch }}
-        ssh-key: ${{ inputs.ssh-key }}
-        token: ${{ inputs.github-token }}
-        path: ${{ inputs.working-directory }}
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    GIT_COMMIT_USER: ${{ inputs.git-commit-user }}
+    GIT_COMMIT_EMAIL: ${{ inputs.git-commit-email }}
+    GIT_COMMIT_MESSAGE: ${{ inputs.git-commit-message }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
+    IMAGES: ${{ inputs.images }}
+    PROMOTION_METHOD: ${{ inputs.promotion-method }}
+    SSH_KEY: ${{ inputs.ssh-key }}
+    TARGET_BRANCH: ${{ inputs.target-branch }}
+    SHA256_CHECKSUM: ${{ inputs.sha256-checksum }}
+    VERSION: ${{ inputs.version }}
+    DRY_RUN: ${{ inputs.dry-run }}
 
-    - name: GitHub Metadata
-      uses: kustomize-everything/action-github-metadata@v1.0.0
+  # steps:
+  #   - name: Checkout Repo
+  #     uses: actions/checkout@v3
+  #     with:
+  #       repository: ${{ inputs.target-repo }}
+  #       ref: ${{ inputs.target-branch }}
+  #       ssh-key: ${{ inputs.ssh-key }}
+  #       token: ${{ inputs.github-token }}
+  #       path: ${{ inputs.working-directory }}
 
-    - name: Kustomize Setup
-      uses: kustomize-everything/action-kustomize@v2.0.2
-      with:
-        version: ${{ inputs.version }}
-        sha256-checksum: ${{ inputs.sha256-checksum }}
+  #   - name: GitHub Metadata
+  #     uses: kustomize-everything/action-github-metadata@v1.0.0
 
-    - name: Python Setup
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.9
+  #   - name: Kustomize Setup
+  #     uses: kustomize-everything/action-kustomize@v2.0.2
+  #     with:
+  #       version: ${{ inputs.version }}
+  #       sha256-checksum: ${{ inputs.sha256-checksum }}
 
-    - name: Set Git Author
-      shell: bash
-      run: |
-        git config --global user.name ${{ inputs.git-commit-user }}
-        git config --global user.email ${{ inputs.git-commit-email }}
+  #   - name: Python Setup
+  #     uses: actions/setup-python@v4
+  #     with:
+  #       python-version: 3.9
 
-    - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
-      shell: bash
-  
-    - name: Install Python Dependencies
-      shell: bash
-      working-directory: ${{ github.action_path }}
-      run: |-
-        python -m pip install -r requirements.txt
-        # We want a global install
-        poetry config virtualenvs.create false --local
-        poetry install
+  #   - name: Set Git Author
+  #     shell: bash
+  #     run: |
+  #       git config --global user.name ${{ inputs.git-commit-user }}
+  #       git config --global user.email ${{ inputs.git-commit-email }}
 
-    - name: Use update all images provided
-      id: update-images
-      shell: bash
-      env:
-        IMAGES_TO_UPDATE: ${{ inputs.images }}
-        DEPLOYMENT_DIR: ${{ inputs.working-directory }}
-      run: |-
-        poetry run python ${{ github.action_path }}/update_images.py > images.json
-        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-        echo "images-json<<$EOF" >> $GITHUB_OUTPUT
-        cat images.json >> $GITHUB_OUTPUT
-        echo "$EOF" >> $GITHUB_OUTPUT
-        echo "images=$(jq -c -r '.[] | map(.name) | join(" ")' < images.json | xargs)" >> $GITHUB_OUTPUT
+  #   - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+  #     shell: bash
 
-    - name: Commit Changes
-      id: commit-changes
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      env:
-        GITHUB_TOKEN: ${{ inputs.github-token }}
-        IMAGES: ${{ steps.update-images.outputs.images }}
-        IMAGES_JSON: ${{ steps.update-images.outputs.images-json }}
-        TARGET_BRANCH: ${{ inputs.target-branch }}
-        TARGET_REPO: ${{ inputs.target-repo }}
-        DRY_RUN: ${{ inputs.dry-run }}
-        PROMOTION_METHOD: ${{ inputs.promotion-method }}
-      run: |
-        # If there are no changes, then we don't need to do anything
-        if [[ -z "$(git status --porcelain)" ]]; then
-          echo "No changes to commit"
-          exit 0
-        # Otherwise, we need to commit the changes with the relevant metadata
-        # in the commit message.
-        else
-           ${{ github.action_path }}/commit-and-pull-request.sh
-        fi
+  #   - name: Install Python Dependencies
+  #     shell: bash
+  #     working-directory: ${{ github.action_path }}
+  #     run: |-
+  #       python -m pip install -r requirements.txt
+  #       # We want a global install
+  #       poetry config virtualenvs.create false --local
+  #       poetry install
+
+  #   - name: Use update all images provided
+  #     id: update-images
+  #     shell: bash
+  #     env:
+  #       IMAGES_TO_UPDATE: ${{ inputs.images }}
+  #       DEPLOYMENT_DIR: ${{ inputs.working-directory }}
+  #     run: |-
+  #       poetry run python ${{ github.action_path }}/update_images.py > images.json
+  #       EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+  #       echo "images-json<<$EOF" >> $GITHUB_OUTPUT
+  #       cat images.json >> $GITHUB_OUTPUT
+  #       echo "$EOF" >> $GITHUB_OUTPUT
+  #       echo "images=$(jq -c -r '.[] | map(.name) | join(" ")' < images.json | xargs)" >> $GITHUB_OUTPUT
+
+  #   - name: Commit Changes
+  #     id: commit-changes
+  #     shell: bash
+  #     working-directory: ${{ inputs.working-directory }}
+  #     env:
+  #       GITHUB_TOKEN: ${{ inputs.github-token }}
+  #       IMAGES: ${{ steps.update-images.outputs.images }}
+  #       IMAGES_JSON: ${{ steps.update-images.outputs.images-json }}
+  #       TARGET_BRANCH: ${{ inputs.target-branch }}
+  #       TARGET_REPO: ${{ inputs.target-repo }}
+  #       DRY_RUN: ${{ inputs.dry-run }}
+  #       PROMOTION_METHOD: ${{ inputs.promotion-method }}
+  #     run: |
+  #       # If there are no changes, then we don't need to do anything
+  #       if [[ -z "$(git status --porcelain)" ]]; then
+  #         echo "No changes to commit"
+  #         exit 0
+  #       # Otherwise, we need to commit the changes with the relevant metadata
+  #       # in the commit message.
+  #       else
+  #          ${{ github.action_path }}/commit-and-pull-request.sh
+  #       fi
