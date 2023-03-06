@@ -49,6 +49,7 @@ git config --global user.email "${GITHUB_COMMIT_EMAIL}"
 # Expects the following environment variables to be set:
 #   - DEPLOYMENT_DIR
 #   - IMAGES_TO_UPDATE
+export DEPLOYMENT_DIR="${GITHUB_WORKSPACE}/${DEPLOYMENT_DIR}"
 poetry run python /update_images.py > images.json
 
 # Save images json output to GITHUB_OUTPUT
