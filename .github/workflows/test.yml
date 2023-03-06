@@ -16,25 +16,6 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Checkout Testing Repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          repository: kustomize-everything/test-deploy
-          ref: main
-          path: test-deploy-reset
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Reset testing repo to known state
-        shell: bash
-        run: |-
-          cd test-deploy-reset
-          BRANCH="pr/${GITHUB_SHA}"
-          echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
-          git checkout -B ${BRANCH}
-          git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
-          git push origin ${BRANCH} -f
-
       - name: Read in examples to github output
         id: read-examples
         shell: bash
@@ -59,7 +40,7 @@ jobs:
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
-          ref: main
+          ref: 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
           path: test-deploy
           token: ${{ secrets.GITHUB_TOKEN }}
 
