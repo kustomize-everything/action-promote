@@ -67,16 +67,12 @@ inputs:
 outputs:
   deployment-repo-sha:
     description: "Git SHA of promotion commit on deployment repo"
-    value: ${{ steps.commit-changes.outputs.deployment-repo-sha }}
   deployment-repo-sha-url:
     description: "Github URL for the promotion commit on the deployment URL"
-    value: ${{ steps.commit-changes.outputs.deployment-repo-sha-url }}
   deployment-repo-sha-short:
     description: "Git short SHA of promotion commit on deployment repo."
-    value: ${{ steps.commit-changes.outputs.deployment-repo-sha-short }}
   images-updated:
     description: "List of image name:tags that were promoted"
-    value: ${{ steps.update-image-tag.outputs.images }}
 
 runs:
   using: 'docker'
@@ -87,88 +83,13 @@ runs:
     GIT_COMMIT_MESSAGE: ${{ inputs.git-commit-message }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     IMAGES: ${{ inputs.images }}
+    IMAGES_TO_UPDATE: ${{ inputs.images }}
     PROMOTION_METHOD: ${{ inputs.promotion-method }}
     SSH_KEY: ${{ inputs.ssh-key }}
     TARGET_BRANCH: ${{ inputs.target-branch }}
-    SHA256_CHECKSUM: ${{ inputs.sha256-checksum }}
-    VERSION: ${{ inputs.version }}
+    DEPLOYMENT_DIR: ${{ inputs.working-directory }}
     DRY_RUN: ${{ inputs.dry-run }}
-
-  # steps:
-  #   - name: Checkout Repo
-  #     uses: actions/checkout@v3
-  #     with:
-  #       repository: ${{ inputs.target-repo }}
-  #       ref: ${{ inputs.target-branch }}
-  #       ssh-key: ${{ inputs.ssh-key }}
-  #       token: ${{ inputs.github-token }}
-  #       path: ${{ inputs.working-directory }}
-
-  #   - name: GitHub Metadata
-  #     uses: kustomize-everything/action-github-metadata@v1.0.0
-
-  #   - name: Kustomize Setup
-  #     uses: kustomize-everything/action-kustomize@v2.0.2
-  #     with:
-  #       version: ${{ inputs.version }}
-  #       sha256-checksum: ${{ inputs.sha256-checksum }}
-
-  #   - name: Python Setup
-  #     uses: actions/setup-python@v4
-  #     with:
-  #       python-version: 3.9
-
-  #   - name: Set Git Author
-  #     shell: bash
-  #     run: |
-  #       git config --global user.name ${{ inputs.git-commit-user }}
-  #       git config --global user.email ${{ inputs.git-commit-email }}
-
-  #   - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
-  #     shell: bash
-
-  #   - name: Install Python Dependencies
-  #     shell: bash
-  #     working-directory: ${{ github.action_path }}
-  #     run: |-
-  #       python -m pip install -r requirements.txt
-  #       # We want a global install
-  #       poetry config virtualenvs.create false --local
-  #       poetry install
-
-  #   - name: Use update all images provided
-  #     id: update-images
-  #     shell: bash
-  #     env:
-  #       IMAGES_TO_UPDATE: ${{ inputs.images }}
-  #       DEPLOYMENT_DIR: ${{ inputs.working-directory }}
-  #     run: |-
-  #       poetry run python ${{ github.action_path }}/update_images.py > images.json
-  #       EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-  #       echo "images-json<<$EOF" >> $GITHUB_OUTPUT
-  #       cat images.json >> $GITHUB_OUTPUT
-  #       echo "$EOF" >> $GITHUB_OUTPUT
-  #       echo "images=$(jq -c -r '.[] | map(.name) | join(" ")' < images.json | xargs)" >> $GITHUB_OUTPUT
-
-  #   - name: Commit Changes
-  #     id: commit-changes
-  #     shell: bash
-  #     working-directory: ${{ inputs.working-directory }}
-  #     env:
-  #       GITHUB_TOKEN: ${{ inputs.github-token }}
-  #       IMAGES: ${{ steps.update-images.outputs.images }}
-  #       IMAGES_JSON: ${{ steps.update-images.outputs.images-json }}
-  #       TARGET_BRANCH: ${{ inputs.target-branch }}
-  #       TARGET_REPO: ${{ inputs.target-repo }}
-  #       DRY_RUN: ${{ inputs.dry-run }}
-  #       PROMOTION_METHOD: ${{ inputs.promotion-method }}
-  #     run: |
-  #       # If there are no changes, then we don't need to do anything
-  #       if [[ -z "$(git status --porcelain)" ]]; then
-  #         echo "No changes to commit"
-  #         exit 0
-  #       # Otherwise, we need to commit the changes with the relevant metadata
-  #       # in the commit message.
-  #       else
-  #          ${{ github.action_path }}/commit-and-pull-request.sh
-  #       fi
+    KUSTOMIZE_BIN_DIR: /opt/bin
+    KUSTOMIZE_FILENAME: kustomize_v${{ inputs.version }}_linux_amd64.tar.gz
+    KUSTOMIZE_SHA256_CHECKSUM: ${{ inputs.sha256-checksum }}
+    KUSTOMIZE_VERSION: ${{ inputs.version }}

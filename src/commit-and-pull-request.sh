@@ -3,6 +3,9 @@
 # Fail on non-zero exit code
 set -e
 
+# Fail on unset variables
+set -o nounset
+
 TITLE="Promote ${IMAGES}"
 METADATA="---
 GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
