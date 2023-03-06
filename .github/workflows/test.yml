@@ -23,7 +23,7 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: main
           path: test-deploy-reset
-          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Reset testing repo to known state
         shell: bash
@@ -61,7 +61,7 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: main
           path: test-deploy
-          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Action Test with Simple Promotion
         uses: ./
