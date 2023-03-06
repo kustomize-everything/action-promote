@@ -6,23 +6,17 @@ set -e
 # Fail on unset variables
 set -o nounset
 
-# `$#` expands to the number of arguments and `$@` expands to the supplied `args`
-printf '%d args:' "$#"
-printf " '%s'" "$@"
-printf '\n'
+if [[ "${DEBUG}" == "true" ]]; then
+  echo "Debug mode enabled in entrypoint.sh"
+  set -x
 
-env
+  # `$#` expands to the number of arguments and `$@` expands to the supplied `args`
+  printf '%d args:' "$#"
+  printf " '%s'" "$@"
+  printf '\n'
 
-  # steps:
-  # TODO this responsibility should be moved to the caller
-  #   - name: Checkout Repo
-  #     uses: actions/checkout@v3
-  #     with:
-  #       repository: ${{ inputs.target-repo }}
-  #       ref: ${{ inputs.target-branch }}
-  #       ssh-key: ${{ inputs.ssh-key }}
-  #       token: ${{ inputs.github-token }}
-  #       path: ${{ inputs.working-directory }}
+  env
+fi
 
 GITHUB_REF_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_REF}"
 echo "GITHUB_REF_URL=${GITHUB_REF_URL}" >> "${GITHUB_ENV}"
