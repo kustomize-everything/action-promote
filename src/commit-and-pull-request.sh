@@ -6,6 +6,13 @@ set -e
 # Fail on unset variables
 set -o nounset
 
+if [[ "${DEBUG}" == "true" ]]; then
+  echo "Debug mode enabled in commit-and-pull-request.sh"
+  set -x
+
+  env
+fi
+
 TITLE="Promote ${IMAGES}"
 METADATA="---
 GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}

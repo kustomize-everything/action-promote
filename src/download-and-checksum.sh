@@ -7,6 +7,13 @@ set -e
 # Fail on unset variables
 set -o nounset
 
+if [[ "${DEBUG}" == "true" ]]; then
+  echo "Debug mode enabled in commit-and-pull-request.sh"
+  set -x
+
+  env
+fi
+
 mkdir -p "${KUSTOMIZE_BIN_DIR}"
 pushd "${KUSTOMIZE_BIN_DIR}" || exit 1
 
