@@ -340,8 +340,8 @@ def main():
         logger.fatal(
             f"Provided images JSON object failed to parse."
         )
-        logger.fatal("Please provide a valid JSON list. Error: {e}")
-        logger.fatal("The input received was: {images_input}")
+        logger.fatal(f"Please provide a valid JSON list. Error: {e}")
+        logger.fatal(f"The input received was: {images_input}")
         exit(1)
 
     # Read in the helm charts to update from stdin or the HELM_CHARTS_TO_UPDATE env variable
@@ -358,8 +358,8 @@ def main():
         logger.fatal(
             f"Provided charts JSON object failed to parse."
         )
-        logger.fatal("Please provide a valid JSON list. Error: {e}")
-        logger.fatal("The input received was: {charts_input}")
+        logger.fatal(f"Please provide a valid JSON list. Error: {e}")
+        logger.fatal(f"The input received was: {charts_input}")
         exit(1)
 
     # Exit with failure if there are no images or charts to update, printing usage information.
