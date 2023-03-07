@@ -1,5 +1,5 @@
 import unittest
-import update_images
+import update_images as update_images
 
 overlay_no_name_or_tag = [{"name": "foo", "overlays": ["bar"]}]
 overlay_new_name = [{"name": "foo", "newName": "quz", "overlays": ["bar"]}]

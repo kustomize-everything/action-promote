@@ -16,25 +16,6 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Checkout Testing Repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          repository: kustomize-everything/test-deploy
-          ref: main
-          path: test-deploy-reset
-          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
-
-      - name: Reset testing repo to known state
-        shell: bash
-        run: |-
-          cd test-deploy-reset
-          BRANCH="pr/${GITHUB_SHA}"
-          echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
-          git checkout -B ${BRANCH}
-          git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
-          git push origin ${BRANCH} -f
-
       - name: Read in examples to github output
         id: read-examples
         shell: bash
@@ -53,6 +34,15 @@ jobs:
           echo "CROSS_OVERLAY_PROMOTION<<$EOF" >> $GITHUB_ENV
           cat example/cross-overlay-promotion.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
+
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
+          path: test-deploy
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Action Test with Simple Promotion
         uses: ./
@@ -136,10 +126,12 @@ jobs:
           python-version: 3.9
 
       - name: Install Dependencies
+        working-directory: src
         run: |-
           pip install -r requirements.txt
           poetry install
 
       - name: Run Tests
+        working-directory: src
         run: |-
           poetry run python -m unittest tests/*_test.py
