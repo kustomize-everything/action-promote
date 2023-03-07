@@ -67,7 +67,7 @@ inputs:
   debug:
     description: |
       If true, the action will print out a lot of debug information.
-    default: "false"
+    default: "true"
 outputs:
   deployment-repo-sha:
     description: "Git SHA of promotion commit on deployment repo"
