@@ -23,8 +23,25 @@ inputs:
       A JSON list of images to promote. Each list item should be a dictionary
       with the following keys:
         - name: The name of the image in the target repository to update
-        - name_tag: The image name:tag to promote
+        - newName: The image name to promote
+        - newTag: The image tag to promote
+        OR
+        - fromOverlay: The name of the overlay to fetch the image details for
+          the named image from
         - env: The env that this image should be promoted in
+      Either images or helm-charts or both must be specified.
+  helm-charts:
+    description: |
+      A JSON list of Helm charts to promote. Each list item should be a dictionary
+      with the following keys:
+        - name: The name of the chart in the target repository to update
+        - releaseName: The name of the release to promote
+        - version: The version of the chart to promote
+        OR
+        - fromOverlay: The name of the overlay to fetch the chart details for
+          the named chart from
+        - env: The env that this chart should be promoted in
+      Either images or helm-charts or both must be specified.
   promotion-method:
     description: |
       How to handle the promotion. pull_request opens a PR against the
@@ -37,11 +54,6 @@ inputs:
     description: Checksum of Kustomize version
     required: false
     default: bba81aa61dba057db1d5abeddf1e522b568b2d906ab67a5c80935e97302c8773
-  ssh-key:
-    description: |
-      SSH key for doing the promotion into the deployment repository.
-      REMEMBER TO USE A GITHUB SECRET FOR THIS.
-    required: true
   target-repo:
     description: The repo where the image promotion should be pushed
     required: true
