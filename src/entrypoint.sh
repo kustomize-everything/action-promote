@@ -49,7 +49,7 @@ git config --global user.email "${GIT_COMMIT_EMAIL}"
 #   - IMAGES_TO_UPDATE
 DEPLOYMENT_DIR="${GITHUB_WORKSPACE}/${DEPLOYMENT_DIR}"
 export DEPLOYMENT_DIR
-poetry run python /update_images.py > images.json
+poetry run python /promote.py > images.json
 
 # Save images json output to GITHUB_OUTPUT
 EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
