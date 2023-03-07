@@ -30,6 +30,7 @@ inputs:
           the named image from
         - env: The env that this image should be promoted in
       Either images or helm-charts or both must be specified.
+    default: "[]"
   charts:
     description: |
       A JSON list of Helm charts to promote. Each list item should be a dictionary
@@ -42,6 +43,7 @@ inputs:
           the named chart from
         - env: The env that this chart should be promoted in
       Either images or helm-charts or both must be specified.
+    default: "[]"
   promotion-method:
     description: |
       How to handle the promotion. pull_request opens a PR against the
