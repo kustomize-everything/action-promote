@@ -328,32 +328,38 @@ def main():
 
     # Read in the images to update from stdin or the IMAGES_TO_UPDATE env variable
     images_to_update = None
+    images_input = None
+    if os.getenv("IMAGES_TO_UPDATE"):
+        images_input = os.getenv("IMAGES_TO_UPDATE")
+    else:
+        images_input = sys.stdin.read()
+
     try:
-        if os.getenv("IMAGES_TO_UPDATE"):
-            images_to_update = json.loads(os.getenv("IMAGES_TO_UPDATE"))
-        else:
-            # Read the whole JSON document from stdin, parsing it as JSON and validating that it is a list
-            # Fail with a useful error message if the JSON is invalid or not a list
-            images_to_update = json.load(sys.stdin)
+        images_to_update = json.loads(images_input)
     except json.JSONDecodeError as e:
         logger.fatal(
-            f"Provided JSON object passed by IMAGES_TO_UPDATE failed to parse. Please provide a valid JSON object. Error: {e}"
+            f"Provided images JSON object failed to parse."
         )
+        logger.fatal("Please provide a valid JSON list. Error: {e}")
+        logger.fatal("The input received was: {images_input}")
         exit(1)
 
     # Read in the helm charts to update from stdin or the HELM_CHARTS_TO_UPDATE env variable
     charts_to_update = None
+    charts_input = None
+    if os.getenv("CHARTS_TO_UPDATE"):
+        charts_input = os.getenv("CHARTS_TO_UPDATE")
+    else:
+        charts_input = sys.stdin.read()
+
     try:
-        if os.getenv("CHARTS_TO_UPDATE"):
-            charts_to_update = json.loads(os.getenv("CHARTS_TO_UPDATE"))
-        else:
-            # Read the whole JSON document from stdin, parsing it as JSON and validating that it is a list
-            # Fail with a useful error message if the JSON is invalid or not a list
-            charts_to_update = json.load(sys.stdin)
+        charts_to_update = json.loads(charts_input)
     except json.JSONDecodeError as e:
         logger.fatal(
-            f"Provided JSON object passed by CHARTS_TO_UPDATE failed to parse. Please provide a valid JSON object. Error: {e}"
+            f"Provided charts JSON object failed to parse."
         )
+        logger.fatal("Please provide a valid JSON list. Error: {e}")
+        logger.fatal("The input received was: {charts_input}")
         exit(1)
 
     # Exit with failure if there are no images or charts to update, printing usage information.
