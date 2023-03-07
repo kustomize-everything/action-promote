@@ -90,6 +90,7 @@ runs:
     IMAGES_TO_UPDATE: ${{ inputs.images }}
     PROMOTION_METHOD: ${{ inputs.promotion-method }}
     SSH_KEY: ${{ inputs.ssh-key }}
+    TARGET_REPO: ${{ inputs.target-repo }}
     TARGET_BRANCH: ${{ inputs.target-branch }}
     DEPLOYMENT_DIR: ${{ inputs.working-directory }}
     DRY_RUN: ${{ inputs.dry-run }}
