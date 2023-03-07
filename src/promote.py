@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 
-# This python script takes a JSON list of images provided either by the IMAGES_TO_UPDATE
-# Environment Variable or via stdin.
+# This python script takes a JSON list of images or helm charts provided either
+# by the IMAGES_TO_UPDATE/CHARTS_TO_UPDATE Environment Variable.
 #
 # It then runs the kustomize edit set image command for each image in the list, updating
 # the image in the kustomize directory for the specified overlays.
+#
+# For each chart, the script will find the chart declaration in the kustomization.yaml
+# and update it to point to the new chart version.
 #
 # The script will generally be run as a GitHub Action. The GitHub Action will take the
 # JSON list of images as an input and pass it to the script via the IMAGES_TO_UPDATE
 # Environment Variable.
 #
-# Each image in the dictionary should have the following format, which corresponds
-# to the kustomize edit set image command:
+# Each image in the IMAGES_TO_UPDATE JSON list should have the following format,
+# which corresponds to the kustomize edit set image command:
 # {
 #   "name": "image-name",
 #   # Either newName or newTag must be specified.
@@ -21,6 +24,19 @@
 #   # the image with the specified name in the fromOverlay.
 #   "fromOverlay": "overlay-name",
 #   "overlays": ["TARGET_DIR", "TARGET_DIR2"]
+# }
+#
+# Each chart in the CHARTS_TO_UPDATE JSON list should have the following format,
+# which corresponds to the kustomize helmGenerator declaration:
+# {
+#     "name": "chart-name",
+#     # Either version is required
+#     "version": "new-chart-version",
+#     # ... or fromOverlay is required
+#     "fromOverlay": "overlay-name",
+#     # Optionally, update the release name
+#     "releaseName": "new-release-name",
+#     "overlays": ["target-env", "target-env2"]
 # }
 #
 # The script assumes that the pwd is the root of the kustomize directory, but
@@ -321,17 +337,30 @@ def main():
             images_to_update = json.load(sys.stdin)
     except json.JSONDecodeError as e:
         logger.fatal(
-            f"Provided JSON object failed to parse. Please provide a valid JSON object. Error: {e}"
+            f"Provided JSON object passed by IMAGES_TO_UPDATE failed to parse. Please provide a valid JSON object. Error: {e}"
         )
         exit(1)
 
-    # Exit with failure if there are no images to update, printing usage information.
-    if not images_to_update:
+    # Read in the helm charts to update from stdin or the HELM_CHARTS_TO_UPDATE env variable
+    charts_to_update = None
+    try:
+        if os.getenv("CHARTS_TO_UPDATE"):
+            charts_to_update = json.loads(os.getenv("CHARTS_TO_UPDATE"))
+        else:
+            # Read the whole JSON document from stdin, parsing it as JSON and validating that it is a list
+            # Fail with a useful error message if the JSON is invalid or not a list
+            charts_to_update = json.load(sys.stdin)
+    except json.JSONDecodeError as e:
         logger.fatal(
-            "No images to update. Please provide a JSON object of images to update via the IMAGES_TO_UPDATE env var or via stdin."
+            f"Provided JSON object passed by CHARTS_TO_UPDATE failed to parse. Please provide a valid JSON object. Error: {e}"
         )
-        logger.info("The JSON object should be in the following format:")
-        logger.info(
+        exit(1)
+
+    # Exit with failure if there are no images or charts to update, printing usage information.
+    if not images_to_update and not charts_to_update:
+        logger.fatal("No images or charts to update. Please provide either (or both):")
+        logger.fatal("- A JSON object of images to update via the IMAGES_TO_UPDATE env var or via stdin in the following format:")
+        logger.fatal(
             """
             [
                 {
@@ -341,6 +370,23 @@ def main():
                     "newTag": "new-image-tag",
                     # ... or fromOverlay is required
                     "fromOverlay": "overlay-name",
+                    "overlays": ["target-env", "target-env2"]
+                }
+            ]
+            """
+        )
+        logger.fatal("- A JSON object of charts to update via the CHARTS_TO_UPDATE env var or via stdin in the following format:")
+        logger.fatal(
+            """
+            [
+                {
+                    "name": "chart-name",
+                    # Either version is required
+                    "version": "new-chart-version",
+                    # ... or fromOverlay is required
+                    "fromOverlay": "overlay-name",
+                    # Optionally, update the release name
+                    "releaseName": "new-release-name",
                     "overlays": ["target-env", "target-env2"]
                 }
             ]
