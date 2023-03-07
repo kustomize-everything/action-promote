@@ -334,15 +334,18 @@ def main():
     else:
         images_input = sys.stdin.read()
 
-    try:
-        images_to_update = json.loads(images_input)
-    except json.JSONDecodeError as e:
-        logger.fatal(
-            f"Provided images JSON object failed to parse."
-        )
-        logger.fatal(f"Please provide a valid JSON list. Error: {e}")
-        logger.fatal(f"The input received was: {images_input}")
-        exit(1)
+    if images_input:
+        try:
+            images_to_update = json.loads(images_input)
+        except json.JSONDecodeError as e:
+            logger.fatal(
+                f"Provided images JSON object failed to parse."
+            )
+            logger.fatal(f"Please provide a valid JSON list. Error: {e}")
+            logger.fatal(f"The input received was: {images_input}")
+            exit(1)
+    else:
+        logger.info("No images to update.")
 
     # Read in the helm charts to update from stdin or the HELM_CHARTS_TO_UPDATE env variable
     charts_to_update = None
@@ -352,15 +355,19 @@ def main():
     else:
         charts_input = sys.stdin.read()
 
-    try:
-        charts_to_update = json.loads(charts_input)
-    except json.JSONDecodeError as e:
-        logger.fatal(
-            f"Provided charts JSON object failed to parse."
-        )
-        logger.fatal(f"Please provide a valid JSON list. Error: {e}")
-        logger.fatal(f"The input received was: {charts_input}")
-        exit(1)
+
+    if charts_input:
+        try:
+            charts_to_update = json.loads(charts_input)
+        except json.JSONDecodeError as e:
+            logger.fatal(
+                f"Provided charts JSON object failed to parse."
+            )
+            logger.fatal(f"Please provide a valid JSON list. Error: {e}")
+            logger.fatal(f"The input received was: {charts_input}")
+            exit(1)
+    else:
+        logger.info("No charts to update.")
 
     # Exit with failure if there are no images or charts to update, printing usage information.
     if not images_to_update and not charts_to_update:
