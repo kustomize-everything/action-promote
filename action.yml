@@ -30,7 +30,7 @@ inputs:
           the named image from
         - env: The env that this image should be promoted in
       Either images or helm-charts or both must be specified.
-  helm-charts:
+  charts:
     description: |
       A JSON list of Helm charts to promote. Each list item should be a dictionary
       with the following keys:
@@ -99,7 +99,7 @@ runs:
     GIT_COMMIT_MESSAGE: ${{ inputs.git-commit-message }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     IMAGES: ${{ inputs.images }}
-    IMAGES_TO_UPDATE: ${{ inputs.images }}
+    CHARTS: ${{ inputs.charts }}
     PROMOTION_METHOD: ${{ inputs.promotion-method }}
     SSH_KEY: ${{ inputs.ssh-key }}
     TARGET_BRANCH: ${{ inputs.target-branch }}

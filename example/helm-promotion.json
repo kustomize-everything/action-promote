@@ -1,0 +1,8 @@
+[
+  {
+    "name": "kube-prometheus-stack",
+    "releaseName": "prometheus",
+    "version": "45.5.0",
+    "overlays": ["env/dev"]
+  }
+]

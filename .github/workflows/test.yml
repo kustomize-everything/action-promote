@@ -35,6 +35,10 @@ jobs:
           cat example/cross-overlay-promotion.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
+          echo "HELM_PROMOTION<<$EOF" >> $GITHUB_ENV
+          cat example/helm-promotion.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
         with:
@@ -110,6 +114,23 @@ jobs:
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
           images: ${{ env.CROSS_OVERLAY_PROMOTION }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: true
+
+      - name: Show Git Diff and Reset
+        shell: bash
+        working-directory: test-deploy
+        run: |-
+          git diff
+          git reset --hard
+
+      - name: Action Test with Helm Promotion
+        uses: ./
+        with:
+          target-repo: kustomize-everything/test-deploy
+          target-branch: ${{ env.BRANCH }}
+          working-directory: test-deploy
+          charts: ${{ env.HELM_PROMOTION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
 

@@ -49,7 +49,21 @@ git config --global user.email "${GIT_COMMIT_EMAIL}"
 #   - IMAGES_TO_UPDATE
 DEPLOYMENT_DIR="${GITHUB_WORKSPACE}/${DEPLOYMENT_DIR}"
 export DEPLOYMENT_DIR
-poetry run python /promote.py > images.json
+# If IMAGES is not an empty string or empty array, then we need to promote the images
+if [[ -n "${IMAGES}" && "${IMAGES}" != "[]" ]]; then
+  IMAGES_TO_UPDATE="${IMAGES}" poetry run python /promote.py > images.json
+else
+  echo "No images to promote"
+  echo "{}" > images.json
+fi
+
+# If CHARTS is not an empty string or empty array, then we need to promote the charts
+if [[ -n "${CHARTS}" && "${CHARTS}" != "[]" ]]; then
+  CHARTS_TO_UPDATE="${CHARTS}" poetry run python /promote.py > charts.json
+else
+  echo "No charts to promote"
+  echo "{}" > charts.json
+fi
 
 # Save images json output to GITHUB_OUTPUT
 EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
@@ -61,8 +75,19 @@ IMAGES_JSON="$(cat images.json)"
 export IMAGES_JSON
 jq -c -r '.[] | map(.name) | join(" ")' < images.json | xargs > images.txt
 echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
-IMAGES="$(cat images.txt)"
-export IMAGES
+IMAGES_NAMES="$(cat images.txt)"
+export IMAGES_NAMES
+
+# shellcheck disable=SC2129
+echo "charts-json<<$EOF" >> "${GITHUB_OUTPUT}"
+cat charts.json >> "${GITHUB_OUTPUT}"
+echo "$EOF" >> "${GITHUB_OUTPUT}"
+CHARTS_JSON="$(cat charts.json)"
+export CHARTS_JSON
+jq -c -r '.[] | map(.name) | join(" ")' < charts.json | xargs > charts.txt
+echo "charts=$(cat charts.txt)" >> "${GITHUB_OUTPUT}"
+CHARTS_NAMES="$(cat charts.txt)"
+export CHARTS_NAMES
 
   #   - name: Commit Changes
   #     id: commit-changes
