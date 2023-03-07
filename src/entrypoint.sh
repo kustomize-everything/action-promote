@@ -86,7 +86,6 @@ pushd "${DEPLOYMENT_DIR}" || exit 1
 # If there are no changes, then we don't need to do anything
 if [[ -z "$(git status --porcelain)" ]]; then
   echo "No changes to commit"
-  exit 0
 # Otherwise, we need to commit the changes with the relevant metadata
 # in the commit message.
 else
