@@ -68,6 +68,11 @@ echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
   #       DRY_RUN: ${{ inputs.dry-run }}
   #       PROMOTION_METHOD: ${{ inputs.promotion-method }}
   #     run: |
+# Because the parent workflow is the one who has run the `checkout` action,
+# we need to tell configure git to consider that directory as "safe" in order
+# to be able to commit changes to it without errors. Specifically, the
+# "dubious ownership" error.
+git config --global --add safe.directory "${DEPLOYMENT_DIR}"
 pushd "${DEPLOYMENT_DIR}" || exit 1
 # If there are no changes, then we don't need to do anything
 if [[ -z "$(git status --porcelain)" ]]; then
