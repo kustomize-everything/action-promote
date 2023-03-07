@@ -338,14 +338,13 @@ def main():
         try:
             images_to_update = json.loads(images_input)
         except json.JSONDecodeError as e:
-            logger.fatal(
-                f"Provided images JSON object failed to parse."
-            )
+            logger.fatal("Provided images JSON object failed to parse.")
             logger.fatal(f"Please provide a valid JSON list. Error: {e}")
             logger.fatal(f"The input received was: {images_input}")
             exit(1)
     else:
         logger.info("No images to update.")
+        images_to_update = []
 
     # Read in the helm charts to update from stdin or the HELM_CHARTS_TO_UPDATE env variable
     charts_to_update = None
@@ -360,17 +359,16 @@ def main():
         try:
             charts_to_update = json.loads(charts_input)
         except json.JSONDecodeError as e:
-            logger.fatal(
-                f"Provided charts JSON object failed to parse."
-            )
+            logger.fatal("Provided charts JSON object failed to parse.")
             logger.fatal(f"Please provide a valid JSON list. Error: {e}")
             logger.fatal(f"The input received was: {charts_input}")
             exit(1)
     else:
         logger.info("No charts to update.")
+        charts_to_update = []
 
     # Exit with failure if there are no images or charts to update, printing usage information.
-    if not images_to_update and not charts_to_update:
+    if len(images_to_update) == 0 and len(charts_to_update) == 0:
         logger.fatal("No images or charts to update. Please provide either (or both):")
         logger.fatal("- A JSON object of images to update via the IMAGES_TO_UPDATE env var or via stdin in the following format:")
         logger.fatal(
