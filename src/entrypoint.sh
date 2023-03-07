@@ -49,6 +49,10 @@ git config --global user.email "${GIT_COMMIT_EMAIL}"
 #   - IMAGES_TO_UPDATE
 DEPLOYMENT_DIR="${GITHUB_WORKSPACE}/${DEPLOYMENT_DIR}"
 export DEPLOYMENT_DIR
+
+# Set IMAGES to empty array if it is not set
+IMAGES="${IMAGES:-[]}"
+
 # If IMAGES is not an empty string or empty array, then we need to promote the images
 if [[ -n "${IMAGES}" && "${IMAGES}" != "[]" ]]; then
   IMAGES_TO_UPDATE="${IMAGES}" poetry run python /promote.py > images.json
@@ -56,6 +60,9 @@ else
   echo "No images to promote"
   echo "{}" > images.json
 fi
+
+# Set CHARTS to empty array if it is not set
+CHARTS="${CHARTS:-[]}"
 
 # If CHARTS is not an empty string or empty array, then we need to promote the charts
 if [[ -n "${CHARTS}" && "${CHARTS}" != "[]" ]]; then
