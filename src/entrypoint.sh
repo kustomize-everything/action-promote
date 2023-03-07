@@ -18,13 +18,17 @@ if [[ "${DEBUG}" == "true" ]]; then
   env
 fi
 
-export GITHUB_REF_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_REF}"
+GITHUB_REF_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_REF}"
+export GITHUB_REF_URL
 echo "GITHUB_REF_URL=${GITHUB_REF_URL}" >> "${GITHUB_ENV}"
-export GITHUB_REPOSITORY_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+GITHUB_REPOSITORY_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+export GITHUB_REPOSITORY_URL
 echo "GITHUB_REPOSITORY_URL=${GITHUB_REPOSITORY_URL}" >> "${GITHUB_ENV}"
-export GITHUB_SHA_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+GITHUB_SHA_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+export GITHUB_SHA_URL
 echo "GITHUB_SHA_URL=${GITHUB_SHA_URL}" >> "${GITHUB_ENV}"
-export GITHUB_WORKFLOW_RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+GITHUB_WORKFLOW_RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+export GITHUB_WORKFLOW_RUN_URL
 echo "GITHUB_WORKFLOW_RUN_URL=${GITHUB_WORKFLOW_RUN_URL}" >> "${GITHUB_ENV}"
 
 # Download and verify checksum on tools (kustomize)
@@ -43,7 +47,8 @@ git config --global user.email "${GIT_COMMIT_EMAIL}"
 # Expects the following environment variables to be set:
 #   - DEPLOYMENT_DIR
 #   - IMAGES_TO_UPDATE
-export DEPLOYMENT_DIR="${GITHUB_WORKSPACE}/${DEPLOYMENT_DIR}"
+DEPLOYMENT_DIR="${GITHUB_WORKSPACE}/${DEPLOYMENT_DIR}"
+export DEPLOYMENT_DIR
 poetry run python /update_images.py > images.json
 
 # Save images json output to GITHUB_OUTPUT
@@ -52,8 +57,12 @@ EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 echo "images-json<<$EOF" >> "${GITHUB_OUTPUT}"
 cat images.json >> "${GITHUB_OUTPUT}"
 echo "$EOF" >> "${GITHUB_OUTPUT}"
+IMAGES_JSON="$(cat images.json)"
+export IMAGES_JSON
 jq -c -r '.[] | map(.name) | join(" ")' < images.json | xargs > images.txt
 echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
+IMAGES="$(cat images.txt)"
+export IMAGES
 
   #   - name: Commit Changes
   #     id: commit-changes
