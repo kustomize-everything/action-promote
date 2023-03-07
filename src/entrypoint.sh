@@ -94,3 +94,5 @@ else
   /commit-and-pull-request.sh
 fi
 popd
+
+exit 0
