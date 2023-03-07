@@ -354,7 +354,6 @@ def main():
     else:
         charts_input = sys.stdin.read()
 
-
     if charts_input:
         try:
             charts_to_update = json.loads(charts_input)
