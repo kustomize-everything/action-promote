@@ -68,6 +68,7 @@ echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
   #       DRY_RUN: ${{ inputs.dry-run }}
   #       PROMOTION_METHOD: ${{ inputs.promotion-method }}
   #     run: |
+pushd "${DEPLOYMENT_DIR}" || exit 1
 # If there are no changes, then we don't need to do anything
 if [[ -z "$(git status --porcelain)" ]]; then
   echo "No changes to commit"
@@ -76,7 +77,6 @@ if [[ -z "$(git status --porcelain)" ]]; then
 # in the commit message.
 else
   echo "Changes to commit"
-  pushd "${DEPLOYMENT_DIR}" || exit 1
   /commit-and-pull-request.sh
-  popd
 fi
+popd
