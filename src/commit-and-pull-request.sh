@@ -98,12 +98,13 @@ elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
   echo
   echo "Images ${IMAGES} from ${GITHUB_GHA} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
   echo
-  DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R "${TARGET_REPO}")"
   echo "${DEPLOYMENT_REPO_SHA_URL}"
 else
   echo "Unknown promotion method: ${PROMOTION_METHOD}. Valid methods are pull_request and push."
   exit 1
 fi
+
+DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R "${TARGET_REPO}")"
 
 # Set outputs so that downstream steps can consume this data
 # shellcheck disable=SC2129
