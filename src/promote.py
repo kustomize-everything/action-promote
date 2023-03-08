@@ -240,11 +240,11 @@ def read_images_from_overlay(overlay, deployment_dir):
             # Read the images from the kustomize.yaml file
             kustomize = yaml.safe_load(f)
             if "images" not in kustomize:
-                logger.fatal(f"Overlay {overlay} does not have any images.")
+                logger.fatal(f"Overlay {overlay} ({kustomization_file}) does not have any images.")
                 sys.exit(1)
             for image in kustomize["images"]:
                 if "name" not in image:
-                    logger.fatal(f"Image {image} is missing the required 'name' field.")
+                    logger.fatal(f"Image {image} ({kustomization_file}) is missing the required 'name' field.")
                     sys.exit(1)
                 # Add the image to the list of images
                 images[image["name"]] = image
@@ -262,6 +262,47 @@ def read_images_from_overlay(overlay, deployment_dir):
 
     return images
 
+
+def read_charts_from_overlay(overlay, deployment_dir):
+    """
+    Read the charts from the given overlay.
+
+    Args:
+        overlay (str): The overlay to read the charts from.
+        deployment_dir (str): The directory containing the overlays.
+
+    Returns:
+        dict: A dictionary mapping chart names to the chart dictionary.
+    """
+    charts = {}
+    kustomization_file = os.path.join(deployment_dir, overlay, "kustomization.yaml")
+    try:
+        # Open the kustomize.yaml file for the overlay
+        with open(kustomization_file) as f:
+            # Read the charts from the kustomize.yaml file
+            kustomize = yaml.safe_load(f)
+            if "charts" not in kustomize:
+                logger.fatal(f"Overlay {overlay} ({kustomization_file}) does not have any charts.")
+                sys.exit(1)
+            for chart in kustomize["charts"]:
+                if "name" not in chart:
+                    logger.fatal(f"Chart {chart} ({kustomization_file}) is missing the required 'name' field.")
+                    sys.exit(1)
+                # Add the chart to the list of charts
+                charts[chart["name"]] = chart
+    except FileNotFoundError:
+        logger.fatal(f"Kustomization file {kustomization_file} does not exist.")
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        logger.fatal(f"Kustomization file {kustomization_file} is invalid: {e}")
+        sys.exit(1)
+
+    # Validate that the charts have the required fields
+    if not validate_charts(charts):
+        logger.fatal(f"Overlay {overlay} has invalid charts.")
+        sys.exit(1)
+
+    return charts
 
 def get_images_from_overlays(images_to_update, deployment_dir):
     """
@@ -289,6 +330,32 @@ def get_images_from_overlays(images_to_update, deployment_dir):
 
     return overlays_to_images
 
+
+def get_charts_from_overlays(charts_to_update, deployment_dir):
+    """
+    Get the list of charts to update for each overlay.
+
+    Args:
+        charts_to_update (list): The list of charts to update.
+        deployment_dir (str): The directory containing the overlays.
+
+    Returns:
+        dict: A dictionary mapping overlays to the list of charts to update for that overlay.
+    """
+    overlays_to_charts = {}
+    for chart in charts_to_update:
+        # Add the chart to the list of charts for each env
+        for overlay in chart["overlays"]:
+            if overlay not in overlays_to_charts:
+                overlays_to_charts[overlay] = []
+
+            if "fromOverlay" in chart:
+                charts = read_images_from_overlay(chart["fromOverlay"], deployment_dir)
+                overlays_to_charts[overlay].append(charts[chart["name"]])
+            else:
+                overlays_to_charts[overlay].append(chart)
+
+    return overlays_to_charts
 
 def generate_kustomize_args(overlay, images, promotion_manifest):
     """
