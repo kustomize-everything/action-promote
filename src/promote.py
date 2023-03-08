@@ -83,6 +83,24 @@ def run(args):
     return output.check_returncode()
 
 
+def merge_manifests(a, b):
+    """
+    Merge the images and charts for each overlay provided in the manifests
+    """
+    for overlay in b:
+        if overlay not in a:
+            a[overlay] = b[overlay]
+        else:
+            if "images" not in a[overlay]:
+                a[overlay]["images"] = []
+            if "charts" not in a[overlay]:
+                a[overlay]["charts"] = []
+            a[overlay]["images"] += b[overlay]["images"]
+            a[overlay]["charts"] += b[overlay]["charts"]
+
+    return a
+
+
 def find_duplicates(images, field):
     """
     Find duplicate fields in images in the list of images.
@@ -393,20 +411,21 @@ def generate_kustomize_args(overlay, images, promotion_manifest):
         name = image["name"]
         new_name = image.get("newName", name)
         new_tag = image.get("newTag")
+        if overlay not in promotion_manifest:
+            promotion_manifest[overlay] = {}
+        if "images" not in promotion_manifest[overlay]:
+            promotion_manifest[overlay]["images"] = []
+
         if new_name and new_tag:
             kustomize_args.append(f"{name}={new_name}:{new_tag}")
             # Add to promotion manifest
-            if overlay not in promotion_manifest:
-                promotion_manifest[overlay] = []
-            promotion_manifest[overlay].append(
+            promotion_manifest[overlay]["images"].append(
                 {"name": name, "newName": new_name, "newTag": new_tag}
             )
         elif new_name:
             kustomize_args.append(f"{name}={new_name}")
             # Add to promotion manifest
-            if overlay not in promotion_manifest:
-                promotion_manifest[overlay] = []
-            promotion_manifest[overlay].append({"name": name, "newName": new_name})
+            promotion_manifest[overlay]["images"].append({"name": name, "newName": new_name})
         else:
             raise ValueError(f"Image {image} is missing required fields.")
 
@@ -438,8 +457,8 @@ def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
     # Change to the kustomize directory for the env
     os.chdir(kustomize_dir)
 
-    kustomize_args, env_promotion_manifest = generate_kustomize_args(
-        env, images, promotion_manifest["images"]
+    kustomize_args, updated_promotion_manifest = generate_kustomize_args(
+        env, images, promotion_manifest
     )
 
     # Run the kustomize edit set image command, failing the script if it fails
@@ -458,9 +477,7 @@ def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
     if "images" not in promotion_manifest:
         promotion_manifest["images"] = []
 
-    promotion_manifest["images"] += env_promotion_manifest
-
-    return promotion_manifest
+    return merge_manifests(promotion_manifest, updated_promotion_manifest)
 
 
 def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest):
@@ -629,7 +646,7 @@ def main():
     overlays_to_charts = get_charts_from_overlays(charts_to_update, deployment_dir)
 
     # Create promotion manifest dictionary to store the promotion manifest
-    promotion_manifest = {"images": [], "charts": []}
+    promotion_manifest = {}
 
     # Iterate through the overlays to images, updating the images in each env
     for env, images in overlays_to_images.items():
@@ -637,8 +654,8 @@ def main():
             env, deployment_dir, images, promotion_manifest
         )
 
-    if promotion_manifest["images"] != {}:
-        logger.info("Images updated successfully.")
+        if promotion_manifest[env]["images"] != {}:
+            logger.info("Images in {env} updated successfully.")
 
     # Iterate through the overlays to charts, updating the charts in each env
     for env, charts in overlays_to_charts.items():
@@ -646,8 +663,8 @@ def main():
             env, deployment_dir, charts, promotion_manifest
         )
 
-    if promotion_manifest["charts"] != {}:
-        logger.info("Charts updated successfully.")
+        if promotion_manifest[env]["charts"] != {}:
+            logger.info("Charts in {env} updated successfully.")
 
     # If we made it this far, all of the images and/or charts were updated successfully.
     # Write the promotion manifest to stdout so it can be captured by the caller.
