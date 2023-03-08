@@ -629,7 +629,7 @@ def main():
     overlays_to_charts = get_charts_from_overlays(charts_to_update, deployment_dir)
 
     # Create promotion manifest dictionary to store the promotion manifest
-    promotion_manifest = {"images": {}, "charts": {}}
+    promotion_manifest = {"images": [], "charts": []}
 
     # Iterate through the overlays to images, updating the images in each env
     for env, images in overlays_to_images.items():
