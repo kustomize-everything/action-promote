@@ -632,14 +632,14 @@ def main():
 
     # Iterate through the overlays to images, updating the images in each env
     for env, images in overlays_to_images.items():
-        promotion_manifest = update_kustomize_images(env, images, deployment_dir, promotion_manifest)
+        promotion_manifest = update_kustomize_images(env, deployment_dir, images, promotion_manifest)
 
     if promotion_manifest["images"] != {}:
         logger.info("Images updated successfully.")
 
     # Iterate through the overlays to charts, updating the charts in each env
     for env, charts in overlays_to_charts.items():
-        promotion_manifest = update_kustomize_charts(env, charts, deployment_dir, promotion_manifest)
+        promotion_manifest = update_kustomize_charts(env, deployment_dir, charts, promotion_manifest)
 
     if promotion_manifest["charts"] != {}:
         logger.info("Charts updated successfully.")
