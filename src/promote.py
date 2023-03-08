@@ -456,9 +456,9 @@ def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
     os.chdir(deployment_dir)
 
     if "images" not in promotion_manifest:
-        promotion_manifest["images"] = {}
+        promotion_manifest["images"] = []
 
-    promotion_manifest["images"].update(env_promotion_manifest)
+    promotion_manifest["images"].append(env_promotion_manifest)
 
     return promotion_manifest
 
@@ -481,13 +481,13 @@ def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest)
     os.chdir(kustomize_dir)
 
     # TODO Write a function to update the charts in the kustomization.yaml file
-    env_promotion_manifest = {}
+    env_promotion_manifest = []
 
     # Change back to the original directory
     os.chdir(deployment_dir)
 
     if "charts" not in promotion_manifest:
-        promotion_manifest["charts"] = {}
+        promotion_manifest["charts"] = []
 
     promotion_manifest["charts"].update(env_promotion_manifest)
 
