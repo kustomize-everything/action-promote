@@ -20,6 +20,12 @@ class TestValidateImagesFromOverlays(unittest.TestCase):
     def test_missing_new_name_and_new_tag(self):
         self.assertEqual(promote.validate_images([{"name": "foo", "overlays": ["bar"]}]), False)
 
+class TestValidateChartsFromOverlays(unittest.TestCase):
+    def test_empty(self):
+        self.assertEqual(promote.validate_charts([]), True)
+
+    def test_only_version(self):
+        self.assertEqual(promote.validate_charts([{"name": "foo", "version": "1.0.0", "overlays": ["bar"]}]), True)
 
 class TestGetImagesFromOverlays(unittest.TestCase):
     def test_empty(self):
