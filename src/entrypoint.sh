@@ -50,52 +50,30 @@ git config --global user.email "${GIT_COMMIT_EMAIL}"
 DEPLOYMENT_DIR="${GITHUB_WORKSPACE}/${DEPLOYMENT_DIR}"
 export DEPLOYMENT_DIR
 
-# Set IMAGES to empty array if it is not set
-if [[ -z "${IMAGES:-}" ]]; then
-  IMAGES="[]"
-fi
-
 # If IMAGES is not an empty string or empty array, then we need to promote the images
-if [[ "${IMAGES}" != "[]" ]]; then
-  IMAGES_TO_UPDATE="${IMAGES}" poetry run python /promote.py > images.json
+if [[ "${IMAGES}" != "[]" || "${CHARTS}" != "[]" ]]; then
+  IMAGES_TO_UPDATE="${IMAGES}" CHARTS_TO_UPDATE="${CHARTS}" poetry run python /promote.py > manifest.json
 else
-  echo "No images to promote"
-  echo "{}" > images.json
+  echo "No images or charts to promote"
+  echo "{}" > manifest.json
 fi
 
-# Set CHARTS to empty array if it is not set
-if [[ -z "${CHARTS:-}" ]]; then
-  CHARTS="[]"
-fi
-
-# If CHARTS is not an empty string or empty array, then we need to promote the charts
-if [[ "${CHARTS}" != "[]" ]]; then
-  CHARTS_TO_UPDATE="${CHARTS}" poetry run python /promote.py > charts.json
-else
-  echo "No charts to promote"
-  echo "{}" > charts.json
-fi
+MANIFEST_JSON="$(jq -c -r '.' manifest.json)"
+export MANIFEST_JSON
 
 # Save images json output to GITHUB_OUTPUT
 EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 # shellcheck disable=SC2129
-echo "images-json<<$EOF" >> "${GITHUB_OUTPUT}"
-jq -c -r '.images' images.json >> "${GITHUB_OUTPUT}"
+echo "manifest-json<<$EOF" >> "${GITHUB_OUTPUT}"
+echo "${MANIFEST_JSON}" >> "${GITHUB_OUTPUT}"
 echo "$EOF" >> "${GITHUB_OUTPUT}"
-IMAGES_JSON="$(cat images.json)"
-export IMAGES_JSON
-jq -c -r '.images | map(.name) | join(" ")' < images.json | xargs > images.txt
+jq -c -r '.[] | .images | map(.name) | unique | join(" ")' < manifest.json | xargs > images.txt
 echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
 IMAGES_NAMES="$(cat images.txt)"
 export IMAGES_NAMES
 
 # shellcheck disable=SC2129
-echo "charts-json<<$EOF" >> "${GITHUB_OUTPUT}"
-jq -c -r '.charts' charts.json >> "${GITHUB_OUTPUT}"
-echo "$EOF" >> "${GITHUB_OUTPUT}"
-CHARTS_JSON="$(cat charts.json)"
-export CHARTS_JSON
-jq -c -r '.charts | map(.name) | join(" ")' < charts.json | xargs > charts.txt
+jq -c -r '.[] | .charts | map(.name) | unique | join(" ")' < manifest.json | xargs > charts.txt
 echo "charts=$(cat charts.txt)" >> "${GITHUB_OUTPUT}"
 CHARTS_NAMES="$(cat charts.txt)"
 export CHARTS_NAMES

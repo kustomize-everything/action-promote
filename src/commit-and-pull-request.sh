@@ -27,7 +27,8 @@ GITHUB_SHA_URL: ${GITHUB_SHA_URL}
 GITHUB_SHA: ${GITHUB_SHA}
 GITHUB_WORKFLOW_RUN_URL: ${GITHUB_WORKFLOW_RUN_URL}
 IMAGES: ${IMAGES_NAMES}
-IMAGES_JSON: ${IMAGES_JSON}"
+CHARTS: ${CHARTS_NAMES}
+MANIFEST_JSON: ${MANIFEST_JSON}"
 
 if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${GITHUB_SHA:?}" | tr "/" "-")"
@@ -111,5 +112,6 @@ DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R "${TARGET_REPO}")"
 echo "deployment-repo-sha-short=$(git rev-parse --short HEAD)" >> "${GITHUB_OUTPUT}"
 echo "deployment-repo-sha-url=${DEPLOYMENT_REPO_SHA_URL}" >> "${GITHUB_OUTPUT}"
 echo "deployment-repo-sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
-echo "images=${IMAGES}" >> "${GITHUB_OUTPUT}"
-echo "images-json=${IMAGES_JSON}" >> "${GITHUB_OUTPUT}"
+echo "images=${IMAGES_NAMES}" >> "${GITHUB_OUTPUT}"
+echo "charts=${CHARTS_NAMES}" >> "${GITHUB_OUTPUT}"
+echo "manifest-json=${MANIFEST_JSON}" >> "${GITHUB_OUTPUT}"

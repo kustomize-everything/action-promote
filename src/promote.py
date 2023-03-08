@@ -474,8 +474,8 @@ def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
     # Change back to the original directory
     os.chdir(deployment_dir)
 
-    if "images" not in promotion_manifest:
-        promotion_manifest["images"] = []
+    logger.debug(f"Updated promotion manifest: {promotion_manifest}")
+    logger.debug(f"Updated promotion manifest: {updated_promotion_manifest}")
 
     return merge_manifests(promotion_manifest, updated_promotion_manifest)
 
@@ -556,8 +556,6 @@ def main():
     images_input = None
     if os.getenv("IMAGES_TO_UPDATE"):
         images_input = os.getenv("IMAGES_TO_UPDATE")
-    else:
-        images_input = sys.stdin.read()
 
     if images_input:
         try:
@@ -576,8 +574,6 @@ def main():
     charts_input = None
     if os.getenv("CHARTS_TO_UPDATE"):
         charts_input = os.getenv("CHARTS_TO_UPDATE")
-    else:
-        charts_input = sys.stdin.read()
 
     if charts_input:
         try:
