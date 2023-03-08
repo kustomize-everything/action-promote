@@ -412,6 +412,83 @@ def generate_kustomize_args(overlay, images, promotion_manifest):
 
     return kustomize_args, promotion_manifest
 
+def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
+    """
+    Uses kustomize to update the images for the given environment.
+
+    Args:
+        env (str): The environment to update the images for.
+        deployment_dir (str): The directory containing the kustomize directories.
+        images (list): The list of images to update.
+        promotion_manifest (dict): The promotion manifest to add the images to.
+
+    Returns:
+        dict: The updated promotion manifest.
+    """
+    kustomize_dir = os.path.join(deployment_dir, env)
+
+    # Validate that the kustomize directory for the env exists
+    if not os.path.isdir(kustomize_dir):
+        logger.fatal(
+            f"Kustomize directory for {env} does not exist. ({kustomize_dir})"
+        )
+        exit(1)
+    else:
+        logger.info(f"Updating images for {env}...")
+
+    # Change to the kustomize directory for the env
+    os.chdir(kustomize_dir)
+
+    kustomize_args, env_promotion_manifest = generate_kustomize_args(
+        env, images, promotion_manifest
+    )
+
+    # Run the kustomize edit set image command, failing the script if it fails
+    if kustomize_args:
+        try:
+            run(["kustomize", "edit", "set", "image", *kustomize_args])
+        except subprocess.CalledProcessError:
+            logger.fatal(f"Failed to update images in {env}.")
+            exit(1)
+    else:
+        logger.info(f"No images to update in {env}.")
+
+    # Change back to the original directory
+    os.chdir(deployment_dir)
+
+    if "images" not in promotion_manifest:
+        promotion_manifest["images"] = {}
+
+    return promotion_manifest["images"].merge(env_promotion_manifest)
+
+
+def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest):
+    """
+    Update the """
+    kustomize_dir = os.path.join(deployment_dir, overlay)
+
+    # Validate that the kustomize directory for the env exists
+    if not os.path.isdir(kustomize_dir):
+        logger.fatal(
+            f"Kustomize directory for {overlay} does not exist. ({kustomize_dir})"
+        )
+        exit(1)
+    else:
+        logger.info(f"Updating charts for {overlay}...")
+
+    # Change to the kustomize directory for the env
+    os.chdir(kustomize_dir)
+
+    # TODO Write a function to update the charts in the kustomization.yaml file
+    env_promotion_manifest = {}
+
+    # Change back to the original directory
+    os.chdir(deployment_dir)
+
+    if "charts" not in promotion_manifest:
+        promotion_manifest["charts"] = {}
+
+    return promotion_manifest["charts"].merge(env_promotion_manifest)
 
 def validate_runtime_environment():
     """
@@ -547,49 +624,30 @@ def main():
     # Get the list of charts for each overlay
     overlays_to_charts = get_charts_from_overlays(charts_to_update, deployment_dir)
 
-    print(f"Length: {len(overlays_to_charts)}")
-
     # Create promotion manifest dictionary to store the promotion manifest
-    promotion_manifest = {}
+    promotion_manifest = {
+        "images": {},
+        "charts": {}
+    }
 
     # Iterate through the overlays to images, updating the images in each env
     for env, images in overlays_to_images.items():
-        kustomize_dir = os.path.join(deployment_dir, env)
+        promotion_manifest = update_kustomize_images(env, images, deployment_dir, promotion_manifest)
 
-        # Validate that the kustomize directory for the env exists
-        if not os.path.isdir(kustomize_dir):
-            logger.fatal(
-                f"Kustomize directory for {env} does not exist. ({kustomize_dir})"
-            )
-            exit(1)
-        else:
-            logger.info(f"Updating images for {env}...")
+    if promotion_manifest["images"] != {}:
+        logger.info("Images updated successfully.")
 
-        # Change to the kustomize directory for the env
-        os.chdir(kustomize_dir)
+    # Iterate through the overlays to charts, updating the charts in each env
+    for env, charts in overlays_to_charts.items():
+        promotion_manifest = update_kustomize_charts(env, charts, deployment_dir, promotion_manifest)
 
-        kustomize_args, promotion_manifest = generate_kustomize_args(
-            env, images, promotion_manifest
-        )
+    if promotion_manifest["charts"] != {}:
+        logger.info("Charts updated successfully.")
 
-        # Run the kustomize edit set image command, failing the script if it fails
-        if kustomize_args:
-            try:
-                run(["kustomize", "edit", "set", "image", *kustomize_args])
-            except subprocess.CalledProcessError:
-                logger.fatal(f"Failed to update images in {env}.")
-                exit(1)
-        else:
-            logger.info(f"No images to update in {env}.")
-
-        # Change back to the original directory
-        os.chdir(deployment_dir)
-
-    # If we made it this far, all of the images were updated successfully.
-    # Write the promotion manifest to stdout
+    # If we made it this far, all of the images and/or charts were updated successfully.
+    # Write the promotion manifest to stdout so it can be captured by the caller.
     print(json.dumps(promotion_manifest))
 
-    logger.info("Successfully updated images.")
     exit(0)
 
 
