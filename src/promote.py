@@ -199,19 +199,14 @@ def validate_charts(charts):
             logger.fatal(f"Chart {chart} is missing the required 'name' field.")
             return False
         if "fromOverlay" in chart:
-            if "newName" in chart:
+            if "version" in chart:
                 logger.fatal(
-                    f"Chart {chart} cannot set newName when fromOverlay is set."
-                )
-                return False
-            if "newTag" in chart:
-                logger.fatal(
-                    f"Chart {chart} cannot set newTag when fromOverlay is set."
+                    f"Chart {chart} cannot set version when fromOverlay is set."
                 )
                 return False
         else:
-            if ("newTag" not in chart) and ("newName" not in chart):
-                logger.fatal(f"Chart {chart} must set newName, newTag or both.")
+            if ("version" not in chart):
+                logger.fatal(f"Chart {chart} must set version.")
                 return False
         # Validate that the chart has the required fields if it was not a dict,
         # which means that it is coming from a promotion file and not from a
@@ -219,6 +214,8 @@ def validate_charts(charts):
         if not originally_dict and "overlays" not in chart:
             logger.fatal(f"Chart {chart} is missing the required 'overlays' field.")
             return False
+
+    return True
 
 
 def read_images_from_overlay(overlay, deployment_dir):
