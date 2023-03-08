@@ -497,18 +497,41 @@ def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest)
     # Change to the kustomize directory for the env
     os.chdir(kustomize_dir)
 
-    # TODO Write a function to update the charts in the kustomization.yaml file
-    env_promotion_manifest = []
+    # Read in existing kustomization.yaml file
+    with open("kustomization.yaml", "r") as kustomization_file:
+        kustomization = yaml.safe_load(kustomization_file)
+
+    # Using the existing kustomization file, update the charts
+    for chart in charts:
+        found = False
+
+        # Search kustomize["helmCharts"] for the chart
+        for helm_chart, i in enumerate(kustomization["helmCharts"]):
+            if helm_chart["name"] == chart["name"]:
+                found = True
+                # Update the chart
+                kustomization["helmCharts"][i]["version"] = chart["version"]
+
+                # Add to promotion manifest
+                if overlay not in promotion_manifest:
+                    promotion_manifest[overlay] = {}
+                if "charts" not in promotion_manifest[overlay]:
+                    promotion_manifest[overlay]["charts"] = []
+                promotion_manifest[overlay]["charts"].append(chart)
+
+        if not found:
+            logger.fatal(f"Chart {chart['name']} not found in kustomization.yaml.")
+            exit(1)
+
+    # Write the updated kustomization file
+    with open("kustomization.yaml", "w") as kustomization_file:
+        yaml.dump(kustomization, kustomization_file)
 
     # Change back to the original directory
     os.chdir(deployment_dir)
 
-    if "charts" not in promotion_manifest:
-        promotion_manifest["charts"] = []
 
-    promotion_manifest["charts"] += env_promotion_manifest
-
-    return promotion_manifest
+    return merge_manifests(promotion_manifest, env_promotion_manifest)
 
 
 def validate_runtime_environment():
