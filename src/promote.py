@@ -205,7 +205,7 @@ def validate_charts(charts):
                 )
                 return False
         else:
-            if ("version" not in chart):
+            if "version" not in chart:
                 logger.fatal(f"Chart {chart} must set version.")
                 return False
         # Validate that the chart has the required fields if it was not a dict,
@@ -412,6 +412,7 @@ def generate_kustomize_args(overlay, images, promotion_manifest):
 
     return kustomize_args, promotion_manifest
 
+
 def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
     """
     Uses kustomize to update the images for the given environment.
@@ -429,9 +430,7 @@ def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
 
     # Validate that the kustomize directory for the env exists
     if not os.path.isdir(kustomize_dir):
-        logger.fatal(
-            f"Kustomize directory for {env} does not exist. ({kustomize_dir})"
-        )
+        logger.fatal(f"Kustomize directory for {env} does not exist. ({kustomize_dir})")
         exit(1)
     else:
         logger.info(f"Updating images for {env}...")
@@ -464,7 +463,7 @@ def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
 
 def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest):
     """
-    Update the """
+    Update the"""
     kustomize_dir = os.path.join(deployment_dir, overlay)
 
     # Validate that the kustomize directory for the env exists
@@ -489,6 +488,7 @@ def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest)
         promotion_manifest["charts"] = {}
 
     return promotion_manifest["charts"].merge(env_promotion_manifest)
+
 
 def validate_runtime_environment():
     """
@@ -625,21 +625,22 @@ def main():
     overlays_to_charts = get_charts_from_overlays(charts_to_update, deployment_dir)
 
     # Create promotion manifest dictionary to store the promotion manifest
-    promotion_manifest = {
-        "images": {},
-        "charts": {}
-    }
+    promotion_manifest = {"images": {}, "charts": {}}
 
     # Iterate through the overlays to images, updating the images in each env
     for env, images in overlays_to_images.items():
-        promotion_manifest = update_kustomize_images(env, deployment_dir, images, promotion_manifest)
+        promotion_manifest = update_kustomize_images(
+            env, deployment_dir, images, promotion_manifest
+        )
 
     if promotion_manifest["images"] != {}:
         logger.info("Images updated successfully.")
 
     # Iterate through the overlays to charts, updating the charts in each env
     for env, charts in overlays_to_charts.items():
-        promotion_manifest = update_kustomize_charts(env, deployment_dir, charts, promotion_manifest)
+        promotion_manifest = update_kustomize_charts(
+            env, deployment_dir, charts, promotion_manifest
+        )
 
     if promotion_manifest["charts"] != {}:
         logger.info("Charts updated successfully.")
