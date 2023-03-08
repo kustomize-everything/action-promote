@@ -80,7 +80,7 @@ fi
 EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 # shellcheck disable=SC2129
 echo "images-json<<$EOF" >> "${GITHUB_OUTPUT}"
-jc -c -r '.images' images.json >> "${GITHUB_OUTPUT}"
+jq -c -r '.images' images.json >> "${GITHUB_OUTPUT}"
 echo "$EOF" >> "${GITHUB_OUTPUT}"
 IMAGES_JSON="$(cat images.json)"
 export IMAGES_JSON
@@ -91,7 +91,7 @@ export IMAGES_NAMES
 
 # shellcheck disable=SC2129
 echo "charts-json<<$EOF" >> "${GITHUB_OUTPUT}"
-jc -c -r '.charts' charts.json >> "${GITHUB_OUTPUT}"
+jq -c -r '.charts' charts.json >> "${GITHUB_OUTPUT}"
 echo "$EOF" >> "${GITHUB_OUTPUT}"
 CHARTS_JSON="$(cat charts.json)"
 export CHARTS_JSON
