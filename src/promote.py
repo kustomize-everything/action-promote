@@ -240,11 +240,15 @@ def read_images_from_overlay(overlay, deployment_dir):
             # Read the images from the kustomize.yaml file
             kustomize = yaml.safe_load(f)
             if "images" not in kustomize:
-                logger.fatal(f"Overlay {overlay} ({kustomization_file}) does not have any images.")
+                logger.fatal(
+                    f"Overlay {overlay} ({kustomization_file}) does not have any images."
+                )
                 sys.exit(1)
             for image in kustomize["images"]:
                 if "name" not in image:
-                    logger.fatal(f"Image {image} ({kustomization_file}) is missing the required 'name' field.")
+                    logger.fatal(
+                        f"Image {image} ({kustomization_file}) is missing the required 'name' field."
+                    )
                     sys.exit(1)
                 # Add the image to the list of images
                 images[image["name"]] = image
@@ -282,11 +286,15 @@ def read_charts_from_overlay(overlay, deployment_dir):
             # Read the charts from the kustomize.yaml file
             kustomize = yaml.safe_load(f)
             if "charts" not in kustomize:
-                logger.fatal(f"Overlay {overlay} ({kustomization_file}) does not have any charts.")
+                logger.fatal(
+                    f"Overlay {overlay} ({kustomization_file}) does not have any charts."
+                )
                 sys.exit(1)
             for chart in kustomize["charts"]:
                 if "name" not in chart:
-                    logger.fatal(f"Chart {chart} ({kustomization_file}) is missing the required 'name' field.")
+                    logger.fatal(
+                        f"Chart {chart} ({kustomization_file}) is missing the required 'name' field."
+                    )
                     sys.exit(1)
                 # Add the chart to the list of charts
                 charts[chart["name"]] = chart
@@ -303,6 +311,7 @@ def read_charts_from_overlay(overlay, deployment_dir):
         sys.exit(1)
 
     return charts
+
 
 def get_images_from_overlays(images_to_update, deployment_dir):
     """
@@ -356,6 +365,7 @@ def get_charts_from_overlays(charts_to_update, deployment_dir):
                 overlays_to_charts[overlay].append(chart)
 
     return overlays_to_charts
+
 
 def generate_kustomize_args(overlay, images, promotion_manifest):
     """
@@ -489,7 +499,9 @@ def main():
     # Exit with failure if there are no images or charts to update, printing usage information.
     if len(images_to_update) == 0 and len(charts_to_update) == 0:
         logger.fatal("No images or charts to update. Please provide either (or both):")
-        logger.fatal("- A JSON object of images to update via the IMAGES_TO_UPDATE env var or via stdin in the following format:")
+        logger.fatal(
+            "- A JSON object of images to update via the IMAGES_TO_UPDATE env var or via stdin in the following format:"
+        )
         logger.fatal(
             """
             [
@@ -505,7 +517,9 @@ def main():
             ]
             """
         )
-        logger.fatal("- A JSON object of charts to update via the CHARTS_TO_UPDATE env var or via stdin in the following format:")
+        logger.fatal(
+            "- A JSON object of charts to update via the CHARTS_TO_UPDATE env var or via stdin in the following format:"
+        )
         logger.fatal(
             """
             [
