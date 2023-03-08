@@ -100,19 +100,6 @@ echo "charts=$(cat charts.txt)" >> "${GITHUB_OUTPUT}"
 CHARTS_NAMES="$(cat charts.txt)"
 export CHARTS_NAMES
 
-  #   - name: Commit Changes
-  #     id: commit-changes
-  #     shell: bash
-  #     working-directory: ${{ inputs.working-directory }}
-  #     env:
-  #       GITHUB_TOKEN: ${{ inputs.github-token }}
-  #       IMAGES: ${{ steps.update-images.outputs.images }}
-  #       IMAGES_JSON: ${{ steps.update-images.outputs.images-json }}
-  #       TARGET_BRANCH: ${{ inputs.target-branch }}
-  #       TARGET_REPO: ${{ inputs.target-repo }}
-  #       DRY_RUN: ${{ inputs.dry-run }}
-  #       PROMOTION_METHOD: ${{ inputs.promotion-method }}
-  #     run: |
 # Because the parent workflow is the one who has run the `checkout` action,
 # we need to tell configure git to consider that directory as "safe" in order
 # to be able to commit changes to it without errors. Specifically, the
