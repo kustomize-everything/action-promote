@@ -168,6 +168,59 @@ def validate_images(images):
     return True
 
 
+def validate_charts(charts):
+    """
+    Validate that the charts to update have the required fields.
+
+    Args:
+        charts_to_update (list): The list of charts to update.
+
+    Returns:
+        bool: True if the charts are valid, False otherwise.
+    """
+    originally_dict = False
+    # Convert to list if it is a dict (which is the case when we are validating
+    # charts from a promotion file)
+    if isinstance(charts, dict):
+        originally_dict = True
+        charts = list(charts.values())
+
+    # Ensure that all chart names are unique
+    duplicates = find_duplicates(charts, "name")
+    if len(duplicates) > 0:
+        logger.fatal(
+            f"Found duplicate chart names: {' '.join(duplicates)}. Charts must have unique names."
+        )
+        sys.exit(1)
+
+    for chart in charts:
+        # Validate that the chart has the required fields
+        if "name" not in chart:
+            logger.fatal(f"Chart {chart} is missing the required 'name' field.")
+            return False
+        if "fromOverlay" in chart:
+            if "newName" in chart:
+                logger.fatal(
+                    f"Chart {chart} cannot set newName when fromOverlay is set."
+                )
+                return False
+            if "newTag" in chart:
+                logger.fatal(
+                    f"Chart {chart} cannot set newTag when fromOverlay is set."
+                )
+                return False
+        else:
+            if ("newTag" not in chart) and ("newName" not in chart):
+                logger.fatal(f"Chart {chart} must set newName, newTag or both.")
+                return False
+        # Validate that the chart has the required fields if it was not a dict,
+        # which means that it is coming from a promotion file and not from a
+        # kustomization.yaml file.
+        if not originally_dict and "overlays" not in chart:
+            logger.fatal(f"Chart {chart} is missing the required 'overlays' field.")
+            return False
+
+
 def read_images_from_overlay(overlay, deployment_dir):
     """
     Read the images from the given overlay.
@@ -407,8 +460,14 @@ def main():
     # Validate that the images to update have the required fields
     validate_images(images_to_update)
 
+    # Validate that the charts to update have the required fields
+    validate_charts(charts_to_update)
+
     # Get the list of images for each overlay
     overlays_to_images = get_images_from_overlays(images_to_update, deployment_dir)
+
+    # Get the list of charts for each overlay
+    overlays_to_charts = get_charts_from_overlays(charts_to_update, deployment_dir)
 
     # Create promotion manifest dictionary to store the promotion manifest
     promotion_manifest = {}
