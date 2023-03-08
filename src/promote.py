@@ -458,7 +458,7 @@ def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
     if "images" not in promotion_manifest:
         promotion_manifest["images"] = {}
 
-    return promotion_manifest["images"].merge(env_promotion_manifest)
+    return promotion_manifest["images"].update(env_promotion_manifest)
 
 
 def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest):
@@ -487,7 +487,7 @@ def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest)
     if "charts" not in promotion_manifest:
         promotion_manifest["charts"] = {}
 
-    return promotion_manifest["charts"].merge(env_promotion_manifest)
+    return promotion_manifest["charts"].update(env_promotion_manifest)
 
 
 def validate_runtime_environment():
