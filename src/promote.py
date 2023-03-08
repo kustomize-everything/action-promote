@@ -458,7 +458,7 @@ def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
     if "images" not in promotion_manifest:
         promotion_manifest["images"] = []
 
-    promotion_manifest["images"].append(env_promotion_manifest)
+    promotion_manifest["images"] += env_promotion_manifest
 
     return promotion_manifest
 
@@ -489,7 +489,7 @@ def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest)
     if "charts" not in promotion_manifest:
         promotion_manifest["charts"] = []
 
-    promotion_manifest["charts"].update(env_promotion_manifest)
+    promotion_manifest["charts"] += env_promotion_manifest
 
     return promotion_manifest
 
