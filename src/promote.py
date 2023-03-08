@@ -439,7 +439,7 @@ def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
     os.chdir(kustomize_dir)
 
     kustomize_args, env_promotion_manifest = generate_kustomize_args(
-        env, images, promotion_manifest
+        env, images, promotion_manifest["images"]
     )
 
     # Run the kustomize edit set image command, failing the script if it fails
