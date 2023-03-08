@@ -550,6 +550,8 @@ def main():
     # Get the list of charts for each overlay
     overlays_to_charts = get_charts_from_overlays(charts_to_update, deployment_dir)
 
+    print(f"Length: {len(overlays_to_charts)}")
+
     # Create promotion manifest dictionary to store the promotion manifest
     promotion_manifest = {}
 

@@ -4,7 +4,9 @@ import promote as promote
 overlay_no_name_or_tag = [{"name": "foo", "overlays": ["bar"]}]
 overlay_new_name = [{"name": "foo", "newName": "quz", "overlays": ["bar"]}]
 overlay_new_tag = [{"name": "foo", "newTag": "whizbang", "overlays": ["bar"]}]
-overlay_new_name_and_tag = [{"name": "foo", "newName": "quz", "newTag": "whizbang", "overlays": ["bar"]}]
+overlay_new_name_and_tag = [
+    {"name": "foo", "newName": "quz", "newTag": "whizbang", "overlays": ["bar"]}
+]
 
 
 class TestValidateImagesFromOverlays(unittest.TestCase):
@@ -12,36 +14,76 @@ class TestValidateImagesFromOverlays(unittest.TestCase):
         self.assertEqual(promote.validate_images([]), True)
 
     def test_only_new_name(self):
-        self.assertEqual(promote.validate_images([{"name": "foo", "newName": "quz", "overlays": ["bar"]}]), True)
+        self.assertEqual(
+            promote.validate_images(
+                [{"name": "foo", "newName": "quz", "overlays": ["bar"]}]
+            ),
+            True,
+        )
 
     def test_only_new_tag(self):
-        self.assertEqual(promote.validate_images([{"name": "foo", "newTag": "whizbang", "overlays": ["bar"]}]), True)
+        self.assertEqual(
+            promote.validate_images(
+                [{"name": "foo", "newTag": "whizbang", "overlays": ["bar"]}]
+            ),
+            True,
+        )
 
     def test_missing_new_name_and_new_tag(self):
-        self.assertEqual(promote.validate_images([{"name": "foo", "overlays": ["bar"]}]), False)
+        self.assertEqual(
+            promote.validate_images([{"name": "foo", "overlays": ["bar"]}]), False
+        )
+
 
 class TestValidateChartsFromOverlays(unittest.TestCase):
     def test_empty(self):
         self.assertEqual(promote.validate_charts([]), True)
 
     def test_only_version(self):
-        self.assertEqual(promote.validate_charts([{"name": "foo", "version": "1.0.0", "overlays": ["bar"]}]), True)
+        self.assertEqual(
+            promote.validate_charts(
+                [{"name": "foo", "version": "1.0.0", "overlays": ["bar"]}]
+            ),
+            True,
+        )
+
 
 class TestGetImagesFromOverlays(unittest.TestCase):
     def test_empty(self):
         self.assertEqual(promote.get_images_from_overlays([], "."), {})
 
     def test_missing_new_name(self):
-        self.assertEqual(promote.get_images_from_overlays(overlay_no_name_or_tag, "."), {"bar": [{"name": "foo", "overlays": ["bar"]}]})
+        self.assertEqual(
+            promote.get_images_from_overlays(overlay_no_name_or_tag, "."),
+            {"bar": [{"name": "foo", "overlays": ["bar"]}]},
+        )
 
     def test_new_name(self):
-        self.assertEqual(promote.get_images_from_overlays(overlay_new_name, "."), {"bar": [{"name": "foo", "newName": "quz", "overlays": ["bar"]}]})
+        self.assertEqual(
+            promote.get_images_from_overlays(overlay_new_name, "."),
+            {"bar": [{"name": "foo", "newName": "quz", "overlays": ["bar"]}]},
+        )
 
     def test_new_tag(self):
-        self.assertEqual(promote.get_images_from_overlays(overlay_new_tag, "."), {"bar": [{"name": "foo", "newTag": "whizbang", "overlays": ["bar"]}]})
+        self.assertEqual(
+            promote.get_images_from_overlays(overlay_new_tag, "."),
+            {"bar": [{"name": "foo", "newTag": "whizbang", "overlays": ["bar"]}]},
+        )
 
     def test_new_name_and_tag(self):
-        self.assertEqual(promote.get_images_from_overlays(overlay_new_name_and_tag, "."), {"bar": [{"name": "foo", "newName": "quz", "newTag": "whizbang", "overlays": ["bar"]}]})
+        self.assertEqual(
+            promote.get_images_from_overlays(overlay_new_name_and_tag, "."),
+            {
+                "bar": [
+                    {
+                        "name": "foo",
+                        "newName": "quz",
+                        "newTag": "whizbang",
+                        "overlays": ["bar"],
+                    }
+                ]
+            },
+        )
 
 
 class TestGenerateKustomizeArgs(unittest.TestCase):
@@ -50,10 +92,25 @@ class TestGenerateKustomizeArgs(unittest.TestCase):
         self.assertEqual(promote.generate_kustomize_args("foo", [], {}), ([], {}))
 
     def test_new_name(self):
-        self.assertEqual(promote.generate_kustomize_args("bar", overlay_new_name, {}), (["foo=quz"], {"bar": [{"name": "foo", "newName": "quz"}]}))
+        self.assertEqual(
+            promote.generate_kustomize_args("bar", overlay_new_name, {}),
+            (["foo=quz"], {"bar": [{"name": "foo", "newName": "quz"}]}),
+        )
 
     def test_new_tag(self):
-        self.assertEqual(promote.generate_kustomize_args("bar", overlay_new_tag, {}), (["foo=foo:whizbang"], {"bar": [{"name": "foo", "newName": "foo", "newTag": "whizbang"}]}))
+        self.assertEqual(
+            promote.generate_kustomize_args("bar", overlay_new_tag, {}),
+            (
+                ["foo=foo:whizbang"],
+                {"bar": [{"name": "foo", "newName": "foo", "newTag": "whizbang"}]},
+            ),
+        )
 
     def test_new_name_and_tag(self):
-        self.assertEqual(promote.generate_kustomize_args("bar", overlay_new_name_and_tag, {}), (["foo=quz:whizbang"], {"bar": [{"name": "foo", "newName": "quz", "newTag": "whizbang"}]}))
+        self.assertEqual(
+            promote.generate_kustomize_args("bar", overlay_new_name_and_tag, {}),
+            (
+                ["foo=quz:whizbang"],
+                {"bar": [{"name": "foo", "newName": "quz", "newTag": "whizbang"}]},
+            ),
+        )
