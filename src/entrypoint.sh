@@ -80,22 +80,22 @@ fi
 EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 # shellcheck disable=SC2129
 echo "images-json<<$EOF" >> "${GITHUB_OUTPUT}"
-cat images.json >> "${GITHUB_OUTPUT}"
+jc -c -r '.images' images.json >> "${GITHUB_OUTPUT}"
 echo "$EOF" >> "${GITHUB_OUTPUT}"
 IMAGES_JSON="$(cat images.json)"
 export IMAGES_JSON
-jq -c -r '.[] | map(.name) | join(" ")' < images.json | xargs > images.txt
+jq -c -r '.images.[] | map(.name) | join(" ")' < images.json | xargs > images.txt
 echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
 IMAGES_NAMES="$(cat images.txt)"
 export IMAGES_NAMES
 
 # shellcheck disable=SC2129
 echo "charts-json<<$EOF" >> "${GITHUB_OUTPUT}"
-cat charts.json >> "${GITHUB_OUTPUT}"
+jc -c -r '.charts' charts.json >> "${GITHUB_OUTPUT}"
 echo "$EOF" >> "${GITHUB_OUTPUT}"
 CHARTS_JSON="$(cat charts.json)"
 export CHARTS_JSON
-jq -c -r '.[] | map(.name) | join(" ")' < charts.json | xargs > charts.txt
+jq -c -r '.charts.[] | map(.name) | join(" ")' < charts.json | xargs > charts.txt
 echo "charts=$(cat charts.txt)" >> "${GITHUB_OUTPUT}"
 CHARTS_NAMES="$(cat charts.txt)"
 export CHARTS_NAMES
