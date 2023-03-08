@@ -531,6 +531,10 @@ def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest)
     with open("kustomization.yaml", "w") as kustomization_file:
         yaml.dump(kustomization, kustomization_file)
 
+    # Since pyYAML doesn't care at all about formatting,
+    # Run kustomize fmt to format the kustomization.yaml file
+    run(["kustomize", "cfg", "fmt", kustomization_file])
+
     # Change back to the original directory
     os.chdir(deployment_dir)
 
