@@ -94,7 +94,7 @@ class TestGenerateKustomizeArgs(unittest.TestCase):
     def test_new_name(self):
         self.assertEqual(
             promote.generate_kustomize_args("bar", overlay_new_name, {}),
-            (["foo=quz"], {"bar": [{"name": "foo", "newName": "quz"}]}),
+            (["foo=quz"], {"bar": {"images": [{"name": "foo", "newName": "quz"}]}}),
         )
 
     def test_new_tag(self):
@@ -102,7 +102,7 @@ class TestGenerateKustomizeArgs(unittest.TestCase):
             promote.generate_kustomize_args("bar", overlay_new_tag, {}),
             (
                 ["foo=foo:whizbang"],
-                {"bar": [{"name": "foo", "newName": "foo", "newTag": "whizbang"}]},
+                {"bar": {"images": [{"name": "foo", "newName": "foo", "newTag": "whizbang"}]}},
             ),
         )
 
@@ -111,6 +111,6 @@ class TestGenerateKustomizeArgs(unittest.TestCase):
             promote.generate_kustomize_args("bar", overlay_new_name_and_tag, {}),
             (
                 ["foo=quz:whizbang"],
-                {"bar": [{"name": "foo", "newName": "quz", "newTag": "whizbang"}]},
+                {"bar": {"images": [{"name": "foo", "newName": "quz", "newTag": "whizbang"}]}},
             ),
         )
