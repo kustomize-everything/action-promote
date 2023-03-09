@@ -302,12 +302,12 @@ def read_charts_from_overlay(overlay, deployment_dir):
         with open(kustomization_file) as f:
             # Read the charts from the kustomize.yaml file
             kustomize = yaml.safe_load(f)
-            if "charts" not in kustomize:
+            if "helmCharts" not in kustomize:
                 logger.fatal(
                     f"Overlay {overlay} ({kustomization_file}) does not have any charts."
                 )
                 sys.exit(1)
-            for chart in kustomize["charts"]:
+            for chart in kustomize["helmCharts"]:
                 if "name" not in chart:
                     logger.fatal(
                         f"Chart {chart} ({kustomization_file}) is missing the required 'name' field."
@@ -376,8 +376,12 @@ def get_charts_from_overlays(charts_to_update, deployment_dir):
                 overlays_to_charts[overlay] = []
 
             if "fromOverlay" in chart:
-                charts = read_images_from_overlay(chart["fromOverlay"], deployment_dir)
-                overlays_to_charts[overlay].append(charts[chart["name"]])
+                charts = read_charts_from_overlay(chart["fromOverlay"], deployment_dir)
+                logger.debug(charts)
+                for overlayChart in charts.values():
+                    logger.debug(overlayChart)
+                    if overlayChart["name"] == chart["name"]:
+                        overlays_to_charts[overlay].append(overlayChart)
             else:
                 overlays_to_charts[overlay].append(chart)
 
@@ -507,6 +511,7 @@ def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest)
 
     # Using the existing kustomization file, update the charts
     for chart in charts:
+        logger.debug(chart)
         found = False
 
         # Search kustomize["helmCharts"] for the chart
