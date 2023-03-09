@@ -15,6 +15,10 @@ jobs:
   action-testing:
     name: Action Testing
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        promotion: [simple-promotion, complex-promotion, cross-overlay-promotion, helm-promotion, helm-cross-overlay-promotion]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -26,20 +30,8 @@ jobs:
           # Generate unique EOF value to prevent injection attack
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 
-          echo "SIMPLE_PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/simple-promotion.json >> $GITHUB_ENV
-          echo "$EOF" >> $GITHUB_ENV
-
-          echo "COMPLEX_PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/complex-promotion.json >> $GITHUB_ENV
-          echo "$EOF" >> $GITHUB_ENV
-
-          echo "CROSS_OVERLAY_PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/cross-overlay-promotion.json >> $GITHUB_ENV
-          echo "$EOF" >> $GITHUB_ENV
-
-          echo "HELM_PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/helm-promotion.json >> $GITHUB_ENV
+          echo "PROMOTION<<$EOF" >> $GITHUB_ENV
+          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Checkout Testing Repo
@@ -57,83 +49,11 @@ jobs:
           target-repo: kustomize-everything/test-deploy
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
-          images: ${{ env.SIMPLE_PROMOTION }}
+          images: ${{ env.PROMOTION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
           # Useful for debugging the action
-          debug: true
-
-      - name: Git Reset to Known SHA
-        shell: bash
-        working-directory: test-deploy
-        run: |-
-          git reset --hard ${{ env.TEST_DEPLOY_SHA }}
-
-      - name: Action Test with Simple Promotion (Inline)
-        uses: ./
-        with:
-          target-repo: kustomize-everything/test-deploy
-          target-branch: ${{ env.BRANCH }}
-          working-directory: test-deploy
-          images: |-
-            [
-              {
-                "name": "nginx",
-                "newName": "nginx-inline",
-                "newTag": "1.9999.0",
-                "overlays": ["env/dev"]
-              }
-            ]
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          dry-run: true
-
-      - name: Git Reset to Known SHA
-        shell: bash
-        working-directory: test-deploy
-        run: |-
-          git reset --hard ${{ env.TEST_DEPLOY_SHA }}
-
-      - name: Action Test with Complex Promotion
-        uses: ./
-        with:
-          target-repo: kustomize-everything/test-deploy
-          target-branch: ${{ env.BRANCH }}
-          working-directory: test-deploy
-          images: ${{ env.COMPLEX_PROMOTION }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          dry-run: true
-
-      - name: Git Reset to Known SHA
-        shell: bash
-        working-directory: test-deploy
-        run: |-
-          git reset --hard ${{ env.TEST_DEPLOY_SHA }}
-
-      - name: Action Test with Cross Overlay Promotion
-        uses: ./
-        with:
-          target-repo: kustomize-everything/test-deploy
-          target-branch: ${{ env.BRANCH }}
-          working-directory: test-deploy
-          images: ${{ env.CROSS_OVERLAY_PROMOTION }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          dry-run: true
-
-      - name: Git Reset to Known SHA
-        shell: bash
-        working-directory: test-deploy
-        run: |-
-          git reset --hard ${{ env.TEST_DEPLOY_SHA }}
-
-      - name: Action Test with Helm Promotion
-        uses: ./
-        with:
-          target-repo: kustomize-everything/test-deploy
-          target-branch: ${{ env.BRANCH }}
-          working-directory: test-deploy
-          charts: ${{ env.HELM_PROMOTION }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          dry-run: true
+          # debug: true
 
   python-tests:
     name: Python Tests
