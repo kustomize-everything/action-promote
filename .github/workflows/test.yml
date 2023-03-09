@@ -12,13 +12,13 @@ env:
   TEST_DEPLOY_SHA: 13a8a77844e4d7412f8e2aed07587e441d0d5f19
 
 jobs:
-  action-testing:
-    name: Action Testing
+  action-image-testing:
+    name: Action Image Testing
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
-        promotion: [simple-promotion, complex-promotion, cross-overlay-promotion, helm-promotion, helm-cross-overlay-promotion]
+        promotion: [simple-promotion, complex-promotion, cross-overlay-promotion]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -50,6 +50,49 @@ jobs:
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
           images: ${{ env.PROMOTION }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: true
+          # Useful for debugging the action
+          # debug: true
+
+  action-helm-testing:
+    name: Action Helm Testing
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        promotion: [helm-promotion, helm-cross-overlay-promotion]
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Read in examples to github output
+        id: read-examples
+        shell: bash
+        run: |-
+          # Generate unique EOF value to prevent injection attack
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+
+          echo "PROMOTION<<$EOF" >> $GITHUB_ENV
+          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: ${{ env.TEST_DEPLOY_SHA }}
+          path: test-deploy
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Action Test with Simple Promotion
+        uses: ./
+        with:
+          target-repo: kustomize-everything/test-deploy
+          target-branch: ${{ env.BRANCH }}
+          working-directory: test-deploy
+          charts: ${{ env.PROMOTION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
           # Useful for debugging the action
