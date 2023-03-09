@@ -43,7 +43,7 @@ jobs:
           path: test-deploy
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Action Test with Simple Promotion
+      - name: Action Test with ${{ matrix.promotion }}
         uses: ./
         with:
           target-repo: kustomize-everything/test-deploy
@@ -86,7 +86,7 @@ jobs:
           path: test-deploy
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Action Test with Simple Promotion
+      - name: Action Test with ${{ matrix.promotion }}
         uses: ./
         with:
           target-repo: kustomize-everything/test-deploy
