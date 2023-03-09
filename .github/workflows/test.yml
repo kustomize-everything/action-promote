@@ -44,7 +44,7 @@ jobs:
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
-          ref: 02c8afb500ed14d507a1ac2b9df61c6a751111e2
+          ref: 7ac5130c5dd92dc3bfa4ecb7160d69f5b7691f2a
           path: test-deploy
           token: ${{ secrets.GITHUB_TOKEN }}
 
