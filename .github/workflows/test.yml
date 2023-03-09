@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  TEST_DEPLOY_SHA: 7ac5130c5dd92dc3bfa4ecb7160d69f5b7691f2a
+  TEST_DEPLOY_SHA: 35cce4344394159e454033058069665d8790d805
 
 jobs:
   action-testing:
