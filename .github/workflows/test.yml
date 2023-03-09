@@ -57,6 +57,8 @@ jobs:
           images: ${{ env.SIMPLE_PROMOTION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
+          # Useful for debugging the action
+          debug: true
 
       - name: Show Git Diff and Reset
         shell: bash
