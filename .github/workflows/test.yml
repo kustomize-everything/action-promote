@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+env:
+  TEST_DEPLOY_SHA: 7ac5130c5dd92dc3bfa4ecb7160d69f5b7691f2a
+
 jobs:
   action-testing:
     name: Action Testing
@@ -44,7 +47,7 @@ jobs:
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
-          ref: 7ac5130c5dd92dc3bfa4ecb7160d69f5b7691f2a
+          ref: ${{ env.TEST_DEPLOY_SHA }}
           path: test-deploy
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -60,12 +63,11 @@ jobs:
           # Useful for debugging the action
           debug: true
 
-      - name: Show Git Diff and Reset
+      - name: Git Reset to Known SHA
         shell: bash
         working-directory: test-deploy
         run: |-
-          git diff
-          git reset --hard
+          git reset --hard ${{ env.TEST_DEPLOY_SHA }}
 
       - name: Action Test with Simple Promotion (Inline)
         uses: ./
@@ -85,12 +87,11 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
 
-      - name: Show Git Diff and Reset
+      - name: Git Reset to Known SHA
         shell: bash
         working-directory: test-deploy
         run: |-
-          git diff
-          git reset --hard
+          git reset --hard ${{ env.TEST_DEPLOY_SHA }}
 
       - name: Action Test with Complex Promotion
         uses: ./
@@ -102,12 +103,11 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
 
-      - name: Show Git Diff and Reset
+      - name: Git Reset to Known SHA
         shell: bash
         working-directory: test-deploy
         run: |-
-          git diff
-          git reset --hard
+          git reset --hard ${{ env.TEST_DEPLOY_SHA }}
 
       - name: Action Test with Cross Overlay Promotion
         uses: ./
@@ -119,12 +119,11 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
 
-      - name: Show Git Diff and Reset
+      - name: Git Reset to Known SHA
         shell: bash
         working-directory: test-deploy
         run: |-
-          git diff
-          git reset --hard
+          git reset --hard ${{ env.TEST_DEPLOY_SHA }}
 
       - name: Action Test with Helm Promotion
         uses: ./
