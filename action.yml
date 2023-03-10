@@ -1,6 +1,9 @@
 ---
-name: Image Promotion
-description: Promote a tagged image to a deployment repo using Kustomize and Git
+name: Kustomize Image and Helm Promotion
+description: Promote a tagged image or helm chart to a deployment repo using Kustomize and Git
+branding:
+  icon: 'git-pull-request'
+  color: 'purple'
 inputs:
   git-commit-user:
     description: Name to add to the Git Commit Message
