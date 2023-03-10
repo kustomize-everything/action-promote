@@ -97,7 +97,12 @@ outputs:
 
 runs:
   using: 'docker'
+  # Use the Dockerfile in the same directory as this action.yml when we are
+  # testing changes to the underlying container. Otherwise, use the latest
+  # version of the container. This prevents the user from having to build
+  # the container themselves.
   image: 'Dockerfile'
+  # image: 'ghcr.io/kustomize-everything/action-promote:v3.4.0'
   env:
     GIT_COMMIT_USER: ${{ inputs.git-commit-user }}
     GIT_COMMIT_EMAIL: ${{ inputs.git-commit-email }}
