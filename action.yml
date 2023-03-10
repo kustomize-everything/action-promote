@@ -1,6 +1,9 @@
 ---
-name: Image Promotion
-description: Promote a tagged image to a deployment repo using Kustomize and Git
+name: Kustomize Image and Helm Promotion
+description: Promote a tagged image or helm chart to a deployment repo using Kustomize and Git
+branding:
+  icon: 'git-pull-request'
+  color: 'purple'
 inputs:
   git-commit-user:
     description: Name to add to the Git Commit Message
@@ -94,7 +97,12 @@ outputs:
 
 runs:
   using: 'docker'
+  # Use the Dockerfile in the same directory as this action.yml when we are
+  # testing changes to the underlying container. Otherwise, use the latest
+  # version of the container. This prevents the user from having to build
+  # the container themselves.
   image: 'Dockerfile'
+  # image: 'ghcr.io/kustomize-everything/action-promote:v3.4.0'
   env:
     GIT_COMMIT_USER: ${{ inputs.git-commit-user }}
     GIT_COMMIT_EMAIL: ${{ inputs.git-commit-email }}
