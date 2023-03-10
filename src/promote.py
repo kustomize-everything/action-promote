@@ -431,7 +431,9 @@ def generate_kustomize_args(overlay, images, promotion_manifest):
         elif new_name:
             kustomize_args.append(f"{name}={new_name}")
             # Add to promotion manifest
-            promotion_manifest[overlay]["images"].append({"name": name, "newName": new_name})
+            promotion_manifest[overlay]["images"].append(
+                {"name": name, "newName": new_name}
+            )
         else:
             raise ValueError(f"Image {image} is missing required fields.")
 
@@ -529,7 +531,9 @@ def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest)
                 promotion_manifest[overlay]["charts"].append(chart)
 
         if not found:
-            logger.fatal(f"Chart {chart['name']} not found in {kustomize_dir}/kustomization.yaml.")
+            logger.fatal(
+                f"Chart {chart['name']} not found in {kustomize_dir}/kustomization.yaml."
+            )
             exit(1)
 
     # Write the updated kustomization file

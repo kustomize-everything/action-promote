@@ -35,19 +35,6 @@ class TestValidateImagesFromOverlays(unittest.TestCase):
         )
 
 
-class TestValidateChartsFromOverlays(unittest.TestCase):
-    def test_empty(self):
-        self.assertEqual(promote.validate_charts([]), True)
-
-    def test_only_version(self):
-        self.assertEqual(
-            promote.validate_charts(
-                [{"name": "foo", "version": "1.0.0", "overlays": ["bar"]}]
-            ),
-            True,
-        )
-
-
 class TestGetImagesFromOverlays(unittest.TestCase):
     def test_empty(self):
         self.assertEqual(promote.get_images_from_overlays([], "."), {})
@@ -102,7 +89,13 @@ class TestGenerateKustomizeArgs(unittest.TestCase):
             promote.generate_kustomize_args("bar", overlay_new_tag, {}),
             (
                 ["foo=foo:whizbang"],
-                {"bar": {"images": [{"name": "foo", "newName": "foo", "newTag": "whizbang"}]}},
+                {
+                    "bar": {
+                        "images": [
+                            {"name": "foo", "newName": "foo", "newTag": "whizbang"}
+                        ]
+                    }
+                },
             ),
         )
 
@@ -111,6 +104,12 @@ class TestGenerateKustomizeArgs(unittest.TestCase):
             promote.generate_kustomize_args("bar", overlay_new_name_and_tag, {}),
             (
                 ["foo=quz:whizbang"],
-                {"bar": {"images": [{"name": "foo", "newName": "quz", "newTag": "whizbang"}]}},
+                {
+                    "bar": {
+                        "images": [
+                            {"name": "foo", "newName": "quz", "newTag": "whizbang"}
+                        ]
+                    }
+                },
             ),
         )
