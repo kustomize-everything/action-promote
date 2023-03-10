@@ -2,10 +2,10 @@
 
 GitHub action providing a standard promotion patterns using Kustomize.
 
-It supports injecting multiple new images into target overlays via a JSON config
-file. For examples, refer to [example](./example).
+It supports injecting multiple new images or helm charts into target overlays
+via a JSON config file. For examples, refer to [example](./example).
 
-Within a JSON config for you image promotions, you have two (mutually exclusive
+Within a JSON config for your image promotions, you have two (mutually exclusive
 on a per image name basis) ways of providing the promotion information. Either
 you can provide the `newName` and/or `newTag` directly keys directly in the
 image configuration OR you can provide a `fromOverlay` key, which will find
@@ -14,6 +14,13 @@ of the image `name` from it.
 
 For each image, you can promote into multiple target overlays in your deployment
 repo by providing multiple values to the `overlays` key.
+
+Within a JSON config for your Helm chart promotions, you have two (also mutually
+exclusive on a per image name basis) ways of providing the promotion information.
+Either you can provide the new `version` for the chart directly (along with an
+optional update to the `releaseName`) or, similar to the images promotion, you
+can provide a `fromOverlay` key, which will find the overlay provided and extract
+the helm chart information from that overlay for use in the provided `overlay`.
 
 After making all of the changes specified in the JSON configuration, the GitHub
 action will automatically commit and either push the branch directly or open
