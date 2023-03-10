@@ -13,7 +13,7 @@ if [[ "${DEBUG}" == "true" ]]; then
   env
 fi
 
-TITLE="Promote ${IMAGES}"
+TITLE="Promote ${IMAGES_NAMES}"
 METADATA="---
 GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
 GITHUB_JOB: ${GITHUB_JOB}
@@ -26,8 +26,9 @@ GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER}
 GITHUB_SHA_URL: ${GITHUB_SHA_URL}
 GITHUB_SHA: ${GITHUB_SHA}
 GITHUB_WORKFLOW_RUN_URL: ${GITHUB_WORKFLOW_RUN_URL}
-IMAGES: ${IMAGES}
-IMAGES_JSON: ${IMAGES_JSON}"
+IMAGES: ${IMAGES_NAMES}
+CHARTS: ${CHARTS_NAMES}
+MANIFEST_JSON: ${MANIFEST_JSON}"
 
 if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${GITHUB_SHA:?}" | tr "/" "-")"
@@ -111,5 +112,6 @@ DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R "${TARGET_REPO}")"
 echo "deployment-repo-sha-short=$(git rev-parse --short HEAD)" >> "${GITHUB_OUTPUT}"
 echo "deployment-repo-sha-url=${DEPLOYMENT_REPO_SHA_URL}" >> "${GITHUB_OUTPUT}"
 echo "deployment-repo-sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
-echo "images=${IMAGES}" >> "${GITHUB_OUTPUT}"
-echo "images-json=${IMAGES_JSON}" >> "${GITHUB_OUTPUT}"
+echo "images=${IMAGES_NAMES}" >> "${GITHUB_OUTPUT}"
+echo "charts=${CHARTS_NAMES}" >> "${GITHUB_OUTPUT}"
+echo "manifest-json=${MANIFEST_JSON}" >> "${GITHUB_OUTPUT}"

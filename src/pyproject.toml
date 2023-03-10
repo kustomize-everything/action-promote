@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "action-promote"
+name = "kustomize-promote"
 version = "0.1.0"
 description = ""
 authors = ["Brandon High <highb@users.noreply.github.com>"]

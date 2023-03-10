@@ -8,10 +8,17 @@ on:
     branches:
       - main
 
+env:
+  TEST_DEPLOY_SHA: 13a8a77844e4d7412f8e2aed07587e441d0d5f19
+
 jobs:
-  action-testing:
-    name: Action Testing
+  action-image-testing:
+    name: Action Image Testing
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        promotion: [simple-promotion, complex-promotion, cross-overlay-promotion]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -23,16 +30,8 @@ jobs:
           # Generate unique EOF value to prevent injection attack
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 
-          echo "SIMPLE_PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/simple-promotion.json >> $GITHUB_ENV
-          echo "$EOF" >> $GITHUB_ENV
-
-          echo "COMPLEX_PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/complex-promotion.json >> $GITHUB_ENV
-          echo "$EOF" >> $GITHUB_ENV
-
-          echo "CROSS_OVERLAY_PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/cross-overlay-promotion.json >> $GITHUB_ENV
+          echo "PROMOTION<<$EOF" >> $GITHUB_ENV
+          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Checkout Testing Repo
@@ -40,78 +39,64 @@ jobs:
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
-          ref: 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
+          ref: ${{ env.TEST_DEPLOY_SHA }}
           path: test-deploy
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Action Test with Simple Promotion
+      - name: Action Test with ${{ matrix.promotion }}
         uses: ./
         with:
           target-repo: kustomize-everything/test-deploy
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
-          images: ${{ env.SIMPLE_PROMOTION }}
+          images: ${{ env.PROMOTION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
+          # Useful for debugging the action
+          # debug: true
 
-      - name: Show Git Diff and Reset
+  action-helm-testing:
+    name: Action Helm Testing
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        promotion: [helm-promotion, helm-cross-overlay-promotion]
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Read in examples to github output
+        id: read-examples
         shell: bash
-        working-directory: test-deploy
         run: |-
-          git diff
-          git reset --hard
+          # Generate unique EOF value to prevent injection attack
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 
-      - name: Action Test with Simple Promotion (Inline)
+          echo "PROMOTION<<$EOF" >> $GITHUB_ENV
+          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: ${{ env.TEST_DEPLOY_SHA }}
+          path: test-deploy
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Action Test with ${{ matrix.promotion }}
         uses: ./
         with:
           target-repo: kustomize-everything/test-deploy
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
-          images: |-
-            [
-              {
-                "name": "nginx",
-                "newName": "nginx-inline",
-                "newTag": "1.9999.0",
-                "overlays": ["env/dev"]
-              }
-            ]
+          charts: ${{ env.PROMOTION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
-
-      - name: Show Git Diff and Reset
-        shell: bash
-        working-directory: test-deploy
-        run: |-
-          git diff
-          git reset --hard
-
-      - name: Action Test with Complex Promotion
-        uses: ./
-        with:
-          target-repo: kustomize-everything/test-deploy
-          target-branch: ${{ env.BRANCH }}
-          working-directory: test-deploy
-          images: ${{ env.COMPLEX_PROMOTION }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          dry-run: true
-
-      - name: Show Git Diff and Reset
-        shell: bash
-        working-directory: test-deploy
-        run: |-
-          git diff
-          git reset --hard
-
-      - name: Action Test with Cross Overlay Promotion
-        uses: ./
-        with:
-          target-repo: kustomize-everything/test-deploy
-          target-branch: ${{ env.BRANCH }}
-          working-directory: test-deploy
-          images: ${{ env.CROSS_OVERLAY_PROMOTION }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          dry-run: true
+          # Useful for debugging the action
+          # debug: true
 
   python-tests:
     name: Python Tests

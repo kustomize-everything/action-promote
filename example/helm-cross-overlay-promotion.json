@@ -1,0 +1,7 @@
+[
+  {
+    "name": "kube-prometheus-stack",
+    "fromOverlay": "env/dev",
+    "overlays": ["env/production"]
+  }
+]

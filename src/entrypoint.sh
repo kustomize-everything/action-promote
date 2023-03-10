@@ -49,34 +49,35 @@ git config --global user.email "${GIT_COMMIT_EMAIL}"
 #   - IMAGES_TO_UPDATE
 DEPLOYMENT_DIR="${GITHUB_WORKSPACE}/${DEPLOYMENT_DIR}"
 export DEPLOYMENT_DIR
-poetry run python /update_images.py > images.json
+
+# If IMAGES is not an empty string or empty array, then we need to promote the images
+if [[ "${IMAGES}" != "[]" || "${CHARTS}" != "[]" ]]; then
+  IMAGES_TO_UPDATE="${IMAGES}" CHARTS_TO_UPDATE="${CHARTS}" poetry run python /promote.py > manifest.json
+else
+  echo "No images or charts to promote"
+  echo "{}" > manifest.json
+fi
+
+MANIFEST_JSON="$(jq -c -r '.' manifest.json)"
+export MANIFEST_JSON
 
 # Save images json output to GITHUB_OUTPUT
 EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 # shellcheck disable=SC2129
-echo "images-json<<$EOF" >> "${GITHUB_OUTPUT}"
-cat images.json >> "${GITHUB_OUTPUT}"
+echo "manifest-json<<$EOF" >> "${GITHUB_OUTPUT}"
+echo "${MANIFEST_JSON}" >> "${GITHUB_OUTPUT}"
 echo "$EOF" >> "${GITHUB_OUTPUT}"
-IMAGES_JSON="$(cat images.json)"
-export IMAGES_JSON
-jq -c -r '.[] | map(.name) | join(" ")' < images.json | xargs > images.txt
+jq -c -r '.[] | .images | map(.name) | unique | join(" ")' < manifest.json | xargs > images.txt
 echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
-IMAGES="$(cat images.txt)"
-export IMAGES
+IMAGES_NAMES="$(cat images.txt)"
+export IMAGES_NAMES
 
-  #   - name: Commit Changes
-  #     id: commit-changes
-  #     shell: bash
-  #     working-directory: ${{ inputs.working-directory }}
-  #     env:
-  #       GITHUB_TOKEN: ${{ inputs.github-token }}
-  #       IMAGES: ${{ steps.update-images.outputs.images }}
-  #       IMAGES_JSON: ${{ steps.update-images.outputs.images-json }}
-  #       TARGET_BRANCH: ${{ inputs.target-branch }}
-  #       TARGET_REPO: ${{ inputs.target-repo }}
-  #       DRY_RUN: ${{ inputs.dry-run }}
-  #       PROMOTION_METHOD: ${{ inputs.promotion-method }}
-  #     run: |
+# shellcheck disable=SC2129
+jq -c -r '.[] | .charts | map(.name) | unique | join(" ")' < manifest.json | xargs > charts.txt
+echo "charts=$(cat charts.txt)" >> "${GITHUB_OUTPUT}"
+CHARTS_NAMES="$(cat charts.txt)"
+export CHARTS_NAMES
+
 # Because the parent workflow is the one who has run the `checkout` action,
 # we need to tell configure git to consider that directory as "safe" in order
 # to be able to commit changes to it without errors. Specifically, the
