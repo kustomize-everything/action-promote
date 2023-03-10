@@ -16,16 +16,16 @@ For each image, you can promote multiple target overlays in your deployment
 repo by providing multiple values to the `overlays` key.
 
 Within a JSON config for your Helm chart promotions, you have two (also mutually
-exclusive on a per-image name basis) ways of providing the promotion information.
-Either you can give the new `version` for the chart directly (along with an
-optional update to the `releaseName`) or, similar to the images promotion configuration, you
-can provide a `fromOverlay` key, which will find the overlay provided and extract
-the helm chart information from that overlay for use in the provided `overlay`.
+exclusive on a per-image name basis) ways of providing the promotion
+information. Either you can give the new `version` for the chart directly (along
+with an optional update to the `releaseName`) or, similar to the images
+promotion configuration, you can provide a `fromOverlay` key, which will find
+the overlay provided and extract the helm chart information from that overlay
+for use in the provided `overlay`.
 
 After making all of the changes specified in the JSON configuration, the GitHub
 action will automatically commit and either push the branch directly or open
 a pull request, depending on what you define.
-
 
 ## Usage
 
