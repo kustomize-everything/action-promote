@@ -13,7 +13,17 @@ if [[ "${DEBUG}" == "true" ]]; then
   env
 fi
 
-TITLE="Promote ${IMAGES_NAMES}"
+# If we have both images and charts, the title should reflect that.
+if [[ "${IMAGES}" != "[]" && "${CHARTS}" != "[]" ]]; then
+  TITLE="Promote images ${IMAGES_NAMES} and charts ${CHARTS_NAMES}"
+else
+  if [[ "${IMAGES}" != "[]" ]]; then
+    TITLE="Promote images ${IMAGES_NAMES}"
+  fi
+  if [[ "${CHARTS}" != "[]" ]]; then
+    TITLE="Promote charts ${CHARTS_NAMES}"
+  fi
+fi
 METADATA="---
 GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
 GITHUB_JOB: ${GITHUB_JOB}
@@ -97,7 +107,17 @@ elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
 
   git push origin "${TARGET_BRANCH}"
   echo
-  echo "Images ${IMAGES} from ${GITHUB_GHA} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
+  # If we have both images and charts, the output should reflect that.
+  if [[ "${IMAGES}" != "[]" && "${CHARTS}" != "[]" ]]; then
+    echo "Images ${IMAGES_NAMES} and charts ${CHARTS_NAMES} from ${GITHUB_GHA} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
+  else
+    if [[ "${IMAGES}" != "[]" ]]; then
+      echo "Images ${IMAGES_NAMES} from ${GITHUB_GHA} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
+    fi
+    if [[ "${CHARTS}" != "[]" ]]; then
+      echo "Charts ${CHARTS_NAMES} from ${GITHUB_GHA} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
+    fi
+  fi
   echo
   echo "${DEPLOYMENT_REPO_SHA_URL}"
 else
