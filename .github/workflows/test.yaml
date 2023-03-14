@@ -137,7 +137,7 @@ jobs:
           working-directory: test-deploy
           images: ${{ env.PROMOTION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          promotion-method: pull-request
+          promotion-method: pull_request
           dry-run: false
           auto-merge: false
           # Useful for debugging the action
