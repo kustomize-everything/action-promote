@@ -93,12 +93,12 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     while [[ "${CHECK_RESULT}" =~ "Waiting for status checks to start" && $ATTEMPTS -gt 0 ]]; do
       sleep 10
       CHECK_RESULT="$(gh pr checks)"
-      ATTEMPTS=$((ATTEMPTS - 1))
       # If non-zero, then we have a failure
       if [[ "${?}" != "0" ]]; then
         echo "Status checks have failed. Exiting."
         exit 1
       fi
+      ATTEMPTS=$((ATTEMPTS - 1))
     done
   fi
   echo
