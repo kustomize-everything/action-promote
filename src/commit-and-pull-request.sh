@@ -75,7 +75,9 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   CHECK_RESULT="$(gh pr checks)";
   set -e
   ATTEMPTS=3
-  while [[ "${CHECK_RESULT}" =~ "no checks reported" ]]; do
+  echo "result"
+  echo "${CHECK_RESULT}"
+  while [[ "${CHECK_RESULT}" =~ "no checks reported" && $ATTEMPTS -gt 0 ]]; do
     sleep 10
     echo "No status checks found or checks are just slow to start."
 
@@ -91,6 +93,8 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     echo "${ATTEMPTS} attempts remaining"
   done
 
+  echo "result"
+  echo "${CHECK_RESULT}"
   ATTEMPTS=5
   while [[ "${CHECK_RESULT}" =~ "Waiting for status checks to start" && $ATTEMPTS -gt 0 ]]; do
     sleep 10
