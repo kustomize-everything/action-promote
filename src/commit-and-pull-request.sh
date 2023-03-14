@@ -87,10 +87,15 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   echo "Waiting for status checks to complete..."
   gh pr checks --watch
   echo
-  echo "Status checks have all passed. Merging PR..."
-  gh pr merge --squash --admin
-  echo
-  echo "Promotion PR has been merged. Details below."
+  if [[ "${AUTO_MERGE}" == "true" ]]; then
+    echo "Status checks have all passed. Merging PR..."
+    gh pr merge --squash --admin
+    echo
+    echo "Promotion PR has been merged. Details below."
+  else
+    echo
+    echo "Promotion PR has been created and has passed checks. Details below."
+  fi
   gh pr view
 elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
   git add .

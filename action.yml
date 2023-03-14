@@ -55,6 +55,14 @@ inputs:
       branch.
     required: false
     default: push
+  auto-merge:
+    description: |
+      Toggles the behavior of automatically merging the PR when using the pull_request
+      promotion method. If set to true, the PR will be automatically merged
+      when all checks pass. If set to false, the PR will be opened but not
+      merged.
+    required: false
+    default: "true"
   sha256-checksum:
     description: Checksum of Kustomize version
     required: false
@@ -111,6 +119,7 @@ runs:
     IMAGES: ${{ inputs.images }}
     CHARTS: ${{ inputs.charts }}
     PROMOTION_METHOD: ${{ inputs.promotion-method }}
+    AUTO_MERGE: ${{ inputs.auto-merge }}
     SSH_KEY: ${{ inputs.ssh-key }}
     TARGET_REPO: ${{ inputs.target-repo }}
     TARGET_BRANCH: ${{ inputs.target-branch }}
