@@ -83,10 +83,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
 
     # If non-zero, then we have a failure
     set +e
-    if ! CHECK_RESULT="$(gh pr checks 2>&1)"; then
-      echo "Status checks have failed. Exiting."
-      exit 1
-    fi
+    CHECK_RESULT="$(gh pr checks 2>&1)"
     set -e
     # Decrement the number of attempts
     ATTEMPTS=$((ATTEMPTS - 1))
