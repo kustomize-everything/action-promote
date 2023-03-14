@@ -71,12 +71,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
 
   echo
   echo "Waiting for status checks to complete..."
-  # If non-zero, then we have a failure
-  if ! CHECK_RESULT="$(gh pr checks)"; then
-    echo "Status checks have failed. Exiting."
-    exit 1
-  fi
-
+  CHECK_RESULT="$(gh pr checks)";
   ATTEMPTS=1
   if [[ "${CHECK_RESULT}" =~ "no checks reported" ]]; then
     echo "No status checks found. Skipping wait."
