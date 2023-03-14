@@ -98,6 +98,51 @@ jobs:
           # Useful for debugging the action
           # debug: true
 
+  action-open-pr-testing:
+    name: Action Open PR Testing
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        promotion: [simple-promotion]
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Read in examples to github output
+        id: read-examples
+        shell: bash
+        run: |-
+          # Generate unique EOF value to prevent injection attack
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+
+          echo "PROMOTION<<$EOF" >> $GITHUB_ENV
+          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: ${{ env.TEST_DEPLOY_SHA }}
+          path: test-deploy
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Action Test with ${{ matrix.promotion }}
+        uses: ./
+        with:
+          target-repo: kustomize-everything/test-deploy
+          target-branch: ${{ env.BRANCH }}
+          working-directory: test-deploy
+          images: ${{ env.PROMOTION }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          promotion-method: pull-request
+          dry-run: false
+          auto-merge: false
+          # Useful for debugging the action
+          # debug: t
+
   python-tests:
     name: Python Tests
     runs-on: ubuntu-latest
