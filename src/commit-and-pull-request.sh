@@ -86,7 +86,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   echo
   echo "Waiting for status checks to complete..."
   CHECK_RESULT="$(gh pr checks)"
-  ATTEMPTS=60
+  ATTEMPTS=1
   if [[ "${CHECK_RESULT}" =~ "no checks reported" ]]; then
     echo "No status checks found. Skipping wait."
   else
