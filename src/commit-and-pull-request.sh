@@ -74,25 +74,38 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   set +e
   CHECK_RESULT="$(gh pr checks)";
   set -e
-  ATTEMPTS=1
-  if [[ "${CHECK_RESULT}" =~ "no checks reported" ]]; then
-    echo "No status checks found. Skipping wait."
-  else
-    while [[ "${CHECK_RESULT}" =~ "Waiting for status checks to start" && $ATTEMPTS -gt 0 ]]; do
-      sleep 10
+  ATTEMPTS=3
+  while [[ "${CHECK_RESULT}" =~ "no checks reported" ]]; do
+    sleep 10
+    echo "No status checks found or checks are just slow to start."
 
-      # If non-zero, then we have a failure
-      set +e
-      if ! CHECK_RESULT="$(gh pr checks)"; then
-        echo "Status checks have failed. Exiting."
-        exit 1
-      fi
-      set -e
-      # Decrement the number of attempts
-      ATTEMPTS=$((ATTEMPTS - 1))
-      echo "${ATTEMPTS} attempts remaining"
-    done
-  fi
+    # If non-zero, then we have a failure
+    set +e
+    if ! CHECK_RESULT="$(gh pr checks)"; then
+      echo "Status checks have failed. Exiting."
+      exit 1
+    fi
+    set -e
+    # Decrement the number of attempts
+    ATTEMPTS=$((ATTEMPTS - 1))
+    echo "${ATTEMPTS} attempts remaining"
+  done
+
+  ATTEMPTS=5
+  while [[ "${CHECK_RESULT}" =~ "Waiting for status checks to start" && $ATTEMPTS -gt 0 ]]; do
+    sleep 10
+
+    # If non-zero, then we have a failure
+    set +e
+    if ! CHECK_RESULT="$(gh pr checks)"; then
+      echo "Status checks have failed. Exiting."
+      exit 1
+    fi
+    set -e
+    # Decrement the number of attempts
+    ATTEMPTS=$((ATTEMPTS - 1))
+    echo "${ATTEMPTS} attempts remaining"
+  done
   echo
   if [[ "${AUTO_MERGE}" == "true" ]]; then
     echo "Status checks have all passed. Merging PR..."
