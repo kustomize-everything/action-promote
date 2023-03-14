@@ -128,7 +128,7 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: ${{ env.TEST_DEPLOY_SHA }}
           path: test-deploy
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Action Test with ${{ matrix.promotion }}
         uses: ./
@@ -137,7 +137,7 @@ jobs:
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
           images: ${{ env.PROMOTION }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
           promotion-method: pull_request
           dry-run: false
           auto-merge: false
