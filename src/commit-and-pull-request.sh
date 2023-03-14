@@ -71,7 +71,9 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
 
   echo
   echo "Waiting for status checks to complete..."
+  set +e
   CHECK_RESULT="$(gh pr checks)";
+  set -e
   ATTEMPTS=1
   if [[ "${CHECK_RESULT}" =~ "no checks reported" ]]; then
     echo "No status checks found. Skipping wait."
@@ -80,10 +82,12 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
       sleep 10
 
       # If non-zero, then we have a failure
+      set +e
       if ! CHECK_RESULT="$(gh pr checks)"; then
         echo "Status checks have failed. Exiting."
         exit 1
       fi
+      set -e
       # Decrement the number of attempts
       ATTEMPTS=$((ATTEMPTS - 1))
       echo "${ATTEMPTS} attempts remaining"
