@@ -10,6 +10,7 @@ on:
 
 env:
   TEST_DEPLOY_SHA: 13a8a77844e4d7412f8e2aed07587e441d0d5f19
+  BRANCH: main
 
 jobs:
   action-image-testing:
