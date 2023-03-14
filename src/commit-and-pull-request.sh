@@ -72,7 +72,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   echo
   echo "Waiting for status checks to complete..."
   set +e
-  CHECK_RESULT="$(gh pr checks)";
+  CHECK_RESULT="$(gh pr checks 2>&1)";
   set -e
   ATTEMPTS=3
   echo "result"
@@ -83,7 +83,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
 
     # If non-zero, then we have a failure
     set +e
-    if ! CHECK_RESULT="$(gh pr checks)"; then
+    if ! CHECK_RESULT="$(gh pr checks 2>&1)"; then
       echo "Status checks have failed. Exiting."
       exit 1
     fi
@@ -101,7 +101,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
 
     # If non-zero, then we have a failure
     set +e
-    if ! CHECK_RESULT="$(gh pr checks)"; then
+    if ! CHECK_RESULT="$(gh pr checks 2>&1)"; then
       echo "Status checks have failed. Exiting."
       exit 1
     fi
