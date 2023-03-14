@@ -99,13 +99,16 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     # If non-zero, then we have a failure
     set +e
     if ! CHECK_RESULT="$(gh pr checks 2>&1)"; then
+      echo "${CHECK_RESULT}"
       echo "Status checks have failed. Exiting."
       exit 1
+    else
+      echo "${CHECK_RESULT}"
+      # Decrement the number of attempts
+      ATTEMPTS=$((ATTEMPTS - 1))
+      echo "${ATTEMPTS} attempts remaining"
     fi
     set -e
-    # Decrement the number of attempts
-    ATTEMPTS=$((ATTEMPTS - 1))
-    echo "${ATTEMPTS} attempts remaining"
   done
   echo
   if [[ "${AUTO_MERGE}" == "true" ]]; then
