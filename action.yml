@@ -55,6 +55,26 @@ inputs:
       branch.
     required: false
     default: push
+  status-attempts:
+    description: |
+      The number of times to attempt to check the status of the PR before
+      giving up.
+    required: false
+    default: "10"
+  status-interval:
+    description: |
+      The number of seconds to wait between attempts to check the status of
+      the PR.
+    required: false
+    default: "10"
+  auto-merge:
+    description: |
+      Toggles the behavior of automatically merging the PR when using the pull_request
+      promotion method. If set to true, the PR will be automatically merged
+      when all checks pass. If set to false, the PR will be opened but not
+      merged.
+    required: false
+    default: "true"
   sha256-checksum:
     description: Checksum of Kustomize version
     required: false
@@ -101,8 +121,8 @@ runs:
   # testing changes to the underlying container. Otherwise, use the latest
   # version of the container. This prevents the user from having to build
   # the container themselves.
-  # image: 'Dockerfile'
-  image: 'docker://ghcr.io/kustomize-everything/action-promote:v3.4.1'
+  image: 'Dockerfile'
+  # image: 'docker://ghcr.io/kustomize-everything/action-promote:v3.4.1'
   env:
     GIT_COMMIT_USER: ${{ inputs.git-commit-user }}
     GIT_COMMIT_EMAIL: ${{ inputs.git-commit-email }}
@@ -111,6 +131,9 @@ runs:
     IMAGES: ${{ inputs.images }}
     CHARTS: ${{ inputs.charts }}
     PROMOTION_METHOD: ${{ inputs.promotion-method }}
+    AUTO_MERGE: ${{ inputs.auto-merge }}
+    STATUS_ATTEMPTS: ${{ inputs.status-attempts }}
+    STATUS_INTERVAL: ${{ inputs.status-interval }}
     SSH_KEY: ${{ inputs.ssh-key }}
     TARGET_REPO: ${{ inputs.target-repo }}
     TARGET_BRANCH: ${{ inputs.target-branch }}
