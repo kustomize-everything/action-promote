@@ -111,8 +111,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   echo "Waiting for status checks to complete..."
   ATTEMPTS=10
   WAIT=10
-  wait_for_result_not_found ".*(no checks reported|Waiting for status checks to start).*" "gh pr checks" "${ATTEMPTS}" "${WAIT}" "false"
-  wait_for_result_not_found ".*pending.*" "gh pr checks" "${ATTEMPTS}" "${WAIT}" "false"
+  wait_for_result_not_found "reported\|Waiting\|pending" "gh pr checks" "${ATTEMPTS}" "${WAIT}" "false"
 
   echo
   if [[ "${AUTO_MERGE}" == "true" ]]; then
