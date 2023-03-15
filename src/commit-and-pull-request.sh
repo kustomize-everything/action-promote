@@ -7,17 +7,15 @@ function wait_for_result_not_found {
   local -r result="$1"
   local -r command="$2"
   local -r attempts="$3"
-  local -r sleep="$4"
+  local -r sleep_time="$4"
   local -r fail_on_nonzero="$5"
-
-  local -r sleep_time=10
 
   local -i attempt=0
   while [[ "${attempt}" -lt "${attempts}" ]]; do
     set +e
     if ! output="$(${command} 2>&1)"; then
       echo "${output}"
-      if [[ "${fail_on_nonzero}" == "fail_on_nonzero" ]]; then
+      if [[ "${fail_on_nonzero}" == "true" ]]; then
         echo "Command failed. Exiting."
         exit 1
       fi
@@ -112,8 +110,8 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   echo "Waiting for status checks to complete..."
   ATTEMPTS=10
   WAIT=10
-  wait_for_result_not_found "no checks reported" "gh pr checks 2>&1" "${ATTEMPTS}" "${WAIT}"
-  wait_for_result_not_found "Waiting for status checks to start" "gh pr checks 2>&1" "${ATTEMPTS}" "${WAIT}" "fail_on_nonzero"
+  wait_for_result_not_found "no checks reported" "gh pr checks 2>&1" "${ATTEMPTS}" "${WAIT}" "false"
+  wait_for_result_not_found "Waiting for status checks to start" "gh pr checks 2>&1" "${ATTEMPTS}" "${WAIT}" "true"
 
   echo
   if [[ "${AUTO_MERGE}" == "true" ]]; then
