@@ -31,7 +31,7 @@ inputs:
         OR
         - fromOverlay: The name of the overlay to fetch the image details for
           the named image from
-        - env: The env that this image should be promoted in
+        - overlays: JSON list of overlays that this image should be promoted in
       Either images or helm-charts or both must be specified.
     default: "[]"
   charts:
@@ -44,7 +44,7 @@ inputs:
         OR
         - fromOverlay: The name of the overlay to fetch the chart details for
           the named chart from
-        - env: The env that this chart should be promoted in
+        - overlays: JSON list of overlays that this image should be promoted in
       Either images or helm-charts or both must be specified.
     default: "[]"
   promotion-method:
