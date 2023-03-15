@@ -24,7 +24,7 @@ function wait_for_result_not_found {
 
     echo "${output}"
     if [[ "${output}" != *"${result}"* ]]; then
-      echo "Result not found. Exiting."
+      echo "Result '${result}' not found. Exiting."
       return 0
     fi
     # Decrement the number of attempts
@@ -33,7 +33,7 @@ function wait_for_result_not_found {
     sleep "${sleep_time}"
   done
 
-  echo "Result not found after ${attempts} attempts. Exiting."
+  echo "Result '${result}' persisted after ${attempts} attempts. Exiting."
   exit 1
 }
 
