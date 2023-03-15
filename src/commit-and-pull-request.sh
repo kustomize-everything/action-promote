@@ -38,6 +38,42 @@ function wait_for_result_not_found {
   exit 1
 }
 
+function git_commit_with_metadata {
+  # All of these variables are assumed to have been set by the caller
+
+  # If we have both images and charts, the title should reflect that.
+  if [[ "${IMAGES}" != "[]" && "${CHARTS}" != "[]" ]]; then
+    TITLE="Promote images ${IMAGES_NAMES} and charts ${CHARTS_NAMES}"
+  else
+    if [[ "${IMAGES}" != "[]" ]]; then
+      TITLE="Promote images ${IMAGES_NAMES}"
+    fi
+    if [[ "${CHARTS}" != "[]" ]]; then
+      TITLE="Promote charts ${CHARTS_NAMES}"
+    fi
+  fi
+  METADATA="---
+  GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
+  GITHUB_JOB: ${GITHUB_JOB}
+  GITHUB_REF_URL: ${GITHUB_REF_URL}
+  GITHUB_REF: ${GITHUB_REF}
+  GITHUB_REPOSITORY_URL: ${GITHUB_REPOSITORY_URL}
+  GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}
+  GITHUB_RUN_ID: ${GITHUB_RUN_ID}
+  GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER}
+  GITHUB_SHA_URL: ${GITHUB_SHA_URL}
+  GITHUB_SHA: ${GITHUB_SHA}
+  GITHUB_WORKFLOW_RUN_URL: ${GITHUB_WORKFLOW_RUN_URL}
+  IMAGES: ${IMAGES_NAMES}
+  CHARTS: ${CHARTS_NAMES}
+  MANIFEST_JSON: ${MANIFEST_JSON}"
+
+  git commit -m "${TITLE}
+
+  ${METADATA}
+  "
+}
+
 # Fail on non-zero exit code
 set -e
 
@@ -51,42 +87,13 @@ if [[ "${DEBUG}" == "true" ]]; then
   env
 fi
 
-# If we have both images and charts, the title should reflect that.
-if [[ "${IMAGES}" != "[]" && "${CHARTS}" != "[]" ]]; then
-  TITLE="Promote images ${IMAGES_NAMES} and charts ${CHARTS_NAMES}"
-else
-  if [[ "${IMAGES}" != "[]" ]]; then
-    TITLE="Promote images ${IMAGES_NAMES}"
-  fi
-  if [[ "${CHARTS}" != "[]" ]]; then
-    TITLE="Promote charts ${CHARTS_NAMES}"
-  fi
-fi
-METADATA="---
-GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
-GITHUB_JOB: ${GITHUB_JOB}
-GITHUB_REF_URL: ${GITHUB_REF_URL}
-GITHUB_REF: ${GITHUB_REF}
-GITHUB_REPOSITORY_URL: ${GITHUB_REPOSITORY_URL}
-GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}
-GITHUB_RUN_ID: ${GITHUB_RUN_ID}
-GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER}
-GITHUB_SHA_URL: ${GITHUB_SHA_URL}
-GITHUB_SHA: ${GITHUB_SHA}
-GITHUB_WORKFLOW_RUN_URL: ${GITHUB_WORKFLOW_RUN_URL}
-IMAGES: ${IMAGES_NAMES}
-CHARTS: ${CHARTS_NAMES}
-MANIFEST_JSON: ${MANIFEST_JSON}"
 
 if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${GITHUB_SHA:?}" | tr "/" "-")"
   git checkout -B "${BRANCH}"
 
   git add .
-  git commit -m "${TITLE}
-
-  ${METADATA}
-  "
+  git_commit_with_metadata
   git show
 
   if [[ "${DRY_RUN}" == "true" ]]; then
@@ -124,10 +131,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   gh pr view
 elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
   git add .
-  git commit -m "${TITLE}
-
-  ${METADATA}
-  "
+  git_commit_with_metadata
   git show
 
   if [[ "${DRY_RUN}" == "true" ]]; then
