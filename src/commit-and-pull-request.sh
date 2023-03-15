@@ -30,7 +30,7 @@ function wait_for_result_not_found {
     fi
     # Decrement the number of attempts
     attempt=$((attempt + 1))
-    echo "$((attempts - attempt)) attempts remaining"
+    echo "$((attempts - attempt)) attempts remaining. Sleeping for ${sleep_time} seconds..."
     sleep "${sleep_time}"
   done
 
@@ -110,7 +110,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   echo
   echo "Waiting for status checks to complete..."
   ATTEMPTS=10
-  WAIT=10
+  WAIT=30
   wait_for_result_not_found "reported\|Waiting\|pending" "gh pr checks" "${ATTEMPTS}" "${WAIT}" "false"
 
   echo
