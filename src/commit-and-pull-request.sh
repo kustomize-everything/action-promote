@@ -1,5 +1,44 @@
 #!/bin/bash
 
+# Function to wait until the string provided by the first argument is not found
+# in the output of the command provided by the second argument, until the number
+# of attempts provided by the third argument is reached, or the command fails.
+function wait_for_result_not_found {
+  local -r result="$1"
+  local -r command="$2"
+  local -r attempts="$3"
+  local -r sleep="$4"
+  local -r fail_on_nonzero="$5"
+
+  local -r sleep_time=10
+
+  local -i attempt=0
+  while [[ "${attempt}" -lt "${attempts}" ]]; do
+    set +e
+    if ! output="$(${command} 2>&1)"; then
+      echo "${output}"
+      if [[ "${fail_on_nonzero}" == "fail_on_nonzero" ]]; then
+        echo "Command failed. Exiting."
+        exit 1
+      fi
+    else
+      echo "${output}"
+      if [[ "${output}" != *"${result}"* ]]; then
+        echo "Result not found. Exiting."
+        return 0
+      fi
+      # Decrement the number of attempts
+      attempt=$((attempt + 1))
+      echo "${attempt} attempts remaining"
+    fi
+    set +e
+    sleep "${sleep_time}"
+  done
+
+  echo "Result not found after ${attempts} attempts. Exiting."
+  exit 1
+}
+
 # Fail on non-zero exit code
 set -e
 
@@ -71,45 +110,11 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
 
   echo
   echo "Waiting for status checks to complete..."
-  set +e
-  CHECK_RESULT="$(gh pr checks 2>&1)";
-  set -e
-  ATTEMPTS=3
-  echo "result"
-  echo "${CHECK_RESULT}"
-  while [[ "${CHECK_RESULT}" =~ "no checks reported" && $ATTEMPTS -gt 0 ]]; do
-    sleep 10
-    echo "No status checks found or checks are just slow to start."
+  ATTEMPTS=10
+  WAIT=10
+  wait_for_result_not_found "no checks reported" "gh pr checks 2>&1" "${ATTEMPTS}" "${WAIT}"
+  wait_for_result_not_found "Waiting for status checks to start" "gh pr checks 2>&1" "${ATTEMPTS}" "${WAIT}" "fail_on_nonzero"
 
-    # If non-zero, then we have a failure
-    set +e
-    CHECK_RESULT="$(gh pr checks 2>&1)"
-    set -e
-    # Decrement the number of attempts
-    ATTEMPTS=$((ATTEMPTS - 1))
-    echo "${ATTEMPTS} attempts remaining"
-  done
-
-  echo "result"
-  echo "${CHECK_RESULT}"
-  ATTEMPTS=5
-  while [[ "${CHECK_RESULT}" =~ "Waiting for status checks to start" && $ATTEMPTS -gt 0 ]]; do
-    sleep 10
-
-    # If non-zero, then we have a failure
-    set +e
-    if ! CHECK_RESULT="$(gh pr checks 2>&1)"; then
-      echo "${CHECK_RESULT}"
-      echo "Status checks have failed. Exiting."
-      exit 1
-    else
-      echo "${CHECK_RESULT}"
-      # Decrement the number of attempts
-      ATTEMPTS=$((ATTEMPTS - 1))
-      echo "${ATTEMPTS} attempts remaining"
-    fi
-    set -e
-  done
   echo
   if [[ "${AUTO_MERGE}" == "true" ]]; then
     echo "Status checks have all passed. Merging PR..."
