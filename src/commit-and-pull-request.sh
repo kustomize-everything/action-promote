@@ -109,9 +109,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
 
   echo
   echo "Waiting for status checks to complete..."
-  ATTEMPTS=10
-  WAIT=30
-  wait_for_result_not_found "reported\|Waiting\|pending" "gh pr checks" "${ATTEMPTS}" "${WAIT}" "false"
+  wait_for_result_not_found "reported\|Waiting\|pending" "gh pr checks" "${STATUS_ATTEMPTS}" "${STATUS_INTERVAL}" "false"
 
   echo
   if [[ "${AUTO_MERGE}" == "true" ]]; then

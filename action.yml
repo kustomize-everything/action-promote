@@ -55,6 +55,18 @@ inputs:
       branch.
     required: false
     default: push
+  status-attempts:
+    description: |
+      The number of times to attempt to check the status of the PR before
+      giving up.
+    required: false
+    default: "10"
+  status-interval:
+    description: |
+      The number of seconds to wait between attempts to check the status of
+      the PR.
+    required: false
+    default: "10"
   auto-merge:
     description: |
       Toggles the behavior of automatically merging the PR when using the pull_request
@@ -120,6 +132,8 @@ runs:
     CHARTS: ${{ inputs.charts }}
     PROMOTION_METHOD: ${{ inputs.promotion-method }}
     AUTO_MERGE: ${{ inputs.auto-merge }}
+    STATUS_ATTEMPTS: ${{ inputs.status-attempts }}
+    STATUS_INTERVAL: ${{ inputs.status-interval }}
     SSH_KEY: ${{ inputs.ssh-key }}
     TARGET_REPO: ${{ inputs.target-repo }}
     TARGET_BRANCH: ${{ inputs.target-branch }}
