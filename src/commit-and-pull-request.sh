@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Function to wait until the string provided by the first argument is not found
+# Function to wait until the regex provided by the first argument is not found
 # in the output of the command provided by the second argument, until the number
 # of attempts provided by the third argument is reached, or the command fails.
 function wait_for_result_not_found {
-  local -r result="$1"
+  local -r regex="$1"
   local -r command="$2"
   local -r attempts="$3"
   local -r sleep_time="$4"
@@ -23,8 +23,9 @@ function wait_for_result_not_found {
     set +e
 
     echo "${output}"
-    if [[ "${output}" != *"${result}"* ]]; then
-      echo "Result '${result}' not found. Exiting."
+    # If the regex does not match, we're done
+    if ! echo "${output}" | grep -q "${regex}"; then
+      echo "Match '${regex}' not found. Exiting."
       return 0
     fi
     # Decrement the number of attempts
@@ -33,7 +34,7 @@ function wait_for_result_not_found {
     sleep "${sleep_time}"
   done
 
-  echo "Result '${result}' persisted after ${attempts} attempts. Exiting."
+  echo "Match '${regex}' persisted after ${attempts} attempts. Exiting."
   exit 1
 }
 
