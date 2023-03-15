@@ -14,8 +14,8 @@ function wait_for_result_not_found {
   while [[ "${attempt}" -lt "${attempts}" ]]; do
     set +e
     if ! output="$(${command} 2>&1)"; then
-      echo "${output}"
       if [[ "${fail_on_nonzero}" == "true" ]]; then
+        echo "${output}"
         echo "Command failed. Exiting."
         exit 1
       fi
@@ -30,7 +30,7 @@ function wait_for_result_not_found {
     fi
     # Decrement the number of attempts
     attempt=$((attempt + 1))
-    echo "${attempt} attempts remaining"
+    echo "$((attempts - attempt)) attempts remaining"
     sleep "${sleep_time}"
   done
 
