@@ -19,17 +19,17 @@ function wait_for_result_not_found {
         echo "Command failed. Exiting."
         exit 1
       fi
-    else
-      echo "${output}"
-      if [[ "${output}" != *"${result}"* ]]; then
-        echo "Result not found. Exiting."
-        return 0
-      fi
-      # Decrement the number of attempts
-      attempt=$((attempt + 1))
-      echo "${attempt} attempts remaining"
     fi
     set +e
+
+    echo "${output}"
+    if [[ "${output}" != *"${result}"* ]]; then
+      echo "Result not found. Exiting."
+      return 0
+    fi
+    # Decrement the number of attempts
+    attempt=$((attempt + 1))
+    echo "${attempt} attempts remaining"
     sleep "${sleep_time}"
   done
 
