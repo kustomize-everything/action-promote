@@ -67,13 +67,19 @@ EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 echo "manifest-json<<$EOF" >> "${GITHUB_OUTPUT}"
 echo "${MANIFEST_JSON}" >> "${GITHUB_OUTPUT}"
 echo "$EOF" >> "${GITHUB_OUTPUT}"
-jq -c -r '.[] | .images | map(.name) | unique | join(" ")' < manifest.json | xargs > images.txt
+
+jq -c -r 'keys | join(", ")' < manifest.json | xargs > overlays.txt
+echo "overlays=$(cat overlays.txt)" >> "${GITHUB_OUTPUT}"
+OVERLAY_NAMES="$(cat overlays.txt)"
+export OVERLAY_NAMES
+
+jq -c -r '[.[] | .charts | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > images.txt
 echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
 IMAGES_NAMES="$(cat images.txt)"
 export IMAGES_NAMES
 
 # shellcheck disable=SC2129
-jq -c -r '.[] | .charts | map(.name) | unique | join(" ")' < manifest.json | xargs > charts.txt
+jq -c -r '[.[] | .charts | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > charts.txt
 echo "charts=$(cat charts.txt)" >> "${GITHUB_OUTPUT}"
 CHARTS_NAMES="$(cat charts.txt)"
 export CHARTS_NAMES

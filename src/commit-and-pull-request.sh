@@ -40,18 +40,7 @@ function wait_for_result_not_found {
 
 function git_commit_with_metadata {
   # All of these variables are assumed to have been set by the caller
-
-  # If we have both images and charts, the title should reflect that.
-  if [[ "${IMAGES}" != "[]" && "${CHARTS}" != "[]" ]]; then
-    TITLE="Promote images ${IMAGES_NAMES} and charts ${CHARTS_NAMES}"
-  else
-    if [[ "${IMAGES}" != "[]" ]]; then
-      TITLE="Promote images ${IMAGES_NAMES}"
-    fi
-    if [[ "${CHARTS}" != "[]" ]]; then
-      TITLE="Promote charts ${CHARTS_NAMES}"
-    fi
-  fi
+  TITLE="Promote to ${OVERLAY_NAMES}"
   METADATA="---
   GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
   GITHUB_JOB: ${GITHUB_JOB}
