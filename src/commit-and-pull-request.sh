@@ -55,6 +55,7 @@ function git_commit_with_metadata {
   GITHUB_WORKFLOW_RUN_URL: ${GITHUB_WORKFLOW_RUN_URL}
   IMAGES: ${IMAGES_NAMES}
   CHARTS: ${CHARTS_NAMES}
+  OVERLAYS: ${OVERLAY_NAMES}
   MANIFEST_JSON: ${MANIFEST_JSON}"
 
   git commit -m "${TITLE}

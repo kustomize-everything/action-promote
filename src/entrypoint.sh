@@ -73,7 +73,7 @@ echo "overlays=$(cat overlays.txt)" >> "${GITHUB_OUTPUT}"
 OVERLAY_NAMES="$(cat overlays.txt)"
 export OVERLAY_NAMES
 
-jq -c -r '[.[] | .charts | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > images.txt
+jq -c -r '[.[] | .images | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > images.txt
 echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
 IMAGES_NAMES="$(cat images.txt)"
 export IMAGES_NAMES
