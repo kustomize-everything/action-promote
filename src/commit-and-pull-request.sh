@@ -133,13 +133,13 @@ elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
   echo
   # If we have both images and charts, the output should reflect that.
   if [[ "${IMAGES}" != "[]" && "${CHARTS}" != "[]" ]]; then
-    echo "Images ${IMAGES_NAMES} and charts ${CHARTS_NAMES} from ${GITHUB_GHA} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
+    echo "Images ${IMAGES_NAMES} and charts ${CHARTS_NAMES} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
   else
     if [[ "${IMAGES}" != "[]" ]]; then
-      echo "Images ${IMAGES_NAMES} from ${GITHUB_GHA} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
+      echo "Images ${IMAGES_NAMES} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
     fi
     if [[ "${CHARTS}" != "[]" ]]; then
-      echo "Charts ${CHARTS_NAMES} from ${GITHUB_GHA} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
+      echo "Charts ${CHARTS_NAMES} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
     fi
   fi
   echo
