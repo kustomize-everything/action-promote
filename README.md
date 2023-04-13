@@ -78,12 +78,20 @@ jobs:
     needs: build-image
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Deployment Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/guestbook-deploy
+          ref: main
+          path: deployment
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push promoted image to deployment repo
         uses: kustomize-everything/action-promote@v1.0.6
         with:
           target-repo: kustomize-everything/guestbook-deploy
           target-branch: main
-          working-directory: guestbook-deploy
+          working-directory: deployment
           images: |-
             [
               {
