@@ -151,4 +151,4 @@ runs:
     KUSTOMIZE_VERSION: ${{ inputs.version }}
     DEBUG: ${{ inputs.debug }}
     AGGREGATE_PR_CHANGES: ${{ inputs.aggregate-pr-changes }}
-    PR_UNIQUE_KEY: ${{ inputs.pr-branch-key }}
+    PR_UNIQUE_KEY: ${{ inputs.pr-unique-key }}
