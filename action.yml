@@ -106,7 +106,7 @@ inputs:
       If true, the action will print out a lot of debug information.
     default: "false"
   aggregate-pr-changes:
-    description: If this is set to true, new promotion PR will aggregate previous unmerged changes in latest PR
+    description: If this is set to true, new changes will be aggregated in the existing open PR
     default: "false"
   pr-unique-key:
     description: this key will be added to all your PR branch names if "aggregate-pr-changes" is set to true

@@ -77,7 +77,6 @@ if [[ "${DEBUG}" == "true" ]]; then
   env
 fi
 
-APP_NAME="$(echo "${OVERLAY_NAMES}"|tr "/" "-")"
 if [[ "${PROMOTION_METHOD}" == "pull_request" && "${AGGREGATE_PR_CHANGES}" == "false" ]]; then
   BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${GITHUB_SHA:?}" | tr "/" "-")"
   git checkout -B "${BRANCH}"
@@ -121,11 +120,11 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" && "${AGGREGATE_PR_CHANGES}" == "f
   gh pr view
 ############# Adding this code for PR aggregation #####################
 elif [[ "${PROMOTION_METHOD}" == "pull_request" && "${AGGREGATE_PR_CHANGES}" == "true" ]]; then
-  BRANCH_REGEX=$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${APP_NAME:?}/${PR_UNIQUE_KEY:?}"|tr "/" "-")
+  BRANCH_REGEX=$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${PR_UNIQUE_KEY:?}"|tr "/" "-")
   if [[ gh pr list --json headRefName |jq -c '.[].headRefName' == *$BRANCH_REGEX* ]]; then
     BRANCH=$(gh pr list --json headRefName |jq -c '.[].headRefName'|grep $BRANCH_REGEX)
   else
-    BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${APP_NAME:?}/${PR_BRANCH_KEY:?}/${GITHUB_SHA:?}" | tr "/" "-")"
+    BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${PR_BRANCH_KEY:?}/${GITHUB_SHA:?}" | tr "/" "-")"
   git checkout -B "${BRANCH}"
   git merge ${TARGET_BRANCH}
   git add .
