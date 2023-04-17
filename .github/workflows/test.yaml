@@ -197,7 +197,7 @@ jobs:
           # Useful for debugging the action
           # debug: true
 
-      - name: Action Test with ${{ matrix.promotion }}
+      - name: Action Test with ${{ matrix.promotion }} (reuse previous PR)
         uses: ./
         with:
           target-repo: kustomize-everything/test-deploy
