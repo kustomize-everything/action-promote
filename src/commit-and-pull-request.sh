@@ -77,10 +77,24 @@ if [[ "${DEBUG}" == "true" ]]; then
   env
 fi
 
-
 if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
-  BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${GITHUB_SHA:?}" | tr "/" "-")"
-  git checkout -B "${BRANCH}"
+  if [[ "${AGGREGATE_PR_CHANGES}" == "true" ]]; then
+    BRANCH_REGEX=$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${PR_UNIQUE_KEY:?}"|tr "/" "-")
+    HEAD_REF_NAME=$(gh pr list --json headRefName | jq -rc '.[].headRefName')
+    if [[ "${HEAD_REF_NAME}" =~ .*${BRANCH_REGEX}.* ]]; then
+      BRANCH=$(gh pr list --json headRefName | jq -rc '.[].headRefName' | grep "${BRANCH_REGEX}")
+      git stash
+      git checkout -B "${BRANCH}"
+      git rebase "${TARGET_BRANCH}"
+      git stash apply
+    else
+      BRANCH=$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${PR_UNIQUE_KEY:?}/${GITHUB_SHA:?}" | tr "/" "-")
+      git checkout -B "${BRANCH}"
+    fi
+  else
+    BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${GITHUB_SHA:?}" | tr "/" "-")"
+    git checkout -B "${BRANCH}"
+  fi
 
   git add .
   git_commit_with_metadata

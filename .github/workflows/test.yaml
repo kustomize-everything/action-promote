@@ -142,7 +142,74 @@ jobs:
           dry-run: false
           auto-merge: false
           # Useful for debugging the action
-          # debug: t
+          # debug: true
+
+  action-open-pr-reuse-testing:
+    name: Action Open PR with Reuse Testing
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        promotion: [simple-promotion]
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Read in examples to github output
+        id: read-examples
+        shell: bash
+        run: |-
+          # Generate unique EOF value to prevent injection attack
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+
+          echo "PROMOTION<<$EOF" >> $GITHUB_ENV
+          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
+          # This relies on the first promotion in the configuration for the matrix
+          # being an image promotion.
+          echo "PROMOTION_2<<$EOF" >> $GITHUB_ENV
+          jq '.[0].newTag = "2.2.2"' example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: ${{ env.TEST_DEPLOY_SHA }}
+          path: test-deploy
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+
+      - name: Action Test with ${{ matrix.promotion }}
+        uses: ./
+        with:
+          target-repo: kustomize-everything/test-deploy
+          target-branch: ${{ env.BRANCH }}
+          working-directory: test-deploy
+          images: ${{ env.PROMOTION }}
+          github-token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+          promotion-method: pull_request
+          dry-run: false
+          auto-merge: false
+          aggregate-pr-changes: true
+          pr-unique-key: gha-testing-${{ env.BRANCH }}
+          # Useful for debugging the action
+          # debug: true
+
+      - name: Action Test with ${{ matrix.promotion }} (reuse previous PR)
+        uses: ./
+        with:
+          target-repo: kustomize-everything/test-deploy
+          target-branch: ${{ env.BRANCH }}
+          working-directory: test-deploy
+          images: ${{ env.PROMOTION_2 }}
+          github-token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+          promotion-method: pull_request
+          dry-run: false
+          auto-merge: false
+          aggregate-pr-changes: true
+          pr-unique-key: gha-testing-${{ env.BRANCH }}
 
   python-tests:
     name: Python Tests
