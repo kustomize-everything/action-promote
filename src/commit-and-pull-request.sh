@@ -86,7 +86,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
       git checkout "${BRANCH}"
       git rebase "${TARGET_BRANCH}"
     else
-      BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${PR_BRANCH_KEY:?}/${GITHUB_SHA:?}" | tr "/" "-")"
+      BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${PR_UNIQUE_KEY:?}/${GITHUB_SHA:?}" | tr "/" "-")"
       git checkout -B "${BRANCH}"
     fi
   else
