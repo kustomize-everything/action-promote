@@ -82,7 +82,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     BRANCH_REGEX=$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${PR_UNIQUE_KEY:?}"|tr "/" "-")
     HEAD_REF_NAME=$(gh pr list --json headRefName | jq -c '.[].headRefName')
     if [[ "${HEAD_REF_NAME}" =~ .*${BRANCH_REGEX}.* ]]; then
-      BRANCH=$(gh pr list --json headRefName |jq -c '.[].headRefName'|grep $BRANCH_REGEX)
+      BRANCH=$(gh pr list --json headRefName | jq -c '.[].headRefName' | grep "${BRANCH_REGEX}")
       git checkout "${BRANCH}"
       git rebase "${TARGET_BRANCH}"
     else
