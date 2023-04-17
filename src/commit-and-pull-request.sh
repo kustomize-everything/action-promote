@@ -77,11 +77,57 @@ if [[ "${DEBUG}" == "true" ]]; then
   env
 fi
 
-
-if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
+APP_NAME="$(echo "${OVERLAY_NAMES}"|tr "/" "-")"
+if [[ "${PROMOTION_METHOD}" == "pull_request" && "${AGGREGATE_PR_CHANGES}" == "false" ]]; then
   BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${GITHUB_SHA:?}" | tr "/" "-")"
   git checkout -B "${BRANCH}"
 
+  git add .
+  git_commit_with_metadata
+  git show
+
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    echo "Dry run is enabled. Not pushing changes."
+    exit 0
+  fi
+
+  git push origin "${BRANCH}" -f
+  set +e
+  PR="$(gh pr view 2>&1)"
+  set -e
+  # We're just looking for the sub-string here, not a regex
+  # shellcheck disable=SC2076
+  if [[ "${PR}" =~ "no pull requests found" ]]; then
+    gh pr create --fill
+  else
+    echo "PR Already exists:"
+    gh pr view
+  fi
+
+  echo
+  echo "Waiting for status checks to complete..."
+  wait_for_result_not_found "reported\|Waiting\|pending" "gh pr checks" "${STATUS_ATTEMPTS}" "${STATUS_INTERVAL}" "false"
+
+  echo
+  if [[ "${AUTO_MERGE}" == "true" ]]; then
+    echo "Status checks have all passed. Merging PR..."
+    gh pr merge --squash --admin
+    echo
+    echo "Promotion PR has been merged. Details below."
+  else
+    echo
+    echo "Promotion PR has been created and has passed checks. Details below."
+  fi
+  gh pr view
+############# Adding this code for PR aggregation #####################
+elif [[ "${PROMOTION_METHOD}" == "pull_request" && "${AGGREGATE_PR_CHANGES}" == "true" ]]; then
+  BRANCH_REGEX=$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${APP_NAME:?}/${PR_UNIQUE_KEY:?}"|tr "/" "-")
+  if [[ gh pr list --json headRefName |jq -c '.[].headRefName' == *$BRANCH_REGEX* ]]; then
+    BRANCH=$(gh pr list --json headRefName |jq -c '.[].headRefName'|grep $BRANCH_REGEX)
+  else
+    BRANCH="$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${APP_NAME:?}/${PR_BRANCH_KEY:?}/${GITHUB_SHA:?}" | tr "/" "-")"
+  git checkout -B "${BRANCH}"
+  git merge ${TARGET_BRANCH}
   git add .
   git_commit_with_metadata
   git show
