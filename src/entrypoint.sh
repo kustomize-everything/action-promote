@@ -73,7 +73,7 @@ echo "overlays=$(cat overlays.txt)" >> "${GITHUB_OUTPUT}"
 OVERLAY_NAMES="$(cat overlays.txt)"
 export OVERLAY_NAMES
 
-jq -c -r 'keys | join("-") | gsub("/", "-")' < manifest.json | xargs > overlays-joined.txt
+jq -c -r 'keys | join("-") | gsub("/"; "-")' < manifest.json | xargs > overlays-joined.txt
 echo "overlays-joined=$(cat overlays-joined.txt)" >> "${GITHUB_OUTPUT}"
 OVERLAY_NAMES_NO_SLASH="$(cat overlays-joined.txt)"
 export OVERLAY_NAMES_NO_SLASH
