@@ -105,7 +105,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        promotion: [simple-promotion]
+        promotion: [simple-promotion, complex-promotion]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -150,7 +150,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        promotion: [simple-promotion]
+        promotion: [simple-promotion, complex-promotion]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
