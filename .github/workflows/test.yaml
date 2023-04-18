@@ -166,6 +166,12 @@ jobs:
           cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
+          # This relies on the first promotion in the configuration for the matrix
+          # being an image promotion.
+          echo "PROMOTION_2<<$EOF" >> $GITHUB_ENV
+          jq '.[0].newTag = "2.2.2"' example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
         with:
@@ -191,13 +197,13 @@ jobs:
           # Useful for debugging the action
           # debug: true
 
-      - name: Action Test with ${{ matrix.promotion }}
+      - name: Action Test with ${{ matrix.promotion }} (reuse previous PR)
         uses: ./
         with:
           target-repo: kustomize-everything/test-deploy
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
-          images: ${{ env.PROMOTION }}
+          images: ${{ env.PROMOTION_2 }}
           github-token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
           promotion-method: pull_request
           dry-run: false
@@ -213,7 +219,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
 
