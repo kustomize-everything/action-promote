@@ -79,8 +79,7 @@ fi
 
 if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   if [[ "${AGGREGATE_PR_CHANGES}" == "true" ]]; then
-    APP_OVERLAY=$(echo "${OVERLAY_NAMES}"|tr "/" "-")
-    BRANCH_REGEX=$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${APP_OVERLAY:?}/${PR_UNIQUE_KEY:?}"|tr "/" "-")
+    BRANCH_REGEX=$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${OVERLAY_NAMES_NO_SLASH:?}/${PR_UNIQUE_KEY:?}"|tr "/" "-")
     HEAD_REF_NAME=$(gh pr list --json headRefName | jq -rc '.[].headRefName')
     if [[ "${HEAD_REF_NAME}" =~ .*${BRANCH_REGEX}.* ]]; then
       BRANCH=$(gh pr list --json headRefName | jq -rc '.[].headRefName' | grep "${BRANCH_REGEX}")
@@ -89,7 +88,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
       git rebase "${TARGET_BRANCH}"
       git stash apply
     else
-      BRANCH=$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${APP_OVERLAY:?}/${PR_UNIQUE_KEY:?}/${GITHUB_SHA:?}" | tr "/" "-")
+      BRANCH=$(echo "promotion/${GITHUB_REPOSITORY:?}/${TARGET_BRANCH:?}/${OVERLAY_NAMES_NO_SLASH:?}/${PR_UNIQUE_KEY:?}/${GITHUB_SHA:?}" | tr "/" "-")
       git checkout -B "${BRANCH}"
     fi
   else
