@@ -156,8 +156,6 @@ elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
       echo "Charts ${CHARTS_NAMES} have been promoted to ${TARGET_REPO} on branch ${TARGET_BRANCH}."
     fi
   fi
-  echo
-  echo "${DEPLOYMENT_REPO_SHA_URL}"
 else
   echo "Unknown promotion method: ${PROMOTION_METHOD}. Valid methods are pull_request and push."
   exit 1
