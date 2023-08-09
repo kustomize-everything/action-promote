@@ -1,51 +1,88 @@
+Here's the updated README for `action-promote`:
+
 # action-promote
 
-This GitHub action provides a standard promotion pattern using Kustomize.
+`action-promote` is a GitHub action designed to implement a standard promotion pattern using Kustomize.
 
-It supports injecting multiple new images or helm charts into target overlays
-via a JSON config file. For examples, refer to [example](./example).
+It facilitates the injection of multiple new images or helm charts into target overlays through a JSON config file. The action supports both cross-overlay promotions using the `fromOverlay` field and direct image/helm tag promotions.
 
-Within a JSON config for your image promotions, you have two (mutually exclusive
-on a per-image name basis) ways of providing the promotion information. Either
-you can give the `newName` or `newTag` keys directly in the
-image configuration OR you can give a `fromOverlay` key, which will find
-the overlay provided as the value in your deployment repo and extract the value
-of the image `name` from it.
+## Promotion Configuration
 
-For each image, you can promote multiple target overlays in your deployment
-repo by providing multiple values to the `overlays` key.
+For each promotion type, you can target multiple overlays in your deployment repository by providing multiple values to the `overlays` key.
 
-Within a JSON config for your Helm chart promotions, you have two (also mutually
-exclusive on a per-image name basis) ways of providing the promotion
-information. Either you can give the new `version` for the chart directly (along
-with an optional update to the `releaseName`) or, similar to the images
-promotion configuration, you can provide a `fromOverlay` key, which will find
-the overlay provided and extract the helm chart information from that overlay
-for use in the provided `overlay`.
+### Image Promotions
 
-After making all of the changes specified in the JSON configuration, the GitHub
-action will automatically commit and either push the branch directly or open
-a pull request, depending on what you define.
+Images can be promoted in two ways:
+
+1. **Cross-Overlay Promotion**: Extract image details from a given overlay and promote it to one or more target overlays.
+    ```json
+    [
+      {
+        "name": "nginx",
+        "fromOverlay": "env/dev",
+        "overlays": ["env/production"]
+      }
+    ]
+    ```
+
+2. **Direct Image Tag Promotion**: Directly promote an image by specifying its new name and tag.
+    ```json
+    [
+      {
+        "name": "nginx",
+        "newName": "nginx",
+        "newTag": "1.25.0",
+        "overlays": ["env/dev"]
+      }
+    ]
+    ```
+
+### Helm Chart Promotions
+
+Helm charts can also be promoted in two ways:
+
+1. **Direct Helm Promotion**: Specify a new version for the helm chart directly (along with an optional `releaseName`).
+    ```json
+    [
+      {
+        "name": "kube-prometheus-stack",
+        "releaseName": "prometheus",
+        "version": "45.5.0",
+        "overlays": ["env/dev"]
+      }
+    ]
+    ```
+
+2. **Cross-Overlay Helm Promotion**: Extract helm details from a given overlay and promote it to one or more target overlays.
+    ```json
+    [
+      {
+        "name": "kube-prometheus-stack",
+        "fromOverlay": "env/dev",
+        "overlays": ["env/production"]
+      }
+    ]
+    ```
+
+For more examples, refer to the [example](./example) directory.
+
+After processing the specified promotions in the JSON configuration, `action-promote` will commit the changes and either push directly or open a pull request, based on your specification.
 
 ## Usage
 
 ### Pre-requisites
 
-- Github repo where your code resides e.g. [kustomize-everything/guestbook](https://github.com/kustomize-everything/guestbook)
-- CI process that results in a container image and tag
-- Github repo where your Kustomize deployment files reside e.g. [kustomize-everything/guestbook-deploy](https://github.com/kustomize-everything/guestbook-deploy)
+- A Github repository where your code resides, e.g., [kustomize-everything/guestbook](https://github.com/kustomize-everything/guestbook).
+- CI process resulting in a container image and tag.
+- Github repository where your Kustomize deployment files reside, e.g., [kustomize-everything/guestbook-deploy](https://github.com/kustomize-everything/guestbook-deploy).
 
-### Inputs
+### Inputs and Outputs
 
-Refer to [action.yml](./action.yml)
-
-### Outputs
-
-Refer to [action.yml](./action.yml)
+For the detailed list of action inputs and outputs, refer to [action.yml](./action.yml).
 
 ### Example Workflow
 
-For a complete example, please refer to [kustomize-everything/guestbook](https://github.com/kustomize-everything/guestbook).
+For a complete workflow example, see [kustomize-everything/guestbook](https://github.com/kustomize-everything/guestbook).
 
 ```yaml
 ---
@@ -106,8 +143,7 @@ jobs:
 
 ## Contributing
 
-We would love for you to contribute to kustomize-everything/actions-promote,
-pull requests are welcome!
+Contributions to `kustomize-everything/action-promote` are highly encouraged! Pull requests are welcome.
 
 ## License
 
