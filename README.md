@@ -1,5 +1,3 @@
-Here's the updated README for `action-promote`:
-
 # action-promote
 
 `action-promote` is a GitHub action designed to implement a standard promotion pattern using Kustomize.
@@ -83,6 +81,8 @@ For the detailed list of action inputs and outputs, refer to [action.yml](./acti
 ### Example Workflow
 
 For a complete workflow example, see [kustomize-everything/guestbook](https://github.com/kustomize-everything/guestbook).
+
+Note: The `images` input uses the JSON configuration specified above.
 
 ```yaml
 ---
