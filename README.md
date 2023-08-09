@@ -87,7 +87,7 @@ jobs:
           path: deployment
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push promoted image to deployment repo
-        uses: kustomize-everything/action-promote@v1.0.6
+        uses: kustomize-everything/action-promote@v3.7.2
         with:
           target-repo: kustomize-everything/guestbook-deploy
           target-branch: main
@@ -95,7 +95,7 @@ jobs:
           images: |-
             [
               {
-                "name": "nginx",
+                "name": "ghcr.io/kustomize-everything/guestbook",
                 "newName": "${{ needs.build-image.outputs.image-name }}",
                 "newTag": "${{ needs.build-image.outputs.image-tag }}",
                 "overlays": ["env/dev"]
