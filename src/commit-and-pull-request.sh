@@ -125,7 +125,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   echo
   if [[ "${AUTO_MERGE}" == "true" ]]; then
     echo "Status checks have all passed. Merging PR..."
-    gh pr merge --squash --admin
+    gh pr merge --squash --admin --delete-branch
     echo
     echo "Promotion PR has been merged. Details below."
   else
