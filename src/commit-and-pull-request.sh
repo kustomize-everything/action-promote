@@ -162,7 +162,7 @@ else
 fi
 
 DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R "${TARGET_REPO}")"
-PULL_REQUEST_URL = "$(gh pr view --json url -q '.url')"
+PULL_REQUEST_URL="$(gh pr view --json url -q '.url')"
 
 # Set outputs so that downstream steps can consume this data
 # shellcheck disable=SC2129
