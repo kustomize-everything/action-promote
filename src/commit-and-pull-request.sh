@@ -132,7 +132,10 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     echo
     echo "Promotion PR has been created and has passed checks. Details below."
   fi
+  
   gh pr view
+  PULL_REQUEST_URL="$(gh pr view --json url -q '.url')"
+  
 elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
   git add .
   git_commit_with_metadata
@@ -162,7 +165,6 @@ else
 fi
 
 DEPLOYMENT_REPO_SHA_URL="$(gh browse -c -n -R "${TARGET_REPO}")"
-PULL_REQUEST_URL="$(gh pr view --json url -q '.url')"
 
 # Set outputs so that downstream steps can consume this data
 # shellcheck disable=SC2129

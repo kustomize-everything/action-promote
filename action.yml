@@ -120,6 +120,8 @@ outputs:
     description: "Git short SHA of promotion commit on deployment repo."
   images-updated:
     description: "List of image name:tags that were promoted"
+  pull-request-url:
+    description: "URL for the pull request created during promotion"
 
 runs:
   using: 'docker'
