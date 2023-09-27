@@ -52,13 +52,13 @@ export DEPLOYMENT_DIR
 
 # If IMAGES is not an empty string or empty array, then we need to promote the images
 if [[ "${IMAGES}" != "[]" || "${CHARTS}" != "[]" ]]; then
-  IMAGES_TO_UPDATE="${IMAGES}" CHARTS_TO_UPDATE="${CHARTS}" poetry run python /action-promote/promote.py > /action-promote/manifest.json
+  IMAGES_TO_UPDATE="${IMAGES}" CHARTS_TO_UPDATE="${CHARTS}" poetry run python promote.py > manifest.json
 else
   echo "No images or charts to promote"
-  echo "{}" > /action-promote/manifest.json
+  echo "{}" > manifest.json
 fi
 
-MANIFEST_JSON="$(jq -c -r '.' /action-promote/manifest.json)"
+MANIFEST_JSON="$(jq -c -r '.' manifest.json)"
 export MANIFEST_JSON
 
 # Save images json output to GITHUB_OUTPUT
@@ -68,25 +68,25 @@ echo "manifest-json<<$EOF" >> "${GITHUB_OUTPUT}"
 echo "${MANIFEST_JSON}" >> "${GITHUB_OUTPUT}"
 echo "$EOF" >> "${GITHUB_OUTPUT}"
 
-jq -c -r 'keys | join(", ")' < /action-promote/manifest.json | xargs > /action-promote/overlays.txt
-echo "overlays=$(cat /action-promote/overlays.txt)" >> "${GITHUB_OUTPUT}"
-OVERLAY_NAMES="$(cat /action-promote/overlays.txt)"
+jq -c -r 'keys | join(", ")' < manifest.json | xargs > overlays.txt
+echo "overlays=$(cat overlays.txt)" >> "${GITHUB_OUTPUT}"
+OVERLAY_NAMES="$(cat overlays.txt)"
 export OVERLAY_NAMES
 
-jq -c -r 'keys | join("-") | gsub("/"; "-")' < /action-promote/manifest.json | xargs > /action-promote/overlays-joined.txt
-echo "overlays-joined=$(cat /action-promote/overlays-joined.txt)" >> "${GITHUB_OUTPUT}"
-OVERLAY_NAMES_NO_SLASH="$(cat /action-promote/overlays-joined.txt)"
+jq -c -r 'keys | join("-") | gsub("/"; "-")' < manifest.json | xargs > overlays-joined.txt
+echo "overlays-joined=$(cat overlays-joined.txt)" >> "${GITHUB_OUTPUT}"
+OVERLAY_NAMES_NO_SLASH="$(cat overlays-joined.txt)"
 export OVERLAY_NAMES_NO_SLASH
 
-jq -c -r '[.[] | .images | map(.name)] | unique | sort | flatten | join(", ")' < /action-promote/manifest.json | xargs > /action-promote/images.txt
-echo "images=$(cat /action-promote/images.txt)" >> "${GITHUB_OUTPUT}"
-IMAGES_NAMES="$(cat /action-promote/images.txt)"
+jq -c -r '[.[] | .images | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > images.txt
+echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
+IMAGES_NAMES="$(cat images.txt)"
 export IMAGES_NAMES
 
 # shellcheck disable=SC2129
-jq -c -r '[.[] | .charts | map(.name)] | unique | sort | flatten | join(", ")' < /action-promote/manifest.json | xargs > /action-promote/charts.txt
-echo "charts=$(cat /action-promote/charts.txt)" >> "${GITHUB_OUTPUT}"
-CHARTS_NAMES="$(cat /action-promote/charts.txt)"
+jq -c -r '[.[] | .charts | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > charts.txt
+echo "charts=$(cat charts.txt)" >> "${GITHUB_OUTPUT}"
+CHARTS_NAMES="$(cat charts.txt)"
 export CHARTS_NAMES
 
 # Because the parent workflow is the one who has run the `checkout` action,
