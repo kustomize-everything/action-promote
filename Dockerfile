@@ -23,4 +23,4 @@ RUN chown -R ${USER}:${USER} ${WORKING_DIR}
 USER ${USER}
 
 # Executes `entrypoint.sh` when the Docker container starts up
-ENTRYPOINT ["${WORKING_DIR}/entrypoint.sh"]
+ENTRYPOINT ["/action-promote/entrypoint.sh"]
