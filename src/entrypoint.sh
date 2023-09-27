@@ -52,7 +52,7 @@ export DEPLOYMENT_DIR
 
 # If IMAGES is not an empty string or empty array, then we need to promote the images
 if [[ "${IMAGES}" != "[]" || "${CHARTS}" != "[]" ]]; then
-  IMAGES_TO_UPDATE="${IMAGES}" CHARTS_TO_UPDATE="${CHARTS}" poetry run python "${WORKING_DIR}"/promote.py > "${WORKING_DIR}"/manifest.json
+  IMAGES_TO_UPDATE="${IMAGES}" CHARTS_TO_UPDATE="${CHARTS}" poetry run python --directory="${WORKING_DIR}" "${WORKING_DIR}"/promote.py > "${WORKING_DIR}"/manifest.json
 else
   echo "No images or charts to promote"
   echo "{}" > "${WORKING_DIR}"/manifest.json
