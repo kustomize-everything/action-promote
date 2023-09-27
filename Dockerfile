@@ -25,4 +25,4 @@ USER ${USER}
 WORKDIR ${WORKDIR}
 
 # Executes `entrypoint.sh` when the Docker container starts up
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
