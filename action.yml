@@ -148,6 +148,7 @@ runs:
     DEPLOYMENT_DIR: ${{ inputs.working-directory }}
     DRY_RUN: ${{ inputs.dry-run }}
     KUSTOMIZE_BIN_DIR: /home/kustomize-everything/.bin
+    WORKING_DIR: /action-promote
     KUSTOMIZE_FILENAME: kustomize_v${{ inputs.version }}_linux_amd64.tar.gz
     KUSTOMIZE_SHA256_CHECKSUM: ${{ inputs.sha256-checksum }}
     KUSTOMIZE_VERSION: ${{ inputs.version }}
