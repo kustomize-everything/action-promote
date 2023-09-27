@@ -9,5 +9,11 @@ RUN pip install --no-cache-dir -r /requirements.txt && \
     poetry config virtualenvs.create false --local && \
     poetry install
 
+RUN set -eux; \
+  addgroup -g 1000 kustomize-everything; \
+  adduser -u 1000 -G kustomize-everything -s /bin/sh -h /home/yq -D kustomize-everything
+
+USER kustomize-everything
+
 # Executes `entrypoint.sh` when the Docker container starts up
 ENTRYPOINT ["/entrypoint.sh"]
