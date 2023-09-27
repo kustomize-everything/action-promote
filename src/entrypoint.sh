@@ -37,7 +37,7 @@ echo "GITHUB_WORKFLOW_RUN_URL=${GITHUB_WORKFLOW_RUN_URL}" >> "${GITHUB_ENV}"
 #   - KUSTOMIZE_CHECKSUM
 #   - KUSTOMIZE_BIN_DIR
 #   - KUSTOMIZE_FILENAME
-/download-and-checksum.sh
+"${WORKING_DIR}"/download-and-checksum.sh
 PATH="${KUSTOMIZE_BIN_DIR}:${PATH}"
 
 git config --global user.name "${GIT_COMMIT_USER}"
@@ -102,7 +102,7 @@ if [[ -z "$(git status --porcelain)" ]]; then
 # in the commit message.
 else
   echo "Changes to commit"
-  /commit-and-pull-request.sh
+  "${WORKING_DIR}"/commit-and-pull-request.sh
 fi
 popd
 
