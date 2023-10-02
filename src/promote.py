@@ -53,7 +53,7 @@ import os
 import subprocess
 import sys
 import yaml
-from typing import Callable, Iterator, Union, Optional
+import typing
 
 # Initialize logger
 logger = logging.getLogger()
