@@ -54,13 +54,15 @@ import subprocess
 import sys
 import yaml
 
+from typing import Callable, Iterator, Union, Optional  # noqa: F401
+
 # Initialize logger
 logger = logging.getLogger()
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.DEBUG)
 
 
-def run(args):
+def run(args: list[str]) -> int:
     """
     Run the given command and log the output.
 
@@ -80,12 +82,25 @@ def run(args):
     if output.stdout:
         logger.info(output.stdout)
 
-    return output.check_returncode()
+    try:
+        output.check_returncode()
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Command failed with return code {e.returncode}")
+        raise e
+
+    return output.returncode
 
 
-def merge_manifests(a, b):
+def merge_manifests(a: dict, b: dict) -> dict:
     """
-    Merge the images and charts for each overlay provided in the manifests
+    Merge the images and charts for each overlay provided in the manifests.
+
+    Args:
+        a (dict): A dictionary representing the initial manifests.
+        b (dict): A dictionary representing the additional manifests to be merged.
+
+    Returns:
+        dict: The merged manifests with images and charts combined for each overlay.
     """
     for overlay in b:
         if overlay not in a:
@@ -103,15 +118,16 @@ def merge_manifests(a, b):
     return a
 
 
-def find_duplicates(images, field):
+def find_duplicates(images: list, field: str) -> set:
     """
-    Find duplicate fields in images in the list of images.
+    Find duplicate values for a specified field in a list of images.
 
     Args:
         images (list): The list of images to check for duplicates.
+        field (str): The field name to check for duplicates.
 
     Returns:
-        set: The set of duplicate images.
+        set: A set containing the duplicate values for the specified field.
     """
     duplicates = set()
     image_names = [image[field] for image in images if field in image]
@@ -127,13 +143,13 @@ def find_duplicates(images, field):
 
 def validate_images(images):
     """
-    Validate that the images to update have the required fields.
+    Validate a list of images to ensure they have the required fields and that the names and newNames are unique.
 
     Args:
-        images_to_update (list): The list of images to update.
+        images (list): The list of images to validate.
 
     Returns:
-        bool: True if the images are valid, False otherwise.
+        bool: True if all images are valid, False otherwise.
     """
     originally_dict = False
     # Convert to list if it is a dict (which is the case when we are validating
@@ -193,10 +209,10 @@ def validate_charts(charts):
     Validate that the charts to update have the required fields.
 
     Args:
-        charts_to_update (list): The list of charts to update.
+        charts (list): The list of charts to update.
 
     Returns:
-        bool: True if the charts are valid, False otherwise.
+        bool: True if all charts are valid, False otherwise.
     """
     originally_dict = False
     # Convert to list if it is a dict (which is the case when we are validating
@@ -238,23 +254,23 @@ def validate_charts(charts):
     return True
 
 
-def read_images_from_overlay(overlay, deployment_dir):
+def read_images_from_overlay(overlay: str, deployment_dir: str) -> dict[str, dict]:
     """
-    Read the images from the given overlay.
+    Read the images from the specified overlay in a deployment directory and return a dictionary mapping image names to their corresponding image dictionaries.
 
     Args:
-        overlay (str): The overlay to read the images from.
+        overlay (str): The name of the overlay to read the images from.
         deployment_dir (str): The directory containing the overlays.
 
     Returns:
-        dict: A dictionary mapping image names to the image dictionary.
+        dict: A dictionary mapping image names to their corresponding image dictionaries.
     """
     images = {}
     kustomization_file = os.path.join(deployment_dir, overlay, "kustomization.yaml")
     try:
-        # Open the kustomize.yaml file for the overlay
+        # Open the kustomization.yaml file for the overlay
         with open(kustomization_file) as f:
-            # Read the images from the kustomize.yaml file
+            # Read the images from the kustomization.yaml file
             kustomize = yaml.safe_load(f)
             if "images" not in kustomize:
                 logger.fatal(
@@ -284,23 +300,27 @@ def read_images_from_overlay(overlay, deployment_dir):
     return images
 
 
-def read_charts_from_overlay(overlay, deployment_dir):
+def read_charts_from_overlay(overlay: str, deployment_dir: str) -> dict[str, dict]:
     """
-    Read the charts from the given overlay.
+    Read the charts from the specified overlay by opening the kustomization.yaml file of the overlay and extracting the chart information.
 
     Args:
-        overlay (str): The overlay to read the charts from.
-        deployment_dir (str): The directory containing the overlays.
+        overlay (str): The name of the overlay to read the charts from.
+        deployment_dir (str): The directory path containing the overlays.
 
     Returns:
         dict: A dictionary mapping chart names to the chart dictionary.
+
+    Raises:
+        FileNotFoundError: If the kustomization.yaml file does not exist.
+        yaml.YAMLError: If the kustomization.yaml file is invalid.
     """
     charts = {}
     kustomization_file = os.path.join(deployment_dir, overlay, "kustomization.yaml")
     try:
-        # Open the kustomize.yaml file for the overlay
+        # Open the kustomization.yaml file for the overlay
         with open(kustomization_file) as f:
-            # Read the charts from the kustomize.yaml file
+            # Read the charts from the kustomization.yaml file
             kustomize = yaml.safe_load(f)
             if "helmCharts" not in kustomize:
                 logger.fatal(
@@ -335,11 +355,16 @@ def get_images_from_overlays(images_to_update, deployment_dir):
     Get the list of images to update for each overlay.
 
     Args:
-        images_to_update (list): The list of images to update.
+        images_to_update (list): The list of images to update, where each image is represented as a dictionary with the following keys:
+            - name (str): The name of the image.
+            - newName (str): The new name of the image.
+            - newTag (str): The new tag of the image.
+            - fromOverlay (str): The name of the overlay to get the image from.
+            - overlays (list): The list of overlays to update the image in.
         deployment_dir (str): The directory containing the overlays.
 
     Returns:
-        dict: A dictionary mapping overlays to the list of images to update for that overlay.
+        dict: A dictionary mapping overlays to the list of images to update for each overlay.
     """
     overlays_to_images = {}
     for image in images_to_update:
@@ -362,15 +387,18 @@ def get_charts_from_overlays(charts_to_update, deployment_dir):
     Get the list of charts to update for each overlay.
 
     Args:
-        charts_to_update (list): The list of charts to update.
+        charts_to_update (list): The list of charts to update, where each chart is represented as a dictionary with the following keys:
+            - name (str): The name of the chart.
+            - version (str): The new version of the chart.
+            - overlays (list): The list of overlays to update the chart in.
         deployment_dir (str): The directory containing the overlays.
 
     Returns:
-        dict: A dictionary mapping overlays to the list of charts to update for that overlay.
+        dict: A dictionary mapping overlays to the list of charts to update for each overlay.
     """
     overlays_to_charts = {}
     for chart in charts_to_update:
-        # Add the chart to the list of charts for each env
+        # Add the chart to the list of charts for each overlay
         for overlay in chart["overlays"]:
             if overlay not in overlays_to_charts:
                 overlays_to_charts[overlay] = []
@@ -388,30 +416,39 @@ def get_charts_from_overlays(charts_to_update, deployment_dir):
     return overlays_to_charts
 
 
-def generate_kustomize_args(overlay, images, promotion_manifest):
+def generate_kustomize_args(
+    overlay: str, images: list, promotion_manifest: dict
+) -> tuple[list[str], dict]:
     """
-    Generate the arguments to pass to kustomize edit set image for the given overlay and images.
+    Generate the arguments to pass to the `kustomize edit set image` command for a given overlay and list of images.
+    It also updates the promotion manifest with the images that are being passed to `kustomize`.
 
     Args:
-        overlay (str): The overlay to generate the kustomize args for.
-        images (list): The list of images to generate the kustomize args for.
+        overlay (str): The overlay to generate the kustomize arguments for.
+        images (list): The list of images to generate the kustomize arguments for.
         promotion_manifest (dict): The promotion manifest to add the images to.
 
     Returns:
-        list: The list of arguments to pass to kustomize edit set image.
+        tuple: A tuple containing the generated kustomize arguments (list) and the updated promotion manifest (dict).
+
+    Example Usage:
+        overlay = "dev"
+        images = [
+            {"name": "app1", "newName": "new-app1", "newTag": "v2"},
+            {"name": "app2", "newName": "new-app2"},
+            {"name": "app3"}
+        ]
+        promotion_manifest = {}
+
+        kustomize_args, updated_manifest = generate_kustomize_args(overlay, images, promotion_manifest)
+
+        print(kustomize_args)
+        # Output: ['app1=new-app1:v2', 'app2=new-app2', 'app3=app3']
+
+        print(updated_manifest)
+        # Output: {'dev': {'images': [{'name': 'app1', 'newName': 'new-app1', 'newTag': 'v2'}, {'name': 'app2', 'newName': 'new-app2'}, {'name': 'app3'}]}}
     """
 
-    # Iterate through the images to collect them into one list of arguments that
-    # will be passed as a group to kustomize edit
-
-    # The kustomize edit set image command takes the following format:
-    # kustomize edit set image <name>=<new-name>:<new-tag>
-    # If the new-name and new-tag are not provided, ignore the image.
-    # If the name is not provided, fail.
-    # If the new-name is not provided, use the name.
-
-    # The kustomize edit set image command can take multiple images at once, so
-    # we will collect all of the images for an overlay and pass them all at once.
     kustomize_args = []
     for image in images:
         name = image["name"]
@@ -424,13 +461,11 @@ def generate_kustomize_args(overlay, images, promotion_manifest):
 
         if new_name and new_tag:
             kustomize_args.append(f"{name}={new_name}:{new_tag}")
-            # Add to promotion manifest
             promotion_manifest[overlay]["images"].append(
                 {"name": name, "newName": new_name, "newTag": new_tag}
             )
         elif new_name:
             kustomize_args.append(f"{name}={new_name}")
-            # Add to promotion manifest
             promotion_manifest[overlay]["images"].append(
                 {"name": name, "newName": new_name}
             )
@@ -440,7 +475,9 @@ def generate_kustomize_args(overlay, images, promotion_manifest):
     return kustomize_args, promotion_manifest
 
 
-def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
+def update_kustomize_images(
+    env: str, deployment_dir: str, images: list, promotion_manifest: dict
+) -> dict[str, dict[str, list]]:
     """
     Uses kustomize to update the images for the given environment.
 
@@ -485,9 +522,21 @@ def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
     return promotion_manifest
 
 
-def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest):
+def update_kustomize_charts(
+    overlay: str, deployment_dir: str, charts: list, promotion_manifest: dict
+) -> dict:
     """
-    Update the"""
+    Update the charts in a kustomization.yaml file for a specific overlay in a deployment directory.
+
+    Args:
+        overlay (str): The name of the overlay for which the charts need to be updated.
+        deployment_dir (str): The path to the deployment directory.
+        charts (list): A list of dictionaries containing the name and version of the charts to be updated.
+        promotion_manifest (dict): A dictionary to store the promotion manifest.
+
+    Returns:
+        dict: The updated promotion manifest containing the updated charts for the overlay.
+    """
     kustomize_dir = os.path.join(deployment_dir, overlay)
 
     # Validate that the kustomize directory for the env exists
@@ -550,9 +599,22 @@ def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest)
     return promotion_manifest
 
 
-def validate_runtime_environment():
+def validate_runtime_environment() -> None:
     """
     Validate that the runtime environment has the tools we need and provided directories exist.
+
+    This function validates the runtime environment by checking if the `kustomize` command is available.
+
+    Example Usage:
+    ```python
+    validate_runtime_environment()
+    ```
+
+    Raises:
+        CalledProcessError: If the `kustomize` command is not available.
+
+    Returns:
+        None
     """
 
     # Validate that the kustomize command is available
@@ -566,9 +628,11 @@ def validate_runtime_environment():
         exit(1)
 
 
-def get_deployment_dir():
+def get_deployment_dir() -> str:
     """
     Get the deployment directory from the DEPLOYMENT_DIR env variable.
+
+    Args:
     """
 
     # Validate that the kustomize directory exists
@@ -585,48 +649,54 @@ def get_deployment_dir():
     return deployment_dir
 
 
-def main():
-    validate_runtime_environment()
+def load_promotion_json(type: str) -> dict:
+    """
+    Loads the promotion JSON for images or helm charts
 
-    deployment_dir = get_deployment_dir()
+    Args:
+        type (str): images or charts
+
+    Returns:
+        dict: The promotion JSON
+    """
 
     # Read in the images to update from stdin or the IMAGES_TO_UPDATE env variable
-    images_to_update = None
-    images_input = None
-    if os.getenv("IMAGES_TO_UPDATE"):
-        images_input = os.getenv("IMAGES_TO_UPDATE")
+    promotion_json = None
+    promotion_input = None
+    if os.environ.get(f"{type.upper()}_TO_UPDATE"):
+        promotion_input = os.environ.get(f"{type.upper()}_TO_UPDATE")
 
-    if images_input:
+    if promotion_input:
         try:
-            images_to_update = json.loads(images_input)
+            promotion_json = json.loads(promotion_input)
         except json.JSONDecodeError as e:
-            logger.fatal("Provided images JSON object failed to parse.")
+            logger.fatal(f"Provided {type} JSON object failed to parse.")
             logger.fatal(f"Please provide a valid JSON list. Error: {e}")
-            logger.fatal(f"The input received was: {images_input}")
+            logger.fatal(f"The input received was: {promotion_input}")
             exit(1)
     else:
-        logger.info("No images to update.")
-        images_to_update = []
+        logger.info(f"No {type} to update.")
+        promotion_json = []
 
-    # Read in the helm charts to update from stdin or the HELM_CHARTS_TO_UPDATE env variable
-    charts_to_update = None
-    charts_input = None
-    if os.getenv("CHARTS_TO_UPDATE"):
-        charts_input = os.getenv("CHARTS_TO_UPDATE")
+    return promotion_json
 
-    if charts_input:
-        try:
-            charts_to_update = json.loads(charts_input)
-        except json.JSONDecodeError as e:
-            logger.fatal("Provided charts JSON object failed to parse.")
-            logger.fatal(f"Please provide a valid JSON list. Error: {e}")
-            logger.fatal(f"The input received was: {charts_input}")
-            exit(1)
-    else:
-        logger.info("No charts to update.")
-        charts_to_update = []
 
-    # Exit with failure if there are no images or charts to update, printing usage information.
+def validate_promotion_lists(
+    images_to_update: list[dict], charts_to_update: list[dict]
+) -> None:
+    """
+    Validate the provided promotion configuration.
+
+    Args:
+        images_to_update (list): The list of images to update.
+        charts_to_update (list): The list of charts to update.
+
+    Returns:
+        None
+
+    Raises:
+        SystemExit: If there are no images or charts to update.
+    """
     if len(images_to_update) == 0 and len(charts_to_update) == 0:
         logger.fatal("No images or charts to update. Please provide either (or both):")
         logger.fatal(
@@ -673,6 +743,21 @@ def main():
 
     # Validate that the charts to update have the required fields
     validate_charts(charts_to_update)
+
+
+def main():
+    validate_runtime_environment()
+
+    deployment_dir = get_deployment_dir()
+
+    # Read in the images to update from stdin or the IMAGES_TO_UPDATE env variable
+    images_to_update = load_promotion_json("images")
+
+    # Read in the helm charts to update from stdin or the HELM_CHARTS_TO_UPDATE env variable
+    charts_to_update = load_promotion_json("charts")
+
+    # Exit with failure if there are no images or charts to update, printing usage information.
+    validate_promotion_lists(images_to_update, charts_to_update)
 
     # Get the list of images for each overlay
     overlays_to_images = get_images_from_overlays(images_to_update, deployment_dir)
