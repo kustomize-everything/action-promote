@@ -60,3 +60,25 @@ jobs:
           yamllint_comment: true
           yamllint_format: parsable
           yamllint_config_filepath: yamllint.yaml
+
+  type-check:
+    name: Type Check with mypy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        working-directory: src
+        run: |
+          python -m pip install -r requirements.txt
+          poetry install
+
+      - name: Run mypy
+        working-directory: src
+        run: |
+          poetry run mypy --ignore-missing-imports --strict .
