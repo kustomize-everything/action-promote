@@ -70,7 +70,7 @@ jobs:
           # If we're testing the cross-overlay promotion
           if [[ "${{matrix.promotion}}" == "cross-overlay-promotion" ]]; then
               echo "Cross-overlay TBD"
-          elif [[ "${{matrix.promotion}}" == "simple-promotion" || "${matrix.promotion}" == complex-promotion ]]; then
+          elif [[ "${{matrix.promotion}}" == "simple-promotion" || "${{matrix.promotion}}" == complex-promotion ]]; then
             if ! grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
               echo "newTag was not updated"
               echo "Contents of ${KUSTOMIZATION_FILE}:"
