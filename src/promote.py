@@ -415,7 +415,9 @@ def get_charts_from_overlays(charts_to_update, deployment_dir):
     return overlays_to_charts
 
 
-def generate_kustomize_args(overlay: str, images: list, promotion_manifest: dict) -> tuple[list[str], dict]:
+def generate_kustomize_args(
+    overlay: str, images: list, promotion_manifest: dict
+) -> tuple[list[str], dict]:
     """
     Generate the arguments to pass to the `kustomize edit set image` command for a given overlay and list of images.
     It also updates the promotion manifest with the images that are being passed to `kustomize`.
@@ -472,7 +474,9 @@ def generate_kustomize_args(overlay: str, images: list, promotion_manifest: dict
     return kustomize_args, promotion_manifest
 
 
-def update_kustomize_images(env: str, deployment_dir: str, images: list, promotion_manifest: dict) -> dict[str, dict[str, list]]:
+def update_kustomize_images(
+    env: str, deployment_dir: str, images: list, promotion_manifest: dict
+) -> dict[str, dict[str, list]]:
     """
     Uses kustomize to update the images for the given environment.
 
@@ -517,7 +521,9 @@ def update_kustomize_images(env: str, deployment_dir: str, images: list, promoti
     return promotion_manifest
 
 
-def update_kustomize_charts(overlay: str, deployment_dir: str, charts: list, promotion_manifest: dict) -> dict:
+def update_kustomize_charts(
+    overlay: str, deployment_dir: str, charts: list, promotion_manifest: dict
+) -> dict:
     """
     Update the charts in a kustomization.yaml file for a specific overlay in a deployment directory.
 
@@ -674,7 +680,9 @@ def load_promotion_json(type: str) -> dict:
     return promotion_json
 
 
-def validate_promotion_lists(images_to_update: list[dict], charts_to_update: list[dict]) -> None:
+def validate_promotion_lists(
+    images_to_update: list[dict], charts_to_update: list[dict]
+) -> None:
     """
     Validate the provided promotion configuration.
 
