@@ -148,7 +148,14 @@ jobs:
 
       - name: Verify that newTag was updated
         run: |
-          if grep -q "2.2.0-${{ github.run_number }}" test-deploy/kustomization.yaml; then
+          KUSTOMIZATION_FILE=test-deploy/env/dev/kustomization.yaml
+          # Fail if kustomization file doesn't exist
+          if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
+            echo "kustomization file does not exist"
+            exit 1
+          fi
+
+          if grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
             echo "New tag was not updated"
             exit 1
           fi
@@ -205,9 +212,16 @@ jobs:
           pr-unique-key: gha-testing-${{ env.BRANCH }}
           # Useful for debugging the action
           # debug: true
-      - name: Verify newTag was updated
+      - name: Verify that newTag was updated
         run: |
-          if grep -q "2.2.0-${{ github.run_number }}" test-deploy/kustomization.yaml; then
+          KUSTOMIZATION_FILE=test-deploy/env/dev/kustomization.yaml
+          # Fail if kustomization file doesn't exist
+          if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
+            echo "kustomization file does not exist"
+            exit 1
+          fi
+
+          if grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
             echo "New tag was not updated"
             exit 1
           fi
@@ -224,13 +238,19 @@ jobs:
           auto-merge: false
           aggregate-pr-changes: true
           pr-unique-key: gha-testing-${{ env.BRANCH }}
-      - name: Verify newTag was updated
+      - name: Verify that newTag was updated
         run: |
-          if grep -q "2.3.0-${{ github.run_number }}" test-deploy/kustomization.yaml; then
-            echo "New tag was not updated"
+          KUSTOMIZATION_FILE=test-deploy/env/dev/kustomization.yaml
+          # Fail if kustomization file doesn't exist
+          if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
+            echo "kustomization file does not exist"
             exit 1
           fi
 
+          if grep -q "2.3.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
+            echo "New tag was not updated"
+            exit 1
+          fi
   python-tests:
     name: Python Tests
     runs-on: ubuntu-latest
