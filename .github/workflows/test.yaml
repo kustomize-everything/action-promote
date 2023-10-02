@@ -11,6 +11,7 @@ on:
 env:
   TEST_DEPLOY_SHA: main
   BRANCH: main
+  KUSTOMIZATION_FILE: test-deploy/env/dev/kustomization.yaml
 
 jobs:
   action-image-testing:
@@ -31,8 +32,10 @@ jobs:
           # Generate unique EOF value to prevent injection attack
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 
+          # Add action run number to the end of the newTag to ensure that
+          # the tag always changes.
           echo "PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          jq '.[0].newTag = "2.2.0-${{ github.run_number }}"' example/${{ matrix.promotion }}.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Checkout Testing Repo
@@ -55,6 +58,21 @@ jobs:
           dry-run: true
           # Useful for debugging the action
           # debug: true
+
+      - name: Verify that newTag was updated
+        run: |
+          # Fail if kustomization file doesn't exist
+          if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
+            echo "kustomization file does not exist"
+            exit 1
+          fi
+
+          if grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
+            echo "New tag was not updated"
+            echo "Contents of ${KUSTOMIZATION_FILE}:"
+            cat "${KUSTOMIZATION_FILE}"
+            exit 1
+          fi
 
   action-helm-testing:
     name: Action Helm Testing
@@ -148,7 +166,6 @@ jobs:
 
       - name: Verify that newTag was updated
         run: |
-          KUSTOMIZATION_FILE=test-deploy/env/dev/kustomization.yaml
           # Fail if kustomization file doesn't exist
           if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
             echo "kustomization file does not exist"
@@ -157,6 +174,8 @@ jobs:
 
           if grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
             echo "New tag was not updated"
+            echo "Contents of ${KUSTOMIZATION_FILE}:"
+            cat "${KUSTOMIZATION_FILE}"
             exit 1
           fi
 
@@ -214,7 +233,6 @@ jobs:
           # debug: true
       - name: Verify that newTag was updated
         run: |
-          KUSTOMIZATION_FILE=test-deploy/env/dev/kustomization.yaml
           # Fail if kustomization file doesn't exist
           if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
             echo "kustomization file does not exist"
@@ -223,6 +241,8 @@ jobs:
 
           if grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
             echo "New tag was not updated"
+            echo "Contents of ${KUSTOMIZATION_FILE}:"
+            cat "${KUSTOMIZATION_FILE}"
             exit 1
           fi
       - name: Action Test with ${{ matrix.promotion }} (reuse previous PR)
@@ -240,7 +260,6 @@ jobs:
           pr-unique-key: gha-testing-${{ env.BRANCH }}
       - name: Verify that newTag was updated
         run: |
-          KUSTOMIZATION_FILE=test-deploy/env/dev/kustomization.yaml
           # Fail if kustomization file doesn't exist
           if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
             echo "kustomization file does not exist"
