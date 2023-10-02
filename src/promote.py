@@ -720,6 +720,12 @@ def validate_promotion_lists(images_to_update, charts_to_update):
         )
         exit(1)
 
+    # Validate that the images to update have the required fields
+    validate_images(images_to_update)
+
+    # Validate that the charts to update have the required fields
+    validate_charts(charts_to_update)
+
 def main():
     validate_runtime_environment()
 
@@ -733,12 +739,6 @@ def main():
 
     # Exit with failure if there are no images or charts to update, printing usage information.
     validate_promotion_lists(images_to_update, charts_to_update)
-
-    # Validate that the images to update have the required fields
-    validate_images(images_to_update)
-
-    # Validate that the charts to update have the required fields
-    validate_charts(charts_to_update)
 
     # Get the list of images for each overlay
     overlays_to_images = get_images_from_overlays(images_to_update, deployment_dir)
