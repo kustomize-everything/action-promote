@@ -11,6 +11,7 @@ on:
 env:
   TEST_DEPLOY_SHA: main
   BRANCH: main
+  KUSTOMIZATION_FILE: test-deploy/env/dev/kustomization.yaml
 
 jobs:
   action-image-testing:
@@ -31,8 +32,10 @@ jobs:
           # Generate unique EOF value to prevent injection attack
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 
+          # Add action run number to the end of the newTag to ensure that
+          # the tag always changes.
           echo "PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          jq '.[0].newTag = "2.2.0-${{ github.run_number }}"' example/${{ matrix.promotion }}.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Checkout Testing Repo
@@ -55,6 +58,29 @@ jobs:
           dry-run: true
           # Useful for debugging the action
           # debug: true
+
+      - name: Verify that newTag was updated
+        run: |
+          # Fail if kustomization file doesn't exist
+          if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
+            echo "kustomization file does not exist"
+            exit 1
+          fi
+
+          # If we're testing the cross-overlay promotion
+          if [[ "${{matrix.promotion}}" == "cross-overlay-promotion" ]]; then
+              echo "Cross-overlay TBD"
+          elif [[ "${{matrix.promotion}}" == "simple-promotion" || "${{matrix.promotion}}" == complex-promotion ]]; then
+            if ! grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
+              echo "newTag was not updated"
+              echo "Contents of ${KUSTOMIZATION_FILE}:"
+              cat "${KUSTOMIZATION_FILE}"
+              exit 1
+            fi
+          else
+            echo "Unknown promotion type. Did you forget to specify it?"
+            exit 1
+          fi
 
   action-helm-testing:
     name: Action Helm Testing
@@ -117,8 +143,10 @@ jobs:
           # Generate unique EOF value to prevent injection attack
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 
+          # Add action run number to the end of the newTag to ensure that
+          # the tag always changes.
           echo "PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          jq '.[0].newTag = "2.2.0-${{ github.run_number }}"' example/${{ matrix.promotion }}.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Checkout Testing Repo
@@ -143,6 +171,21 @@ jobs:
           auto-merge: false
           # Useful for debugging the action
           # debug: true
+
+      - name: Verify that newTag was updated
+        run: |
+          # Fail if kustomization file doesn't exist
+          if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
+            echo "kustomization file does not exist"
+            exit 1
+          fi
+
+          if ! grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
+            echo "newTag was not updated"
+            echo "Contents of ${KUSTOMIZATION_FILE}:"
+            cat "${KUSTOMIZATION_FILE}"
+            exit 1
+          fi
 
   action-open-pr-reuse-testing:
     name: Action Open PR with Reuse Testing
@@ -163,13 +206,13 @@ jobs:
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 
           echo "PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          jq '.[0].newTag = "2.2.0-${{github.run_number}}"' example/${{ matrix.promotion }}.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
           # This relies on the first promotion in the configuration for the matrix
           # being an image promotion.
           echo "PROMOTION_2<<$EOF" >> $GITHUB_ENV
-          jq '.[0].newTag = "2.2.2"' example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          jq '.[0].newTag = "2.3.0-${{github.run_number}}"' example/${{ matrix.promotion }}.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Checkout Testing Repo
@@ -196,6 +239,20 @@ jobs:
           pr-unique-key: gha-testing-${{ env.BRANCH }}
           # Useful for debugging the action
           # debug: true
+      - name: Verify that newTag was updated
+        run: |
+          # Fail if kustomization file doesn't exist
+          if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
+            echo "kustomization file does not exist"
+            exit 1
+          fi
+
+          if ! grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
+            echo "newTag was not updated"
+            echo "Contents of ${KUSTOMIZATION_FILE}:"
+            cat "${KUSTOMIZATION_FILE}"
+            exit 1
+          fi
 
       - name: Action Test with ${{ matrix.promotion }} (reuse previous PR)
         uses: ./
@@ -210,6 +267,20 @@ jobs:
           auto-merge: false
           aggregate-pr-changes: true
           pr-unique-key: gha-testing-${{ env.BRANCH }}
+      - name: Verify that newTag was updated
+        run: |
+          # Fail if kustomization file doesn't exist
+          if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
+            echo "kustomization file does not exist"
+            exit 1
+          fi
+
+          if ! grep -q "2.3.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
+            echo "newTag was not updated"
+            echo "Contents of ${KUSTOMIZATION_FILE}:"
+            cat "${KUSTOMIZATION_FILE}"
+            exit 1
+          fi
 
   python-tests:
     name: Python Tests
