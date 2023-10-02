@@ -634,6 +634,7 @@ def get_deployment_dir():
 
     return deployment_dir
 
+
 def load_promotion_json(type):
     """
     Loads the promotion JSON for images or helm charts
@@ -664,6 +665,7 @@ def load_promotion_json(type):
         promotion_json = []
 
     return promotion_json
+
 
 def validate_promotion_lists(images_to_update, charts_to_update):
     """
@@ -725,6 +727,7 @@ def validate_promotion_lists(images_to_update, charts_to_update):
 
     # Validate that the charts to update have the required fields
     validate_charts(charts_to_update)
+
 
 def main():
     validate_runtime_environment()
