@@ -67,8 +67,8 @@ jobs:
             exit 1
           fi
 
-          if grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
-            echo "New tag was not updated"
+          if ! grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
+            echo "newTag was not updated"
             echo "Contents of ${KUSTOMIZATION_FILE}:"
             cat "${KUSTOMIZATION_FILE}"
             exit 1
@@ -172,8 +172,8 @@ jobs:
             exit 1
           fi
 
-          if grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
-            echo "New tag was not updated"
+          if ! grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
+            echo "newTag was not updated"
             echo "Contents of ${KUSTOMIZATION_FILE}:"
             cat "${KUSTOMIZATION_FILE}"
             exit 1
@@ -239,12 +239,13 @@ jobs:
             exit 1
           fi
 
-          if grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
-            echo "New tag was not updated"
+          if ! grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
+            echo "newTag was not updated"
             echo "Contents of ${KUSTOMIZATION_FILE}:"
             cat "${KUSTOMIZATION_FILE}"
             exit 1
           fi
+
       - name: Action Test with ${{ matrix.promotion }} (reuse previous PR)
         uses: ./
         with:
@@ -266,10 +267,13 @@ jobs:
             exit 1
           fi
 
-          if grep -q "2.3.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
-            echo "New tag was not updated"
+          if ! grep -q "2.3.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
+            echo "newTag was not updated"
+            echo "Contents of ${KUSTOMIZATION_FILE}:"
+            cat "${KUSTOMIZATION_FILE}"
             exit 1
           fi
+
   python-tests:
     name: Python Tests
     runs-on: ubuntu-latest
