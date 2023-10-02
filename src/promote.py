@@ -616,19 +616,12 @@ def validate_runtime_environment():
 
 def get_deployment_dir():
     """
-    Get the deployment directory from the DEPLOYMENT_DIR environment variable and validate its existence.
+    Get the deployment directory from the DEPLOYMENT_DIR env variable.
 
-    Returns:
-        str: The deployment directory.
-
-    Raises:
-        SystemExit: If the deployment directory does not exist.
-
-    Example:
-        >>> deployment_dir = get_deployment_dir()
+    Args:
     """
 
-    # Validate that the deployment directory exists
+    # Validate that the kustomize directory exists
     deployment_dir = os.getenv("DEPLOYMENT_DIR", ".")
     if not os.path.isdir(deployment_dir):
         logger.fatal(f"Deployment directory {deployment_dir} does not exist.")
@@ -642,26 +635,6 @@ def get_deployment_dir():
     return deployment_dir
 
 
-"""
-This code defines a `main` function that is responsible for updating images and charts in different environments using kustomize. It takes input from environment variables or stdin, validates the input, retrieves the images and charts for each environment, updates them using kustomize, and outputs the updated promotion manifest.
-
-Inputs:
-- `IMAGES_TO_UPDATE` (optional): A JSON object representing the images to update. Each image should have a `name`, and either `newName` or `newTag` or both. It can be provided as an environment variable or via stdin.
-- `CHARTS_TO_UPDATE` (optional): A JSON object representing the charts to update. Each chart should have a `name` and a `version`. It can be provided as an environment variable or via stdin.
-
-Outputs:
-The output is the updated promotion manifest, which is a JSON object representing the images and charts that were updated for each environment. It is printed to stdout.
-
-Example Usage:
-```python
-# Set the IMAGES_TO_UPDATE and CHARTS_TO_UPDATE environment variables
-export IMAGES_TO_UPDATE='[{"name": "image-name", "newName": "new-image-name", "newTag": "new-image-tag", "overlays": ["target-env", "target-env2"]}]'
-export CHARTS_TO_UPDATE='[{"name": "chart-name", "version": "new-chart-version", "overlays": ["target-env", "target-env2"]}]'
-
-# Run the script
-python script.py
-```
-"""
 def main():
     validate_runtime_environment()
 
