@@ -117,8 +117,10 @@ jobs:
           # Generate unique EOF value to prevent injection attack
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 
+          # Add action run number to the end of the newTag to ensure that
+          # the tag always changes.
           echo "PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          jq '.[0].newTag = "2.2.2-${{ github.run_number }}"' example/${{ matrix.promotion }}.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Checkout Testing Repo
@@ -163,7 +165,7 @@ jobs:
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 
           echo "PROMOTION<<$EOF" >> $GITHUB_ENV
-          cat example/${{ matrix.promotion }}.json >> $GITHUB_ENV
+          jq '.[0].newTag = "2.2.2-${{ github.run_number }}"' example/${{ matrix.promotion }}.json >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV
 
           # This relies on the first promotion in the configuration for the matrix
