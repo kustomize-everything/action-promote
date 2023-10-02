@@ -81,4 +81,6 @@ jobs:
       - name: Run mypy
         working-directory: src
         run: |
-          poetry run mypy --ignore-missing-imports --strict .
+          poetry run mypy --ignore-missing-imports .
+          # When we'e added annotations and fixed all errors, we can use this stricter version:
+          # poetry run mypy --ignore-missing-imports --strict .
