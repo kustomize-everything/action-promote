@@ -53,6 +53,7 @@ import os
 import subprocess
 import sys
 import yaml
+from typing import Callable, Iterator, Union, Optional
 
 # Initialize logger
 logger = logging.getLogger()
@@ -60,7 +61,7 @@ logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.DEBUG)
 
 
-def run(args):
+def run(args: list[str]) -> int:
     """
     Run the given command and log the output.
 
@@ -80,10 +81,16 @@ def run(args):
     if output.stdout:
         logger.info(output.stdout)
 
-    return output.check_returncode()
+    try:
+        output.check_returncode()
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Command failed with return code {e.returncode}")
+        raise e
+
+    return output.returncode
 
 
-def merge_manifests(a, b):
+def merge_manifests(a: dict, b: dict) -> dict:
     """
     Merge the images and charts for each overlay provided in the manifests.
 
@@ -110,7 +117,7 @@ def merge_manifests(a, b):
     return a
 
 
-def find_duplicates(images, field):
+def find_duplicates(images: list, field: str) -> set:
     """
     Find duplicate values for a specified field in a list of images.
 
@@ -246,7 +253,7 @@ def validate_charts(charts):
     return True
 
 
-def read_images_from_overlay(overlay, deployment_dir):
+def read_images_from_overlay(overlay: str, deployment_dir: str) -> dict[str, dict]:
     """
     Read the images from the specified overlay in a deployment directory and return a dictionary mapping image names to their corresponding image dictionaries.
 
@@ -292,7 +299,7 @@ def read_images_from_overlay(overlay, deployment_dir):
     return images
 
 
-def read_charts_from_overlay(overlay, deployment_dir):
+def read_charts_from_overlay(overlay: str, deployment_dir: str) -> dict[str, dict]:
     """
     Read the charts from the specified overlay by opening the kustomization.yaml file of the overlay and extracting the chart information.
 
@@ -408,7 +415,7 @@ def get_charts_from_overlays(charts_to_update, deployment_dir):
     return overlays_to_charts
 
 
-def generate_kustomize_args(overlay, images, promotion_manifest):
+def generate_kustomize_args(overlay: str, images: list, promotion_manifest: dict) -> tuple[list[str], dict]:
     """
     Generate the arguments to pass to the `kustomize edit set image` command for a given overlay and list of images.
     It also updates the promotion manifest with the images that are being passed to `kustomize`.
@@ -465,7 +472,7 @@ def generate_kustomize_args(overlay, images, promotion_manifest):
     return kustomize_args, promotion_manifest
 
 
-def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
+def update_kustomize_images(env: str, deployment_dir: str, images: list, promotion_manifest: dict) -> dict[str, dict[str, list]]:
     """
     Uses kustomize to update the images for the given environment.
 
@@ -510,7 +517,7 @@ def update_kustomize_images(env, deployment_dir, images, promotion_manifest):
     return promotion_manifest
 
 
-def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest):
+def update_kustomize_charts(overlay: str, deployment_dir: str, charts: list, promotion_manifest: dict) -> dict:
     """
     Update the charts in a kustomization.yaml file for a specific overlay in a deployment directory.
 
@@ -585,7 +592,7 @@ def update_kustomize_charts(overlay, deployment_dir, charts, promotion_manifest)
     return promotion_manifest
 
 
-def validate_runtime_environment():
+def validate_runtime_environment() -> None:
     """
     Validate that the runtime environment has the tools we need and provided directories exist.
 
@@ -614,7 +621,7 @@ def validate_runtime_environment():
         exit(1)
 
 
-def get_deployment_dir():
+def get_deployment_dir() -> str:
     """
     Get the deployment directory from the DEPLOYMENT_DIR env variable.
 
@@ -635,7 +642,7 @@ def get_deployment_dir():
     return deployment_dir
 
 
-def load_promotion_json(type):
+def load_promotion_json(type: str) -> dict:
     """
     Loads the promotion JSON for images or helm charts
 
@@ -667,7 +674,7 @@ def load_promotion_json(type):
     return promotion_json
 
 
-def validate_promotion_lists(images_to_update, charts_to_update):
+def validate_promotion_lists(images_to_update: list[dict], charts_to_update: list[dict]) -> None:
     """
     Validate the provided promotion configuration.
 
