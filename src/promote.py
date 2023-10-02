@@ -53,7 +53,8 @@ import os
 import subprocess
 import sys
 import yaml
-import typing
+
+from typing import Callable, Iterator, Union, Optional  # noqa: F401
 
 # Initialize logger
 logger = logging.getLogger()
