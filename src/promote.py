@@ -634,49 +634,51 @@ def get_deployment_dir():
 
     return deployment_dir
 
+def load_promotion_json(type):
+    """
+    Loads the promotion JSON for images or helm charts
 
-def main():
-    validate_runtime_environment()
+    Args:
+        type (str): images or charts
 
-    deployment_dir = get_deployment_dir()
+    Returns:
+        dict: The promotion JSON
+    """
 
     # Read in the images to update from stdin or the IMAGES_TO_UPDATE env variable
-    images_to_update = None
-    images_input = None
-    if os.getenv("IMAGES_TO_UPDATE"):
-        images_input = os.getenv("IMAGES_TO_UPDATE")
+    promotion_json = None
+    promotion_input = None
+    if os.environ.get(f"{type.upper()}_TO_UPDATE"):
+        promotion_input = os.environ.get(f"{type.upper()}_TO_UPDATE")
 
-    if images_input:
+    if promotion_input:
         try:
-            images_to_update = json.loads(images_input)
+            promotion_json = json.loads(promotion_input)
         except json.JSONDecodeError as e:
-            logger.fatal("Provided images JSON object failed to parse.")
+            logger.fatal(f"Provided {type} JSON object failed to parse.")
             logger.fatal(f"Please provide a valid JSON list. Error: {e}")
-            logger.fatal(f"The input received was: {images_input}")
+            logger.fatal(f"The input received was: {promotion_input}")
             exit(1)
     else:
-        logger.info("No images to update.")
-        images_to_update = []
+        logger.info(f"No {type} to update.")
+        promotion_json = []
 
-    # Read in the helm charts to update from stdin or the HELM_CHARTS_TO_UPDATE env variable
-    charts_to_update = None
-    charts_input = None
-    if os.getenv("CHARTS_TO_UPDATE"):
-        charts_input = os.getenv("CHARTS_TO_UPDATE")
+    return promotion_json
 
-    if charts_input:
-        try:
-            charts_to_update = json.loads(charts_input)
-        except json.JSONDecodeError as e:
-            logger.fatal("Provided charts JSON object failed to parse.")
-            logger.fatal(f"Please provide a valid JSON list. Error: {e}")
-            logger.fatal(f"The input received was: {charts_input}")
-            exit(1)
-    else:
-        logger.info("No charts to update.")
-        charts_to_update = []
+def validate_promotion_lists(images_to_update, charts_to_update):
+    """
+    Validate the provided promotion configuration.
 
-    # Exit with failure if there are no images or charts to update, printing usage information.
+    Args:
+        images_to_update (list): The list of images to update.
+        charts_to_update (list): The list of charts to update.
+
+    Returns:
+        None
+
+    Raises:
+        SystemExit: If there are no images or charts to update.
+    """
     if len(images_to_update) == 0 and len(charts_to_update) == 0:
         logger.fatal("No images or charts to update. Please provide either (or both):")
         logger.fatal(
@@ -717,6 +719,20 @@ def main():
             """
         )
         exit(1)
+
+def main():
+    validate_runtime_environment()
+
+    deployment_dir = get_deployment_dir()
+
+    # Read in the images to update from stdin or the IMAGES_TO_UPDATE env variable
+    images_to_update = load_promotion_json("images")
+
+    # Read in the helm charts to update from stdin or the HELM_CHARTS_TO_UPDATE env variable
+    charts_to_update = load_promotion_json("charts")
+
+    # Exit with failure if there are no images or charts to update, printing usage information.
+    validate_promotion_lists(images_to_update, charts_to_update)
 
     # Validate that the images to update have the required fields
     validate_images(images_to_update)
