@@ -1,5 +1,7 @@
 # action-promote
 
+[![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/44667)
+
 `action-promote` is a GitHub action designed to implement a standard promotion
 pattern using Kustomize.
 
