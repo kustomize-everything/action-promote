@@ -141,7 +141,7 @@ def find_duplicates(images: list, field: str) -> set:
     return duplicates
 
 
-def validate_images(images):
+def valid_images(images):
     """
     Validate a list of images to ensure they have the required fields and that the names and newNames are unique.
 
@@ -151,6 +151,7 @@ def validate_images(images):
     Returns:
         bool: True if all images are valid, False otherwise.
     """
+    errors = []
     originally_dict = False
     # Convert to list if it is a dict (which is the case when we are validating
     # images from a promotion file)
@@ -161,47 +162,34 @@ def validate_images(images):
     # Ensure that all image names are unique
     duplicates = find_duplicates(images, "name")
     if len(duplicates) > 0:
-        logger.fatal(
-            f"Found duplicate image names: {' '.join(duplicates)}. Images must have unique names."
-        )
-        sys.exit(1)
+        errors += f"Found duplicate image names: {' '.join(duplicates)}. Images must have unique names."
 
     # Ensure that all image newNames are unique
     duplicates = find_duplicates(images, "newName")
     if len(duplicates) > 0:
-        logger.fatal(
-            f"Found duplicate image newNames: {' '.join(duplicates)}. Image newNames must have unique names."
-        )
-        sys.exit(1)
+        errors += f"Found duplicate image names: {' '.join(duplicates)}. Images must have unique names."
 
     for image in images:
         # Validate that the image has the required fields
         if "name" not in image:
-            logger.fatal(f"Image {image} is missing the required 'name' field.")
-            return False
+            errors += f"Image {image} is missing the required 'name' field."
         if "fromOverlay" in image:
             if "newName" in image:
-                logger.fatal(
-                    f"Image {image} cannot set newName when fromOverlay is set."
-                )
-                return False
+                errors += f"Image {image} cannot set newName when fromOverlay is set."
             if "newTag" in image:
-                logger.fatal(
-                    f"Image {image} cannot set newTag when fromOverlay is set."
-                )
-                return False
+                errors += f"Image {image} cannot set newTag when fromOverlay is set."
         else:
             if ("newTag" not in image) and ("newName" not in image):
-                logger.fatal(f"Image {image} must set newName, newTag or both.")
-                return False
+                errors += f"Image {image} must set newName, newTag or both."
         # Validate that the image has the required fields if it was not a dict,
         # which means that it is coming from a promotion file and not from a
         # kustomization.yaml file.
         if not originally_dict and "overlays" not in image:
-            logger.fatal(f"Image {image} is missing the required 'overlays' field.")
-            return False
+            errors += f"Image {image} is missing the required 'overlays' field."
 
-    return True
+    for error in errors:
+        logger.error(error)
+    return len(errors) == 0
 
 
 def validate_charts(charts):
@@ -293,7 +281,7 @@ def read_images_from_overlay(overlay: str, deployment_dir: str) -> dict[str, dic
         sys.exit(1)
 
     # Validate that the images have the required fields
-    if not validate_images(images):
+    if not valid_images(images):
         logger.fatal(f"Overlay {overlay} has invalid images.")
         sys.exit(1)
 
@@ -681,9 +669,9 @@ def load_promotion_json(type: str) -> dict:
     return promotion_json
 
 
-def validate_promotion_lists(
+def valid_promotion_lists(
     images_to_update: list[dict], charts_to_update: list[dict]
-) -> None:
+) -> bool:
     """
     Validate the provided promotion configuration.
 
@@ -739,11 +727,17 @@ def validate_promotion_lists(
         exit(1)
 
     # Validate that the images to update have the required fields
-    validate_images(images_to_update)
+    valid_images = valid_images(images_to_update)
 
     # Validate that the charts to update have the required fields
     validate_charts(charts_to_update)
 
+    if not valid_images:
+        logger.error(
+            "The provided images to update are not valid. Please provide a JSON object of images to update in the following format:"
+        )
+
+    return valid_images
 
 def main():
     validate_runtime_environment()
@@ -757,7 +751,8 @@ def main():
     charts_to_update = load_promotion_json("charts")
 
     # Exit with failure if there are no images or charts to update, printing usage information.
-    validate_promotion_lists(images_to_update, charts_to_update)
+    if not valid_promotion_lists(images_to_update, charts_to_update):
+        sys.exit(1)
 
     # Get the list of images for each overlay
     overlays_to_images = get_images_from_overlays(images_to_update, deployment_dir)
