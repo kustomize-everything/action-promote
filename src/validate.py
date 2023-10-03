@@ -87,18 +87,12 @@ def validate_image_fields(images, originally_dict) -> list:
         # Validate that the image has the required fields
         if "name" not in image:
             errors.append(f"Image {image} is missing the required 'name' field.")
-        if "fromOverlay" in image:
-            if "newName" in image:
-                errors.append(
-                    f"Image {image} cannot set newName when fromOverlay is set."
-                )
-            if "newTag" in image:
-                errors.append(
-                    f"Image {image} cannot set newTag when fromOverlay is set."
-                )
-        else:
-            if ("newTag" not in image) and ("newName" not in image):
-                errors.append(f"Image {image} must set newName, newTag or both.")
+        if "fromOverlay" in image and "newName" in image:
+            errors.append(f"Image {image} cannot set newName when fromOverlay is set.")
+        elif "fromOverlay" in image and "newTag" in image:
+            errors.append(f"Image {image} cannot set newTag when fromOverlay is set.")
+        elif ("newTag" not in image) and ("newName" not in image):
+            errors.append(f"Image {image} must set newName, newTag or both.")
         # Validate that the image has the required fields if it was not a dict,
         # which means that it is coming from a promotion file and not from a
         # kustomization.yaml file.
@@ -157,14 +151,10 @@ def validate_chart_fields(charts, originally_dict) -> list:
         # Validate that the chart has the required fields
         if "name" not in chart:
             errors.append(f"Chart {chart} is missing the required 'name' field.")
-        if "fromOverlay" in chart:
-            if "version" in chart:
-                errors.append(
-                    f"Chart {chart} cannot set version when fromOverlay is set."
-                )
-        else:
-            if "version" not in chart:
-                errors.append(f"Chart {chart} must set version.")
+        if "fromOverlay" in chart and "version" in chart:
+            errors.append(f"Chart {chart} cannot set version when fromOverlay is set.")
+        elif "version" not in chart:
+            errors.append(f"Chart {chart} must set version.")
         # Validate that the chart has the required fields if it was not a dict,
         # which means that it is coming from a promotion file and not from a
         # kustomization.yaml file.
