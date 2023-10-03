@@ -58,6 +58,24 @@ def validate_images(images):
     if len(duplicates) > 0:
         errors.append(f"Found duplicate image names: {' '.join(duplicates)}. Images must have unique names.")
 
+    if len(images) > 0:
+        errors.extend(validate_image_fields(images, originally_dict))
+
+    for error in errors:
+        logger.error(error)
+    return len(errors) == 0
+
+def validate_image_fields(images, originally_dict) -> list:
+    """
+    Args:
+        images (list): The list of images to validate.
+        originally_dict (bool): True if the images were originally a dict, False otherwise.
+
+    Returns:
+        list: A list of errors.
+    """
+    errors = []
+
     for image in images:
         # Validate that the image has the required fields
         if "name" not in image:
@@ -76,10 +94,7 @@ def validate_images(images):
         if not originally_dict and "overlays" not in image:
             errors.append(f"Image {image} is missing the required 'overlays' field.")
 
-    for error in errors:
-        logger.error(error)
-    return len(errors) == 0
-
+    return errors
 
 def validate_charts(charts):
     """
@@ -106,6 +121,25 @@ def validate_charts(charts):
             f"Found duplicate chart names: {' '.join(duplicates)}. Charts must have unique names."
         )
 
+    if len(charts) > 0:
+        errors.extend(validate_chart_fields(charts, originally_dict))
+
+    for error in errors:
+        logger.error(error)
+
+    return len(errors) == 0
+
+def validate_chart_fields(charts, originally_dict) -> list:
+    """
+    Args:
+        charts (list): The list of charts to validate.
+        originally_dict (bool): True if the charts were originally a dict, False otherwise.
+
+    Returns:
+        list: A list of errors.
+    """
+    errors = []
+
     for chart in charts:
         # Validate that the chart has the required fields
         if "name" not in chart:
@@ -124,10 +158,7 @@ def validate_charts(charts):
         if not originally_dict and "overlays" not in chart:
             errors.append(f"Chart {chart} is missing the required 'overlays' field.")
 
-    for error in errors:
-        logger.error(error)
-
-    return len(errors) == 0
+    return errors
 
 def validate_promotion_lists(
     images_to_update: list[dict], charts_to_update: list[dict]
