@@ -558,7 +558,7 @@ def main():
     charts_to_update = load_promotion_json("charts")
 
     # Exit with failure if there are no images or charts to update, printing usage information.
-    if not valid_promotion_lists(images_to_update, charts_to_update):
+    if not validate_promotion_lists(images_to_update, charts_to_update):
         sys.exit(1)
 
     # Get the list of images for each overlay
