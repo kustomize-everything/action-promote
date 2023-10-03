@@ -63,6 +63,35 @@ logger.propagate = False
 logger.setLevel(logging.DEBUG)
 
 
+
+def validate_runtime_environment() -> None:
+    """
+    Validate that the runtime environment has the tools we need and provided directories exist.
+
+    This function validates the runtime environment by checking if the `kustomize` command is available.
+
+    Example Usage:
+    ```python
+    validate_runtime_environment()
+    ```
+
+    Raises:
+        CalledProcessError: If the `kustomize` command is not available.
+
+    Returns:
+        None
+    """
+
+    # Validate that the kustomize command is available
+    try:
+        logger.debug("Validating that kustomize is available...")
+        run(["kustomize", "version"])
+    except subprocess.CalledProcessError:
+        logger.fatal(
+            "kustomize is not available. Please install kustomize before running this script."
+        )
+        exit(1)
+
 def run(args: list[str]) -> int:
     """
     Run the given command and log the output.
