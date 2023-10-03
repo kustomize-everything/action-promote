@@ -2,7 +2,7 @@ import pytest
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import validate
+from validate.validate import validate_images
 
 @pytest.mark.parametrize("images, expected", [
   # Basic
@@ -53,4 +53,4 @@ import validate
   ]
 ])
 def test_validate_images(images, expected):
-    assert validate.validate_images(images) == expected
+    assert validate_images(images) == expected
