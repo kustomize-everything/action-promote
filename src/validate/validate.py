@@ -129,7 +129,7 @@ def validate_charts(charts):
 
     return len(errors) == 0
 
-def valid_promotion_lists(
+def validate_promotion_lists(
     images_to_update: list[dict], charts_to_update: list[dict]
 ) -> bool:
     """
