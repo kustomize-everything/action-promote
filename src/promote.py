@@ -55,7 +55,7 @@ import sys
 import yaml
 
 from typing import Callable, Iterator, Union, Optional  # noqa: F401
-from validate.validate import validate_promotion_lists, validate_charts, validate_images
+from promote.validate import validate_promotion_lists, validate_charts, validate_images
 
 # Initialize logger
 logger = logging.getLogger(__name__)
