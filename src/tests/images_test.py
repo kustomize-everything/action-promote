@@ -1,7 +1,8 @@
 import unittest
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from promote import validate_images, get_images_from_overlays, generate_kustomize_args
 
 overlay_no_name_or_tag = [{"name": "foo", "overlays": ["bar"]}]
@@ -18,9 +19,7 @@ class TestValidateImagesFromOverlays(unittest.TestCase):
 
     def test_only_new_name(self):
         self.assertEqual(
-            validate_images(
-                [{"name": "foo", "newName": "quz", "overlays": ["bar"]}]
-            ),
+            validate_images([{"name": "foo", "newName": "quz", "overlays": ["bar"]}]),
             True,
         )
 
@@ -33,9 +32,7 @@ class TestValidateImagesFromOverlays(unittest.TestCase):
         )
 
     def test_missing_new_name_and_new_tag(self):
-        self.assertEqual(
-            validate_images([{"name": "foo", "overlays": ["bar"]}]), False
-        )
+        self.assertEqual(validate_images([{"name": "foo", "overlays": ["bar"]}]), False)
 
 
 class TestGetImagesFromOverlays(unittest.TestCase):

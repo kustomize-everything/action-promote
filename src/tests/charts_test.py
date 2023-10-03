@@ -1,7 +1,8 @@
 import unittest
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from promote import validate_charts, get_charts_from_overlays
 
 overlay_no_name_or_version = [{"name": "lighthouse", "overlays": ["bar"]}]

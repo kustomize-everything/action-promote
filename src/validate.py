@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 logger.propagate = False
 logger.setLevel(logging.DEBUG)
 
+
 def find_duplicates(images: list, field: str) -> set:
     """
     Find duplicate values for a specified field in a list of images.
@@ -30,6 +31,7 @@ def find_duplicates(images: list, field: str) -> set:
 
     return duplicates
 
+
 def validate_images(images):
     """
     Validate a list of images to ensure they have the required fields and that the names and newNames are unique.
@@ -51,12 +53,16 @@ def validate_images(images):
     # Ensure that all image names are unique
     duplicates = find_duplicates(images, "name")
     if len(duplicates) > 0:
-        errors.append(f"Found duplicate image names: {' '.join(duplicates)}. Images must have unique names.")
+        errors.append(
+            f"Found duplicate image names: {' '.join(duplicates)}. Images must have unique names."
+        )
 
     # Ensure that all image newNames are unique
     duplicates = find_duplicates(images, "newName")
     if len(duplicates) > 0:
-        errors.append(f"Found duplicate image names: {' '.join(duplicates)}. Images must have unique names.")
+        errors.append(
+            f"Found duplicate image names: {' '.join(duplicates)}. Images must have unique names."
+        )
 
     if len(images) > 0:
         errors.extend(validate_image_fields(images, originally_dict))
@@ -64,6 +70,7 @@ def validate_images(images):
     for error in errors:
         logger.error(error)
     return len(errors) == 0
+
 
 def validate_image_fields(images, originally_dict) -> list:
     """
@@ -82,9 +89,13 @@ def validate_image_fields(images, originally_dict) -> list:
             errors.append(f"Image {image} is missing the required 'name' field.")
         if "fromOverlay" in image:
             if "newName" in image:
-                errors.append(f"Image {image} cannot set newName when fromOverlay is set.")
+                errors.append(
+                    f"Image {image} cannot set newName when fromOverlay is set."
+                )
             if "newTag" in image:
-                errors.append(f"Image {image} cannot set newTag when fromOverlay is set.")
+                errors.append(
+                    f"Image {image} cannot set newTag when fromOverlay is set."
+                )
         else:
             if ("newTag" not in image) and ("newName" not in image):
                 errors.append(f"Image {image} must set newName, newTag or both.")
@@ -95,6 +106,7 @@ def validate_image_fields(images, originally_dict) -> list:
             errors.append(f"Image {image} is missing the required 'overlays' field.")
 
     return errors
+
 
 def validate_charts(charts):
     """
@@ -129,6 +141,7 @@ def validate_charts(charts):
 
     return len(errors) == 0
 
+
 def validate_chart_fields(charts, originally_dict) -> list:
     """
     Args:
@@ -159,6 +172,7 @@ def validate_chart_fields(charts, originally_dict) -> list:
             errors.append(f"Chart {chart} is missing the required 'overlays' field.")
 
     return errors
+
 
 def validate_promotion_lists(
     images_to_update: list[dict], charts_to_update: list[dict]

@@ -63,7 +63,6 @@ logger.propagate = False
 logger.setLevel(logging.DEBUG)
 
 
-
 def validate_runtime_environment() -> None:
     """
     Validate that the runtime environment has the tools we need and provided directories exist.
@@ -91,6 +90,7 @@ def validate_runtime_environment() -> None:
             "kustomize is not available. Please install kustomize before running this script."
         )
         exit(1)
+
 
 def run(args: list[str]) -> int:
     """
