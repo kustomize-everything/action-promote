@@ -130,7 +130,7 @@ runs:
   # version of the container. This prevents the user from having to build
   # the container themselves.
   image: 'Dockerfile'
-  #image: 'docker://ghcr.io/kustomize-everything/action-promote:v4.1.3'
+  # image: 'docker://ghcr.io/kustomize-everything/action-promote:v4.1.3'
   env:
     GIT_COMMIT_USER: ${{ inputs.git-commit-user }}
     GIT_COMMIT_EMAIL: ${{ inputs.git-commit-email }}
