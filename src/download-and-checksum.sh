@@ -4,9 +4,6 @@
 # Fail on non-zero exit code
 set -e
 
-# Fail on unset variables
-set -o nounset
-
 if [[ "${DEBUG}" == "true" ]]; then
   echo "Debug mode enabled in commit-and-pull-request.sh"
   set -x
