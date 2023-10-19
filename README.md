@@ -5,7 +5,7 @@
 <!-- markdownlint-enable -->
 
 `action-promote` is a GitHub action designed to implement a standard promotion
-pattern using Kustomize. Another FOSS tool that enables a similar workflow is 
+pattern using Kustomize. Another FOSS tool that enables a similar workflow is
 [Kargo](https://kargo.akuity.io/) from [Akuity](https://akuity.io/).
 
 It facilitates the injection of multiple new images or helm charts into target
