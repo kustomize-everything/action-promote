@@ -21,6 +21,7 @@ jobs:
       fail-fast: true
       matrix:
         promotion: [simple-promotion, complex-promotion, cross-overlay-promotion]
+        promotion-method: [push, pull_request]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -54,6 +55,7 @@ jobs:
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
           images: ${{ env.PROMOTION }}
+          promotion-method: ${{ matrix.promotion-method }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
           # Useful for debugging the action
@@ -89,6 +91,7 @@ jobs:
       fail-fast: true
       matrix:
         promotion: [helm-promotion, helm-cross-overlay-promotion]
+        promotion-method: [push, pull_request]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -120,6 +123,7 @@ jobs:
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
           charts: ${{ env.PROMOTION }}
+          promotion-method: ${{ matrix.promotion-method }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
           # Useful for debugging the action
