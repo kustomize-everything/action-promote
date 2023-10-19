@@ -23,7 +23,7 @@ jobs:
         promotion: [simple-promotion, complex-promotion, cross-overlay-promotion]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Read in examples to github output
         id: read-examples
@@ -39,7 +39,7 @@ jobs:
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Checkout Testing Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
@@ -91,7 +91,7 @@ jobs:
         promotion: [helm-promotion, helm-cross-overlay-promotion]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Read in examples to github output
         id: read-examples
@@ -105,7 +105,7 @@ jobs:
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Checkout Testing Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
@@ -134,7 +134,7 @@ jobs:
         promotion: [simple-promotion, complex-promotion]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Read in examples to github output
         id: read-examples
@@ -150,7 +150,7 @@ jobs:
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Checkout Testing Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
@@ -196,7 +196,7 @@ jobs:
         promotion: [simple-promotion, complex-promotion]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Read in examples to github output
         id: read-examples
@@ -216,7 +216,7 @@ jobs:
           echo "$EOF" >> $GITHUB_ENV
 
       - name: Checkout Testing Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
@@ -287,7 +287,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v4
