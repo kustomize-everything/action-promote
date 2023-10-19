@@ -21,6 +21,7 @@ jobs:
       fail-fast: true
       matrix:
         promotion: [simple-promotion, complex-promotion, cross-overlay-promotion]
+        promotion-method: [push, pull_request]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -54,76 +55,8 @@ jobs:
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
           images: ${{ env.PROMOTION }}
+          promotion-method: ${{ matrix.promotion-method }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          dry-run: true
-          # Useful for debugging the action
-          # debug: true
-
-      - name: Verify that newTag was updated
-        run: |
-          # Fail if kustomization file doesn't exist
-          if [[ ! -f "${KUSTOMIZATION_FILE}" ]]; then
-            echo "kustomization file does not exist"
-            exit 1
-          fi
-
-          # If we're testing the cross-overlay promotion
-          if [[ "${{matrix.promotion}}" == "cross-overlay-promotion" ]]; then
-              echo "Cross-overlay TBD"
-          elif [[ "${{matrix.promotion}}" == "simple-promotion" || "${{matrix.promotion}}" == complex-promotion ]]; then
-            if ! grep -q "2.2.0-${{ github.run_number }}" "${KUSTOMIZATION_FILE}"; then
-              echo "newTag was not updated"
-              echo "Contents of ${KUSTOMIZATION_FILE}:"
-              cat "${KUSTOMIZATION_FILE}"
-              exit 1
-            fi
-          else
-            echo "Unknown promotion type. Did you forget to specify it?"
-            exit 1
-          fi
-
-  action-image-testing-push:
-    name: Action Image Testing (push method)
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        promotion: [simple-promotion, complex-promotion, cross-overlay-promotion]
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-
-      - name: Read in examples to github output
-        id: read-examples
-        shell: bash
-        run: |-
-          # Generate unique EOF value to prevent injection attack
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-
-          # Add action run number to the end of the newTag to ensure that
-          # the tag always changes.
-          echo "PROMOTION<<$EOF" >> $GITHUB_ENV
-          jq '.[0].newTag = "2.2.0-${{ github.run_number }}"' example/${{ matrix.promotion }}.json >> $GITHUB_ENV
-          echo "$EOF" >> $GITHUB_ENV
-
-      - name: Checkout Testing Repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          repository: kustomize-everything/test-deploy
-          ref: ${{ env.TEST_DEPLOY_SHA }}
-          path: test-deploy
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Action Test with ${{ matrix.promotion }}
-        uses: ./
-        with:
-          target-repo: kustomize-everything/test-deploy
-          target-branch: ${{ env.BRANCH }}
-          working-directory: test-deploy
-          images: ${{ env.PROMOTION }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          promotion-method: push
           dry-run: true
           # Useful for debugging the action
           # debug: true
@@ -158,6 +91,7 @@ jobs:
       fail-fast: true
       matrix:
         promotion: [helm-promotion, helm-cross-overlay-promotion]
+        promotion-method: [push, pull_request]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -189,6 +123,7 @@ jobs:
           target-branch: ${{ env.BRANCH }}
           working-directory: test-deploy
           charts: ${{ env.PROMOTION }}
+          promotion-method: ${{ matrix.promotion-method }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: true
           # Useful for debugging the action
