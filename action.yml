@@ -77,7 +77,7 @@ inputs:
     default: "true"
   labels:
     description: |
-      Comma separated list of labels to add to the PR. Only used when promotion method 
+      Comma separated list of labels to add to the PR. Only used when promotion method
       is pull_requets.
     required: false
   sha256-checksum:
