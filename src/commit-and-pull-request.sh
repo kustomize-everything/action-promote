@@ -118,7 +118,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     gh pr view
   fi
 
-  if [[ "${LABELS}" ]]; then
+  if [[ -n "${LABELS}" ]]; then
     echo "Adding labels to PR: ${LABELS}"
     gh pr label --add "${LABELS}"
   fi  
