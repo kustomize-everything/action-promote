@@ -120,7 +120,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
 
   if [[ -n "${LABELS}" ]]; then
     echo "Adding labels to PR: ${LABELS}"
-    gh pr label --add "${LABELS}"
+    gh pr edit --add-label "${LABELS}"
   fi  
 
   echo
