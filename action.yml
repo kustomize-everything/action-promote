@@ -75,6 +75,11 @@ inputs:
       merged.
     required: false
     default: "true"
+  labels:
+    description: |
+      Comma separated list of labels to add to the PR. Only used when promotion method
+      is pull_requets.
+    required: false
   sha256-checksum:
     description: Checksum of Kustomize version
     required: false
@@ -140,6 +145,7 @@ runs:
     CHARTS: ${{ inputs.charts }}
     PROMOTION_METHOD: ${{ inputs.promotion-method }}
     AUTO_MERGE: ${{ inputs.auto-merge }}
+    LABELS: ${{ inputs.labels }}
     STATUS_ATTEMPTS: ${{ inputs.status-attempts }}
     STATUS_INTERVAL: ${{ inputs.status-interval }}
     SSH_KEY: ${{ inputs.ssh-key }}

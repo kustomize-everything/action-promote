@@ -173,6 +173,7 @@ jobs:
           promotion-method: pull_request
           dry-run: false
           auto-merge: false
+          labels: bug
           # Useful for debugging the action
           # debug: true
 
