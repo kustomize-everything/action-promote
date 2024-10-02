@@ -83,6 +83,11 @@ echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
 IMAGES_NAMES="$(cat images.txt)"
 export IMAGES_NAMES
 
+jq -c -r '[.[] | .images | unique| .[] | "\(.newName):\(.newTag)"]' manifest.json  |xargs > images-updated.txt
+echo "images-updated=$(cat images-updated.txt)" >> "${GITHUB_OUTPUT}"
+IMAGES_UPDATED="$(cat images-updated.txt)"
+export IMAGES_UPDATED
+
 # shellcheck disable=SC2129
 jq -c -r '[.[] | .charts | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > charts.txt
 echo "charts=$(cat charts.txt)" >> "${GITHUB_OUTPUT}"
@@ -98,6 +103,7 @@ pushd "${DEPLOYMENT_DIR}" || exit 1
 # If there are no changes, then we don't need to do anything
 if [[ -z "$(git status --porcelain)" ]]; then
   echo "No changes to commit"
+  echo "images-updated='[]'" >> "${GITHUB_OUTPUT}"
 # Otherwise, we need to commit the changes with the relevant metadata
 # in the commit message.
 else
