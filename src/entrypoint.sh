@@ -17,6 +17,8 @@ if [[ "${DEBUG}" == "true" ]]; then
 
   env
 fi
+# Sets images-updated early so that it is always set, even if promote fails
+echo "images-updated=[]" >> "${GITHUB_OUTPUT}"
 
 GITHUB_REF_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_REF}"
 export GITHUB_REF_URL
@@ -105,7 +107,6 @@ pushd "${DEPLOYMENT_DIR}" || exit 1
 # If there are no changes, then we don't need to do anything
 if [[ -z "$(git status --porcelain)" ]]; then
   echo "No changes to commit"
-  echo "images-updated=[]" >> "${GITHUB_OUTPUT}"
 # Otherwise, we need to commit the changes with the relevant metadata
 # in the commit message.
 else
