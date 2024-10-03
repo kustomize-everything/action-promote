@@ -148,6 +148,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push promoted image to deployment repo
         uses: kustomize-everything/action-promote@v3.7.2
+        id: promote
         with:
           target-repo: kustomize-everything/guestbook-deploy
           target-branch: main
@@ -162,6 +163,17 @@ jobs:
               }
             ]
           github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Send Changes
+        if: ${{ steps.promote.outputs.images-updated != '[]' }}
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          channel-id: 'robots'
+          slack-message: |
+            "Promoted:
+            ${{ join(fromJson(steps.promote.outputs.images-updated), ',') }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        
 ```
 
 ## Contributing

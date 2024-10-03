@@ -83,7 +83,9 @@ echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
 IMAGES_NAMES="$(cat images.txt)"
 export IMAGES_NAMES
 
-jq -c -r '[.[] | .images | unique| .[] | "\(.newName):\(.newTag)"]' manifest.json  |xargs > images-updated.txt
+# xargs ignores errors from jq, but also strips quotes. we handle errors differently for images-updated
+# since we need the file to be a proper json object
+jq -c -r '[.[] | .images | unique| .[] | "\(.newName):\(.newTag)"]' manifest.json  > images-updated.txt  2>/dev/null || echo "Error setting images-updated. Continuing"
 echo "images-updated=$(cat images-updated.txt)" >> "${GITHUB_OUTPUT}"
 IMAGES_UPDATED="$(cat images-updated.txt)"
 export IMAGES_UPDATED
@@ -103,7 +105,7 @@ pushd "${DEPLOYMENT_DIR}" || exit 1
 # If there are no changes, then we don't need to do anything
 if [[ -z "$(git status --porcelain)" ]]; then
   echo "No changes to commit"
-  echo "images-updated='[]'" >> "${GITHUB_OUTPUT}"
+  echo "images-updated=[]" >> "${GITHUB_OUTPUT}"
 # Otherwise, we need to commit the changes with the relevant metadata
 # in the commit message.
 else
