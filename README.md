@@ -168,7 +168,9 @@ jobs:
         uses: slackapi/slack-github-action@v1.27.0
         with:
           channel-id: 'robots'
-          slack-message: "Promoted: ${{ join(fromJson(steps.promote.outputs.images-updated), ',') }}"
+          slack-message: |
+            "Promoted:
+            ${{ join(fromJson(steps.promote.outputs.images-updated), ',') }}"
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         
