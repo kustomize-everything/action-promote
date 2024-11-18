@@ -129,7 +129,19 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
 
   echo
   if [[ "${AUTO_MERGE}" == "true" ]]; then
-    echo "Status checks have all passed. Merging PR..."
+    # Retry to work around "Base branch was modified." error.
+    # Ref: https://github.com/cli/cli/issues/8092
+    for i in {1..3}; do
+      echo "Status checks have all passed. Merging PR..."
+      if gh pr merge --squash --admin --delete-branch; then
+        break
+      fi
+      if [[ $i -eq 3 ]]; then
+        exit 1
+      fi
+      echo "retrying in 5 seconds..."
+      sleep 5
+    done
     gh pr merge --squash --admin --delete-branch
     echo
     echo "Promotion PR has been merged. Details below."
