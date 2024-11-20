@@ -134,8 +134,8 @@ runs:
   # testing changes to the underlying container. Otherwise, use the latest
   # version of the container. This prevents the user from having to build
   # the container themselves.
-  # image: 'Dockerfile'
-  image: 'docker://ghcr.io/kustomize-everything/action-promote:v4.3.3'
+  image: 'Dockerfile'
+  #image: 'docker://ghcr.io/kustomize-everything/action-promote:v4.3.3'
   env:
     GIT_COMMIT_USER: ${{ inputs.git-commit-user }}
     GIT_COMMIT_EMAIL: ${{ inputs.git-commit-email }}
