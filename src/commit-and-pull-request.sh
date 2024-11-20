@@ -142,7 +142,6 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
       echo "retrying in 5 seconds..."
       sleep 5
     done
-    gh pr merge --squash --admin --delete-branch
     echo
     echo "Promotion PR has been merged. Details below."
   else
