@@ -12,7 +12,7 @@ types-pyyaml = "^6.0.12.12"
 
 [tool.poetry.dev-dependencies]
 black = "^23.1.0"
-flake8 = "^6.0.0"
+flake8 = "^7.0.0"
 mypy = "^1.0.0"
 pytest = "^8.0.0"
 
