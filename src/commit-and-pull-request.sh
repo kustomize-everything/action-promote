@@ -39,8 +39,14 @@ function wait_for_result_not_found {
 }
 
 function git_commit_with_metadata {
+  # Default the title if no provided
+  if [[ -z "${PR_TITLE:-}" ]]; then
+    TITLE="Promote to ${OVERLAY_NAMES}"
+  else
+    TITLE="${PR_TITLE}"
+  fi
+
   # All of these variables are assumed to have been set by the caller
-  TITLE="Promote to ${OVERLAY_NAMES}"
   METADATA="---
   GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}
   GITHUB_JOB: ${GITHUB_JOB}

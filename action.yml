@@ -113,6 +113,9 @@ inputs:
   aggregate-pr-changes:
     description: If this is set to true, new changes will be aggregated in the existing open PR
     default: "false"
+  pr-title:
+    description: Title of the PR. If unset a default title will be used
+    default: ""
   pr-unique-key:
     description: this key will be added to all your PR branch names if "aggregate-pr-changes" is set to true
     default: "80514bedee3628f200f6"
@@ -160,3 +163,4 @@ runs:
     DEBUG: ${{ inputs.debug }}
     AGGREGATE_PR_CHANGES: ${{ inputs.aggregate-pr-changes }}
     PR_UNIQUE_KEY: ${{ inputs.pr-unique-key }}
+    PR_TITLE: ${{ inputs.pr-title }}
