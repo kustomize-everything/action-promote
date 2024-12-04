@@ -64,10 +64,14 @@ function git_commit_with_metadata {
   OVERLAYS: ${OVERLAY_NAMES}
   MANIFEST_JSON: ${MANIFEST_JSON}"
 
-  git commit -m "${TITLE}
+  if [ -n "${GIT_COMMIT_MESSAGE}" ]; then
+    git commit -m "${GIT_COMMIT_MESSAGE}"
+  else
+    git commit -m "${TITLE}
 
-  ${METADATA}
-  "
+    ${METADATA}
+    "
+  fi
 }
 
 # Fail on non-zero exit code
