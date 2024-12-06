@@ -129,6 +129,11 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     gh pr edit --add-label "${LABELS}"
   fi  
 
+  if [[ -n "${PR_REVIEWER}" ]]; then
+    echo "Adding reviewer to PR: ${PR_REVIEWER}"
+    gh pr edit --add-reviewer "${PR_REVIEWER}"
+  fi
+
   echo
   echo "Waiting for status checks to complete..."
   wait_for_result_not_found "reported\|Waiting\|pending" "gh pr checks" "${STATUS_ATTEMPTS}" "${STATUS_INTERVAL}" "false"

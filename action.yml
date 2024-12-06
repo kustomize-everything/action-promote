@@ -113,6 +113,9 @@ inputs:
   aggregate-pr-changes:
     description: If this is set to true, new changes will be aggregated in the existing open PR
     default: "false"
+  pr-reviewer:
+    description: Reviewer for the PR
+    default: ""
   pr-title:
     description: Title of the PR. If unset a default title will be used
     default: ""
@@ -164,3 +167,4 @@ runs:
     AGGREGATE_PR_CHANGES: ${{ inputs.aggregate-pr-changes }}
     PR_UNIQUE_KEY: ${{ inputs.pr-unique-key }}
     PR_TITLE: ${{ inputs.pr-title }}
+    PR_REVIEWER: ${{ inputs.pr-reviewer }}
