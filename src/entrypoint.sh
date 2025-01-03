@@ -39,7 +39,7 @@ echo "GITHUB_WORKFLOW_RUN_URL=${GITHUB_WORKFLOW_RUN_URL}" >> "${GITHUB_ENV}"
 #   - KUSTOMIZE_CHECKSUM
 #   - KUSTOMIZE_BIN_DIR
 #   - KUSTOMIZE_FILENAME
-/download-and-checksum.sh
+"${WORKING_DIR}"/download-and-checksum.sh
 PATH="${KUSTOMIZE_BIN_DIR}:${PATH}"
 
 git config --global user.name "${GIT_COMMIT_USER}"
@@ -54,13 +54,15 @@ export DEPLOYMENT_DIR
 
 # If IMAGES is not an empty string or empty array, then we need to promote the images
 if [[ "${IMAGES}" != "[]" || "${CHARTS}" != "[]" ]]; then
-  IMAGES_TO_UPDATE="${IMAGES}" CHARTS_TO_UPDATE="${CHARTS}" poetry run python /promote.py > manifest.json
+  pushd "${WORKING_DIR}" || exit 1
+  IMAGES_TO_UPDATE="${IMAGES}" CHARTS_TO_UPDATE="${CHARTS}" poetry run python promote.py > manifest.json
+  popd
 else
   echo "No images or charts to promote"
-  echo "{}" > manifest.json
+  echo "{}" > "${WORKING_DIR}"/manifest.json
 fi
 
-MANIFEST_JSON="$(jq -c -r '.' manifest.json)"
+MANIFEST_JSON="$(jq -c -r '.' "${WORKING_DIR}"/manifest.json)"
 export MANIFEST_JSON
 
 # Save images json output to GITHUB_OUTPUT
@@ -70,19 +72,19 @@ echo "manifest-json<<$EOF" >> "${GITHUB_OUTPUT}"
 echo "${MANIFEST_JSON}" >> "${GITHUB_OUTPUT}"
 echo "$EOF" >> "${GITHUB_OUTPUT}"
 
-jq -c -r 'keys | join(", ")' < manifest.json | xargs > overlays.txt
-echo "overlays=$(cat overlays.txt)" >> "${GITHUB_OUTPUT}"
-OVERLAY_NAMES="$(cat overlays.txt)"
+jq -c -r 'keys | join(", ")' < "${WORKING_DIR}"/manifest.json | xargs > "${WORKING_DIR}"/overlays.txt
+echo "overlays=$(cat "${WORKING_DIR}"/overlays.txt)" >> "${GITHUB_OUTPUT}"
+OVERLAY_NAMES="$(cat "${WORKING_DIR}"/overlays.txt)"
 export OVERLAY_NAMES
 
-jq -c -r 'keys | join("-") | gsub("/"; "-")' < manifest.json | xargs > overlays-joined.txt
-echo "overlays-joined=$(cat overlays-joined.txt)" >> "${GITHUB_OUTPUT}"
-OVERLAY_NAMES_NO_SLASH="$(cat overlays-joined.txt)"
+jq -c -r 'keys | join("-") | gsub("/"; "-")' < "${WORKING_DIR}"/manifest.json | xargs > "${WORKING_DIR}"/overlays-joined.txt
+echo "overlays-joined=$(cat "${WORKING_DIR}"/overlays-joined.txt)" >> "${GITHUB_OUTPUT}"
+OVERLAY_NAMES_NO_SLASH="$(cat "${WORKING_DIR}"/overlays-joined.txt)"
 export OVERLAY_NAMES_NO_SLASH
 
-jq -c -r '[.[] | .images | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > images.txt
-echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
-IMAGES_NAMES="$(cat images.txt)"
+jq -c -r '[.[] | .images | map(.name)] | unique | sort | flatten | join(", ")' < "${WORKING_DIR}"/manifest.json | xargs > "${WORKING_DIR}"/images.txt
+echo "images=$(cat "${WORKING_DIR}"/images.txt)" >> "${GITHUB_OUTPUT}"
+IMAGES_NAMES="$(cat "${WORKING_DIR}"/images.txt)"
 export IMAGES_NAMES
 
 # xargs ignores errors from jq, but also strips quotes. we handle errors differently for images-updated
@@ -93,9 +95,9 @@ IMAGES_UPDATED="$(cat images-updated.txt)"
 export IMAGES_UPDATED
 
 # shellcheck disable=SC2129
-jq -c -r '[.[] | .charts | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > charts.txt
-echo "charts=$(cat charts.txt)" >> "${GITHUB_OUTPUT}"
-CHARTS_NAMES="$(cat charts.txt)"
+jq -c -r '[.[] | .charts | map(.name)] | unique | sort | flatten | join(", ")' < "${WORKING_DIR}"/manifest.json | xargs > "${WORKING_DIR}"/charts.txt
+echo "charts=$(cat "${WORKING_DIR}"/charts.txt)" >> "${GITHUB_OUTPUT}"
+CHARTS_NAMES="$(cat "${WORKING_DIR}"/charts.txt)"
 export CHARTS_NAMES
 
 # Because the parent workflow is the one who has run the `checkout` action,
@@ -111,7 +113,7 @@ if [[ -z "$(git status --porcelain)" ]]; then
 # in the commit message.
 else
   echo "Changes to commit"
-  /commit-and-pull-request.sh
+  "${WORKING_DIR}"/commit-and-pull-request.sh
 fi
 popd
 

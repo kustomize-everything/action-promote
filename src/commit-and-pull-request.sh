@@ -201,4 +201,8 @@ echo "deployment-repo-sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
 echo "images=${IMAGES_NAMES}" >> "${GITHUB_OUTPUT}"
 echo "charts=${CHARTS_NAMES}" >> "${GITHUB_OUTPUT}"
 echo "manifest-json=${MANIFEST_JSON}" >> "${GITHUB_OUTPUT}"
-echo "pull-request-url=${PULL_REQUEST_URL}" >> "${GITHUB_OUTPUT}"
+
+if [[ -n "${PULL_REQUEST_URL}" ]]; then
+  echo "pull-request-url=${PULL_REQUEST_URL}" >> "${GITHUB_OUTPUT}"
+fi
+
