@@ -7,7 +7,7 @@ RUN apk add --no-cache git bash curl jq github-cli
 
 RUN pip install --no-cache-dir -r /requirements.txt && \
     poetry config virtualenvs.create false --local && \
-    poetry install
+    poetry install --no-root
 
 # Executes `entrypoint.sh` when the Docker container starts up
 ENTRYPOINT ["/entrypoint.sh"]

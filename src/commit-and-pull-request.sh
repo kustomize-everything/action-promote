@@ -143,16 +143,26 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     # Retry to work around "Base branch was modified." error.
     # Ref: https://github.com/cli/cli/issues/8092
     for i in {1..3}; do
-      echo "Status checks have all passed. Merging PR..."
-      if gh pr merge --squash --admin --delete-branch; then
-        break
+      echo "Checking if the PR is still open..."
+      if ! gh pr view --json state | jq -e '.state == "MERGED"' >/dev/null 2>&1; then
+        echo "Status checks have all passed. Attempting to merge PR..."
+        if gh pr merge --squash --admin --delete-branch; then
+          break
+        fi
+      else
+        echo "PR is already merged. Stopping retries."
+        break  # Stop retrying if PR is already merged
       fi
+      
       if [[ $i -eq 3 ]]; then
+        echo "Failed to merge after 3 attempts."
         exit 1
       fi
-      echo "retrying in 5 seconds..."
+      
+      echo "Merge failed, retrying in 5 seconds..."
       sleep 5
     done
+
     echo
     echo "Promotion PR has been merged. Details below."
   else
