@@ -112,16 +112,25 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   fi
 
   git push origin "${BRANCH}" -f
+
+  # Use a focused, explicit query to determine whether a PR already exists for this branch.
+  # This avoids letting the CLI request extra fields (such as deprecated projectCards) via GraphQL.
   set +e
-  PR="$(gh pr view 2>&1)"
+  EXISTING_PR_URL="$(gh pr view --json url --jq .url 2>/dev/null || true)"
   set -e
-  # We're just looking for the sub-string here, not a regex
-  # shellcheck disable=SC2076
-  if [[ "${PR}" =~ "no pull requests found" ]]; then
+
+  if [[ -z "${EXISTING_PR_URL}" ]]; then
+    # No existing PR found; create one.
     gh pr create --fill
+    # Capture the PR URL created (best effort).
+    set +e
+    PULL_REQUEST_URL="$(gh pr view --json url --jq .url 2>/dev/null || true)"
+    set -e
   else
-    echo "PR Already exists:"
-    gh pr view
+    echo "PR Already exists: ${EXISTING_PR_URL}"
+    # Show a focused summary of the existing PR (minimal fields)
+    gh pr view --json number,title,url,headRefName --jq '["#\(.number)","\(.title)","\(.url)"] | @tsv' || true
+    PULL_REQUEST_URL="${EXISTING_PR_URL}"
   fi
 
   if [[ -n "${LABELS}" ]]; then
@@ -170,9 +179,8 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     echo "Promotion PR has been created and has passed checks. Details below."
   fi
   
-  gh pr view
-  PULL_REQUEST_URL="$(gh pr view --json url -q '.url')"
-  
+  gh pr view || true
+
 elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
   git add .
   git_commit_with_metadata
@@ -211,4 +219,4 @@ echo "deployment-repo-sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
 echo "images=${IMAGES_NAMES}" >> "${GITHUB_OUTPUT}"
 echo "charts=${CHARTS_NAMES}" >> "${GITHUB_OUTPUT}"
 echo "manifest-json=${MANIFEST_JSON}" >> "${GITHUB_OUTPUT}"
-echo "pull-request-url=${PULL_REQUEST_URL}" >> "${GITHUB_OUTPUT}"
+echo "pull-request-url=${PULL_REQUEST_URL}" >> "${GITHUB_OUTPUT"
