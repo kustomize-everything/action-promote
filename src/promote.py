@@ -649,7 +649,7 @@ def get_deployment_dir() -> str:
     return deployment_dir
 
 
-def load_promotion_json(type: str) -> dict:
+def load_promotion_json(type: str) -> list[dict]:
     """
     Loads the promotion JSON for images or helm charts
 
@@ -657,7 +657,7 @@ def load_promotion_json(type: str) -> dict:
         type (str): images or charts
 
     Returns:
-        dict: The promotion JSON
+        list[dict]: The promotion JSON (a list of image/chart objects)
     """
 
     # Read in the images to update from stdin or the IMAGES_TO_UPDATE env variable
