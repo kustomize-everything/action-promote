@@ -287,6 +287,62 @@ jobs:
             exit 1
           fi
 
+  action-commit-message-testing:
+    name: Action Commit Message Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v7
+
+      - name: Read in examples to github output
+        id: read-examples
+        shell: bash
+        run: |-
+          # Generate unique EOF value to prevent injection attack
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+
+          # Unique newTag so there is always a change to commit.
+          echo "PROMOTION<<$EOF" >> $GITHUB_ENV
+          jq '.[0].newTag = "2.2.0-${{ github.run_number }}"' example/simple-promotion.json >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: ${{ env.TEST_DEPLOY_SHA }}
+          path: test-deploy
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Promote with a custom git-commit-message
+        uses: ./
+        with:
+          target-repo: kustomize-everything/test-deploy
+          target-branch: ${{ env.BRANCH }}
+          working-directory: test-deploy
+          images: ${{ env.PROMOTION }}
+          promotion-method: pull_request
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          git-commit-message: "test: custom promotion commit message ${{ github.run_number }}"
+          # dry-run commits locally without pushing, so the commit message can
+          # be asserted from the working copy below.
+          dry-run: true
+
+      - name: Verify the promotion commit used git-commit-message
+        run: |
+          EXPECTED="test: custom promotion commit message ${{ github.run_number }}"
+          ACTUAL="$(git -C test-deploy log -1 --pretty=%B)"
+          if [[ "${ACTUAL}" != "${EXPECTED}" ]]; then
+            echo "Promotion commit did not use the git-commit-message input."
+            echo "Expected: '${EXPECTED}'"
+            echo "Actual:   '${ACTUAL}'"
+            echo "--- full last commit ---"
+            git -C test-deploy log -1
+            exit 1
+          fi
+          echo "OK: promotion commit used the git-commit-message input."
+
   python-tests:
     name: Python Tests
     runs-on: ubuntu-latest
