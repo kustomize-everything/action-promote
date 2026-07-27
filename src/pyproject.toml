@@ -11,7 +11,7 @@ loguru = "^0.7.0"
 types-pyyaml = "^6.0.12.12"
 packaging = ">=24.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
 flake8 = "^6.0.0"
 mypy = "^1.0.0"
