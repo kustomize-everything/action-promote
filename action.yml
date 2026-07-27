@@ -146,6 +146,12 @@ runs:
     GIT_COMMIT_USER: ${{ inputs.git-commit-user }}
     GIT_COMMIT_EMAIL: ${{ inputs.git-commit-email }}
     GIT_COMMIT_MESSAGE: ${{ inputs.git-commit-message }}
+    # Set GH_TOKEN (gh's preferred variable, which takes precedence over
+    # GITHUB_TOKEN) so the `github-token` input is authoritative for gh even
+    # when the calling workflow sets its own env.GITHUB_TOKEN. Backwards
+    # compatible: github-token is required, and if it were ever empty gh falls
+    # back to GITHUB_TOKEN as before.
+    GH_TOKEN: ${{ inputs.github-token }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     IMAGES: ${{ inputs.images }}
     CHARTS: ${{ inputs.charts }}
