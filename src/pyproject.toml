@@ -14,7 +14,7 @@ packaging = ">=24.0"
 [tool.poetry.group.dev.dependencies]
 black = "^26.0.0"
 flake8 = "^7.0.0"
-mypy = "^1.0.0"
+mypy = "^2.0.0"
 pytest = "^9.0.0"
 
 [build-system]
