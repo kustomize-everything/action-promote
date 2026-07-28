@@ -1,42 +1,8 @@
 #!/bin/bash
 
-# Function to wait until the regex provided by the first argument is not found
-# in the output of the command provided by the second argument, until the number
-# of attempts provided by the third argument is reached, or the command fails.
-function wait_for_result_not_found {
-  local -r regex="$1"
-  local -r command="$2"
-  local -r attempts="$3"
-  local -r sleep_time="$4"
-  local -r fail_on_nonzero="$5"
-
-  local -i attempt=0
-  while [[ "${attempt}" -lt "${attempts}" ]]; do
-    set +e
-    if ! output="$(${command} 2>&1)"; then
-      if [[ "${fail_on_nonzero}" == "true" ]]; then
-        echo "${output}"
-        echo "Command failed. Exiting."
-        exit 1
-      fi
-    fi
-    set +e
-
-    echo "${output}"
-    # If the regex does not match, we're done
-    if ! echo "${output}" | grep -q "${regex}"; then
-      echo "Match '${regex}' not found. Exiting."
-      return 0
-    fi
-    # Decrement the number of attempts
-    attempt=$((attempt + 1))
-    echo "$((attempts - attempt)) attempts remaining. Sleeping for ${sleep_time} seconds..."
-    sleep "${sleep_time}"
-  done
-
-  echo "Match '${regex}' persisted after ${attempts} attempts. Exiting."
-  exit 1
-}
+# Shared helpers, packaged alongside this script (see Dockerfile `COPY src/* /`).
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/gh-checks.sh"
 
 function git_commit_with_metadata {
   # Default the title if no provided
@@ -145,7 +111,26 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
 
   echo
   echo "Waiting for status checks to complete..."
-  wait_for_result_not_found "reported\|Waiting\|pending" "gh pr checks" "${STATUS_ATTEMPTS}" "${STATUS_INTERVAL}" "false"
+  # Wait only while checks are actually running. A PR with no status checks
+  # ("no checks reported") is treated as "nothing to wait on" and proceeds
+  # immediately, instead of waiting out every attempt and failing the promotion.
+  status_attempt=0
+  while true; do
+    set +e
+    checks_output="$(gh pr checks 2>&1)"
+    set -e
+    echo "${checks_output}"
+    if [[ "$(pr_checks_state "${checks_output}")" == "proceed" ]]; then
+      break
+    fi
+    status_attempt=$((status_attempt + 1))
+    if [[ "${status_attempt}" -ge "${STATUS_ATTEMPTS}" ]]; then
+      echo "Status checks still pending after ${STATUS_ATTEMPTS} attempts. Exiting."
+      exit 1
+    fi
+    echo "$((STATUS_ATTEMPTS - status_attempt)) attempts remaining. Sleeping for ${STATUS_INTERVAL} seconds..."
+    sleep "${STATUS_INTERVAL}"
+  done
 
   echo
   if [[ "${AUTO_MERGE}" == "true" ]]; then
