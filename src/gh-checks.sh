@@ -17,7 +17,10 @@ function pr_checks_state {
   local output="${1:-}"
   if printf '%s' "${output}" | grep -q "no checks reported"; then
     echo "proceed"
-  elif printf '%s' "${output}" | grep -qiE "pending|in progress"; then
+  elif printf '%s' "${output}" | grep -qiE "pending|in progress|queued|waiting"; then
+    # Any not-yet-concluded state (pending / in progress / queued / waiting)
+    # means checks are still running, so keep waiting. Checked *after* the
+    # "no checks reported" case above, so a repo with no checks still proceeds.
     echo "pending"
   else
     echo "proceed"

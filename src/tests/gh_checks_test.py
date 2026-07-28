@@ -33,6 +33,14 @@ class TestPrChecksState(unittest.TestCase):
         out = "e2e\tin progress\t0\thttps://example.test/checks"
         self.assertEqual(classify(out), "pending")
 
+    def test_queued_waits(self):
+        out = "deploy\tqueued\t0\thttps://example.test/checks"
+        self.assertEqual(classify(out), "pending")
+
+    def test_waiting_waits(self):
+        out = "lint\twaiting\t0\thttps://example.test/checks"
+        self.assertEqual(classify(out), "pending")
+
     def test_all_passed_proceeds(self):
         out = "build\tpass\t12s\thttps://example.test/checks"
         self.assertEqual(classify(out), "proceed")
