@@ -99,14 +99,18 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     gh pr view --json number,title,state,url,headRefName,baseRefName
   fi
 
+  # Resolve the PR number while the promotion branch still exists: `gh pr merge
+  # --delete-branch` deletes it, and branch-inferred `gh pr` calls then fail.
+  PR_NUMBER="$(gh pr view --json number -q '.number')"
+
   if [[ -n "${LABELS}" ]]; then
     echo "Adding labels to PR: ${LABELS}"
-    gh pr edit --add-label "${LABELS}"
+    gh pr edit "${PR_NUMBER}" --add-label "${LABELS}"
   fi  
   
   if [[ -n "${PR_REVIEWER}" ]]; then
     echo "Adding reviewer to PR: ${PR_REVIEWER}"
-    gh pr edit --add-reviewer "${PR_REVIEWER}"
+    gh pr edit "${PR_NUMBER}" --add-reviewer "${PR_REVIEWER}"
   fi
 
   echo
@@ -117,7 +121,7 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   status_attempt=0
   while true; do
     set +e
-    checks_output="$(gh pr checks 2>&1)"
+    checks_output="$(gh pr checks "${PR_NUMBER}" 2>&1)"
     set -e
     echo "${checks_output}"
     if [[ "$(pr_checks_state "${checks_output}")" == "proceed" ]]; then
@@ -138,9 +142,9 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
     # Ref: https://github.com/cli/cli/issues/8092
     for i in {1..3}; do
       echo "Checking if the PR is still open..."
-      if ! gh pr view --json state | jq -e '.state == "MERGED"' >/dev/null 2>&1; then
+      if ! gh pr view "${PR_NUMBER}" --json state | jq -e '.state == "MERGED"' >/dev/null 2>&1; then
         echo "Status checks have all passed. Attempting to merge PR..."
-        if gh pr merge --squash --admin --delete-branch; then
+        if gh pr merge "${PR_NUMBER}" --squash --admin --delete-branch; then
           break
         fi
       else
@@ -165,8 +169,8 @@ if [[ "${PROMOTION_METHOD}" == "pull_request" ]]; then
   fi
   
   # Use explicit JSON fields to avoid querying deprecated projectCards
-  gh pr view --json number,title,state,url,headRefName,baseRefName
-  PULL_REQUEST_URL="$(gh pr view --json url -q '.url')"
+  gh pr view "${PR_NUMBER}" --json number,title,state,url,headRefName,baseRefName
+  PULL_REQUEST_URL="$(gh pr view "${PR_NUMBER}" --json url -q '.url')"
   
 elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
   git add .

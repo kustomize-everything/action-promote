@@ -80,20 +80,20 @@ echo "overlays-joined=$(cat overlays-joined.txt)" >> "${GITHUB_OUTPUT}"
 OVERLAY_NAMES_NO_SLASH="$(cat overlays-joined.txt)"
 export OVERLAY_NAMES_NO_SLASH
 
-jq -c -r '[.[] | .images | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > images.txt
+jq -c -r '[.[] | .images // [] | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > images.txt
 echo "images=$(cat images.txt)" >> "${GITHUB_OUTPUT}"
 IMAGES_NAMES="$(cat images.txt)"
 export IMAGES_NAMES
 
 # xargs ignores errors from jq, but also strips quotes. we handle errors differently for images-updated
 # since we need the file to be a proper json object
-jq -c -r '[.[] | .images | unique| .[] | "\(.newName):\(.newTag)"]' manifest.json  > images-updated.txt  2>/dev/null || echo "Error setting images-updated. Continuing"
+jq -c -r '[.[] | .images // [] | unique| .[] | "\(.newName):\(.newTag)"]' manifest.json  > images-updated.txt  2>/dev/null || echo "Error setting images-updated. Continuing"
 echo "images-updated=$(cat images-updated.txt)" >> "${GITHUB_OUTPUT}"
 IMAGES_UPDATED="$(cat images-updated.txt)"
 export IMAGES_UPDATED
 
 # shellcheck disable=SC2129
-jq -c -r '[.[] | .charts | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > charts.txt
+jq -c -r '[.[] | .charts // [] | map(.name)] | unique | sort | flatten | join(", ")' < manifest.json | xargs > charts.txt
 echo "charts=$(cat charts.txt)" >> "${GITHUB_OUTPUT}"
 CHARTS_NAMES="$(cat charts.txt)"
 export CHARTS_NAMES
