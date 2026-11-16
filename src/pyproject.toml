@@ -7,7 +7,7 @@ authors = ["Brandon High <highb@users.noreply.github.com>"]
 [tool.poetry.dependencies]
 python = "^3.12"
 PyYAML = "^6.0"
-loguru = "^0.7.0"
+loguru = "^0.8.0"
 types-pyyaml = "^6.0.12.12"
 packaging = ">=24.0"
 
